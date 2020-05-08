@@ -3,7 +3,7 @@ package com.harry.renthouse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication 
 public class RentHouseApplication {
 
     public static void main(String[] args) {
