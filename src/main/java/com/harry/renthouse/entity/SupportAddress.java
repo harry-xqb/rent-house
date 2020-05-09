@@ -43,7 +43,7 @@ public class SupportAddress {
     public enum AddressLevel{
         PROVINCE("province"),
         CITY("city"),
-        region("region");
+        REGION("region");
 
         private String value;
 

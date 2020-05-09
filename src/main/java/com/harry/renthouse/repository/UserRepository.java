@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
  * @author Harry Xu
  * @date 2020/5/7 16:09
  */
-@Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
     User findUserByName(String name);

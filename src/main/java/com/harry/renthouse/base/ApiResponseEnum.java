@@ -12,7 +12,7 @@ import lombok.Getter;
 public enum ApiResponseEnum {
 
     SUCCESS(200, "成功"),
-    BAD_REQUEST(400, "请求格式有误"),
+    BAD_REQUEST(400, "请求失败"),
     NOT_FOUND(404, "请求地址不存在"),
     INTERNAL_SERVER_ERROR(500, "服务器内部错误"),
     NOT_LOGIN(40001, "用户未登录"),

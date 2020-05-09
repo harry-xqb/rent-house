@@ -17,7 +17,15 @@ public interface SupportAddressRepository  extends JpaRepository<SupportAddress,
     /**
      * 查询所有对应行政级别的信息
      * @param level 行政级别
-     * @return 行政级别列表
+     * @return 行政单位列表
      */
     List<SupportAddress> findAllByLevel(String level);
+
+    /**
+     * 通过所属行政单位简称和行政单位级别查询区域列表
+     * @param belongTo 所属行政单位
+     * @param level 行政级别
+     * @return 行政单位列表
+     */
+    List<SupportAddress> findAllByBelongToAndLevel(String belongTo, String level);
 }

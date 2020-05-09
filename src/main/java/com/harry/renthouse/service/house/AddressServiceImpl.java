@@ -1,7 +1,13 @@
 package com.harry.renthouse.service.house;
 
-import com.harry.renthouse.controller.house.SupportAddressDTO;
+import com.harry.renthouse.controller.dto.SubwayDTO;
+import com.harry.renthouse.controller.dto.SubwayStationDTO;
+import com.harry.renthouse.controller.dto.SupportAddressDTO;
+import com.harry.renthouse.entity.Subway;
+import com.harry.renthouse.entity.SubwayStation;
 import com.harry.renthouse.entity.SupportAddress;
+import com.harry.renthouse.repository.SubwayRepository;
+import com.harry.renthouse.repository.SubwayStationRepository;
 import com.harry.renthouse.repository.SupportAddressRepository;
 import com.harry.renthouse.service.ServiceMultiResult;
 import org.modelmapper.ModelMapper;
@@ -26,6 +32,12 @@ public class AddressServiceImpl implements AddressService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private SubwayRepository subwayRepository;
+
+    @Autowired
+    private SubwayStationRepository subwayStationRepository;
+
     /**
      * 获取所有城市
      * @return
@@ -37,5 +49,31 @@ public class AddressServiceImpl implements AddressService {
                 .map(address -> modelMapper.map(address, SupportAddressDTO.class))
                 .collect(Collectors.toList());
         return new ServiceMultiResult<>(list.size(), list);
+    }
+
+    @Override
+    public ServiceMultiResult<SupportAddressDTO> findAreaByBelongToAndLevel(String belongTo, String level) {
+        SupportAddress.AddressLevel levelEnum = SupportAddress.AddressLevel.of(level);
+        List<SupportAddressDTO> list = Optional.ofNullable(supportAddressRepository.findAllByBelongToAndLevel(belongTo, levelEnum.getValue()))
+                .orElse(Collections.emptyList())
+                .stream().map(address -> modelMapper.map(address, SupportAddressDTO.class))
+                .collect(Collectors.toList());
+        ;
+        return new ServiceMultiResult<>(list.size(), list);
+    }
+
+    @Override
+    public ServiceMultiResult<SubwayDTO> findAllSubwayByCityEnName(String cityEnName) {
+        List<SubwayDTO> subWayDtoList = Optional.ofNullable(subwayRepository.findAllByCityEnName(cityEnName))
+                .orElse(Collections.emptyList()).stream().map(subway -> modelMapper.map(subway, SubwayDTO.class)).collect(Collectors.toList());
+        return new ServiceMultiResult<>(subWayDtoList.size(), subWayDtoList);
+    }
+
+    @Override
+    public ServiceMultiResult<SubwayStationDTO> findAllSubwayStationBySubwayId(Long subwayId) {
+        List<SubwayStationDTO> subwayStationDTOList = Optional.ofNullable(subwayStationRepository
+                .getAllBySubwayId(subwayId)).orElse(Collections.emptyList()).stream()
+                .map(subwayStation -> modelMapper.map(subwayStation, SubwayStationDTO.class)).collect(Collectors.toList());
+        return new ServiceMultiResult<>(subwayStationDTOList.size(), subwayStationDTOList);
     }
 }
