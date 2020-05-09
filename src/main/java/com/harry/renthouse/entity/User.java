@@ -3,15 +3,13 @@ package com.harry.renthouse.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GeneratorType;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -39,11 +37,11 @@ public class User implements UserDetails, Serializable {
 
     private Integer status;
 
-    private Date createTime;
+    private LocalDateTime createTime;
 
-    private Date lastLoginTime;
+    private LocalDateTime lastLoginTime;
 
-    private Date lastUpdateTime;
+    private LocalDateTime lastUpdateTime;
 
     private String avatar;
 

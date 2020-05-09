@@ -1,4 +1,4 @@
-package com.harry.renthouse.service.house;
+package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.controller.dto.SubwayDTO;
 import com.harry.renthouse.controller.dto.SubwayStationDTO;
@@ -10,6 +10,7 @@ import com.harry.renthouse.repository.SubwayRepository;
 import com.harry.renthouse.repository.SubwayStationRepository;
 import com.harry.renthouse.repository.SupportAddressRepository;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.house.AddressService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
