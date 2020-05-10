@@ -11,8 +11,20 @@ spring:
       format_sql: true
     hibernate:
       ddl-auto:
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 30MB
+      location: F:\idea\rent-house\tmp
 logging:
   level:
     org:
       hibernate:
         SQL: debug
+
+# 七牛云配置
+qiniu:
+  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo
+  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7
+  bucket: hz-rent-house
+  cdnPrefix: http://qa22ygxo8.bkt.clouddn.com/

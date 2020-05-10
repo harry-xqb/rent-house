@@ -34,7 +34,7 @@ public class RentHouseAuthenticationProvider implements AuthenticationProvider {
         if(!passwordEncoder.matches(password, user.getPassword())){
              throw new BadCredentialsException("用户名或密码错误");
         }
-        return new UsernamePasswordAuthenticationToken(user, password);
+        return new UsernamePasswordAuthenticationToken(username, password, user.getAuthorities());
     }
 
     @Override

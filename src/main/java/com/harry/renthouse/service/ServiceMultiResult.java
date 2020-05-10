@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
+ *  服务端统一列表返回格式
  * @author Harry Xu
  * @date 2020/5/8 17:52
  */
