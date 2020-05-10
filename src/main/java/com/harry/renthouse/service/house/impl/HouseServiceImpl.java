@@ -1,11 +1,10 @@
 package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.base.AuthenticatedUserUtil;
-import com.harry.renthouse.controller.dto.HouseDTO;
-import com.harry.renthouse.controller.form.HouseForm;
+import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.entity.House;
 import com.harry.renthouse.repository.HouseRepository;
-import com.harry.renthouse.service.ServiceResult;
 import com.harry.renthouse.service.house.HouseService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

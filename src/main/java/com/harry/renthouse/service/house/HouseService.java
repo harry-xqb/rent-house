@@ -1,8 +1,7 @@
 package com.harry.renthouse.service.house;
 
-import com.harry.renthouse.controller.dto.HouseDTO;
-import com.harry.renthouse.controller.form.HouseForm;
-import com.harry.renthouse.service.ServiceResult;
+import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.HouseForm;
 
 /**
  * 房屋service

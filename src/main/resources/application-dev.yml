@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/rent_house?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
+    username: harry
+    password: 123456
+  jpa:
+    show-sql: true
+    properties:
+      dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      format_sql: true
+    hibernate:
+      ddl-auto:
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 30MB
+      location: F:\idea\rent-house\tmp
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+
+# 七牛云配置
+qiniu:
+  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo
+  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7
+  bucket: hz-rent-house
+  cdnPrefix: http://qa22ygxo8.bkt.clouddn.com/
