@@ -21,7 +21,8 @@ public enum ApiResponseEnum {
     NOT_VALID_PARAM(40005, "无效的参数"),
     NOT_SUPPORTED_OPERATION(40006, "不支持的操作"),
     NO_AUTHENTICATED_USER_ERROR(40007, "获取认证用户失败"),
-    FILE_UPLOAD_ERROR(50001, "文件上传失败")
+    NOT_VALID_CREDENTIAL(40008, "无效的凭据"),
+    FILE_UPLOAD_ERROR(50001, "文件上传失败"),
     ;
 
     private Integer code;
