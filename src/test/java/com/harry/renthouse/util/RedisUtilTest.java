@@ -26,4 +26,10 @@ class RedisUtilTest extends RentHouseApplicationTests {
         boolean result = redisUtil.set("hello", user);
         Assert.isTrue(result, "redis插入数据失败");
     }
+
+    @Test
+    void hasKey() {
+        boolean hasKey = redisUtil.hasKey("52cbc2725f1243da8132e741984f0289");
+        Assert.isTrue(hasKey, "redis key不存在");
+    }
 }

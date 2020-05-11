@@ -36,6 +36,12 @@ class QiniuServiceTest extends RentHouseApplicationTests {
 
     @Test
     void testUploadFile() {
+        try {
+            Response resp = qiniuService.deleteFile("Fox8sEemX6ibXvjNGoX4grYSiHJ4");
+            Assert.isTrue(resp.isOK(), "文件删除失败");
+        } catch (QiniuException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

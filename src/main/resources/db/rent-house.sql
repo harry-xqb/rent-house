@@ -243,7 +243,7 @@ CREATE TABLE `user` (
   `name` varchar(32) DEFAULT NULL COMMENT '用户名',
   `email` varchar(32) DEFAULT NULL COMMENT '电子邮箱',
   `phone_number` varchar(15) NOT NULL COMMENT '电话号码',
-  `password` varchar(32) DEFAULT NULL COMMENT '密码',
+  `password` varchar(64) DEFAULT NULL COMMENT '密码',
   `status` int(2) unsigned NOT NULL DEFAULT '0' COMMENT '用户状态 0-正常 1-封禁',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '用户账号创建时间',
   `last_login_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '上次登录时间',

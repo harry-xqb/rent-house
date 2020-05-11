@@ -24,7 +24,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final String  TOKEN_HEADER = "Authorization";
 
-    private final String  TOKEN_PREFIX = "Bearer";
+    private final String  TOKEN_PREFIX = "Bearer ";
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain fc)

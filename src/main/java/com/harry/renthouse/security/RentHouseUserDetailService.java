@@ -37,8 +37,10 @@ public class RentHouseUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> userOptional = Optional.ofNullable(userRepository.findUserByName(username));
-        User user = userOptional.orElseThrow(() -> new UsernameNotFoundException("用户不存在"));
+        User user = userRepository.findUserByName(username);
+        if(user == null){
+            return null;
+        }
         List<Role> roleList = Optional.ofNullable(roleRepository.findRolesByUserId(user.getId()))
                 .orElseThrow(() -> new DisabledException(ApiResponseEnum.NO_PRIORITY_ERROR.getMessage()));
         Set<GrantedAuthority> authorities = new HashSet<>();

@@ -1,5 +1,6 @@
 package com.harry.renthouse.config;
 
+import com.qiniu.storage.BucketManager;
 import com.qiniu.storage.Region;
 import com.qiniu.storage.UploadManager;
 import com.qiniu.util.Auth;
@@ -43,5 +44,14 @@ public class WebUploadFileConfig {
     @Bean
     public UploadManager uploadManager(){
         return new UploadManager(qiniuConfiguration());
+    }
+
+    /**
+     * 空间桶对象
+     * @return
+     */
+    @Bean
+    public BucketManager bucketManager(){
+        return new BucketManager(auth(), qiniuConfiguration());
     }
 }

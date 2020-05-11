@@ -1,6 +1,6 @@
 package com.harry.renthouse.service.auth;
 
-import com.harry.renthouse.controller.dto.AuthenticationDTO;
+import com.harry.renthouse.web.dto.AuthenticationDTO;
 
 import java.util.Optional;
 
@@ -11,5 +11,9 @@ import java.util.Optional;
  */
 public interface AuthenticationService {
 
-    Optional<AuthenticationDTO> login(String username, String password);
+    AuthenticationDTO login(String username, String password, String role);
+
+    AuthenticationDTO adminLogin(String username, String password);
+
+    AuthenticationDTO userLogin(String username, String password);
 }

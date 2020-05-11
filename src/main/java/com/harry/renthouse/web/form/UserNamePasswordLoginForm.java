@@ -1,4 +1,4 @@
-package com.harry.renthouse.controller.form;
+package com.harry.renthouse.web.form;
 
 import lombok.Data;
 

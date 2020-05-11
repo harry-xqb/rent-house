@@ -1,4 +1,4 @@
-package com.harry.renthouse.controller.dto;
+package com.harry.renthouse.web.dto;
 
 import lombok.Data;
 

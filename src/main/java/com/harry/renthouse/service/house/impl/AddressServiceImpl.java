@@ -1,10 +1,8 @@
 package com.harry.renthouse.service.house.impl;
 
-import com.harry.renthouse.controller.dto.SubwayDTO;
-import com.harry.renthouse.controller.dto.SubwayStationDTO;
-import com.harry.renthouse.controller.dto.SupportAddressDTO;
-import com.harry.renthouse.entity.Subway;
-import com.harry.renthouse.entity.SubwayStation;
+import com.harry.renthouse.web.dto.SubwayDTO;
+import com.harry.renthouse.web.dto.SubwayStationDTO;
+import com.harry.renthouse.web.dto.SupportAddressDTO;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.repository.SubwayRepository;
 import com.harry.renthouse.repository.SubwayStationRepository;
