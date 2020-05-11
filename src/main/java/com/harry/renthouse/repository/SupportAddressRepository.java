@@ -28,4 +28,11 @@ public interface SupportAddressRepository  extends JpaRepository<SupportAddress,
      * @return 行政单位列表
      */
     List<SupportAddress> findAllByBelongToAndLevel(String belongTo, String level);
+
+    /**
+     * 查找所有给定的enName地址
+     * @param enNameList 城市/区域 enName 列表
+     * @return 行政单位列表
+     */
+    List<SupportAddress> findAllByEnNameIn(List<String> enNameList);
 }

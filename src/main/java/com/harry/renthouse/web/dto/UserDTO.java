@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
+ *  用户信息dto
  * @author Harry Xu
  * @date 2020/5/11 11:48
  */

@@ -3,6 +3,7 @@ package com.harry.renthouse.web.dto;
 import lombok.Data;
 
 /**
+ *  支持区域dto
  * @author Harry Xu
  * @date 2020/5/8 17:36
  */

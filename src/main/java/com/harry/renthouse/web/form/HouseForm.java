@@ -4,6 +4,7 @@ import lombok.Data;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author Harry Xu
@@ -66,4 +67,40 @@ public class HouseForm {
     /* 街道 */
     @NotNull(message = "房源街道名称不能为空")
     private String street;
+
+    /************* 房屋详情 *******************/
+    private String description;
+
+    /* 户型介绍 */
+    private String layoutDesc;
+
+    /* 交通出行介绍 */
+    private String traffic;
+
+    /* 周边配套设施 */
+    private String roundService;
+
+    /* 出租方式, 1:整租  2: 合租 */
+    @NotNull(message = "出租方式不能为空")
+    private Integer rentWay;
+
+    @NotNull(message = "房源地址不能为空")
+    private String address;
+
+    /* 地铁线路id */
+    private Long subwayLineId;
+
+    /* 地铁线路名称 */
+    private String subwayLineName;
+
+    private Long subwayStationId;
+
+    private String subwayStationName;
+
+    /************ 房屋标签 *****************/
+    private List<String> tags;
+
+    /*房屋照片*/
+    private List<PhotoForm> photos;
+
 }

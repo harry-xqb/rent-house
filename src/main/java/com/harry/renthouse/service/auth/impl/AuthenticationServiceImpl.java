@@ -47,6 +47,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationDTO login(String username, String password, String role) {
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
+        // TODO 用户新增接口完成后需要删除该行
+        String encode = passwordEncoder.encode(password);
         // 如果用户不存在或者密码不匹配
         if(user == null || !passwordEncoder.matches(password, user.getPassword())){
             throw new BusinessException(ApiResponseEnum.USERNAME_PASSWORD_ERROR);

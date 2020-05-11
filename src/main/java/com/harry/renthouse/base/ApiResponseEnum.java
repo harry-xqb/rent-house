@@ -21,8 +21,12 @@ public enum ApiResponseEnum {
     NOT_VALID_PARAM(40005, "无效的参数"),
     NOT_SUPPORTED_OPERATION(40006, "不支持的操作"),
     NO_AUTHENTICATED_USER_ERROR(40007, "获取认证用户失败"),
-    FILE_UPLOAD_ERROR(50001, "文件上传失败"),
     NOT_VALID_CREDENTIAL(40008, "无效的凭据"),
+    FILE_UPLOAD_ERROR(50001, "文件上传失败"),
+    SUPPORT_ADDRESS_ERROR(50002, "地址选择有误"),
+    SUBWAY_LINE_ERROR(50003, "地铁线路有误"),
+    SUBWAY_STATION_ERROR(50004, "地铁站有误"),
+    SUBWAY_AND_STATION_MATCH_ERROR(50005, "地铁线路与地铁站匹配错误")
     ;
 
     private Integer code;

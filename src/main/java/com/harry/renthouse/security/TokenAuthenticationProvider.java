@@ -34,7 +34,7 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         if (StringUtils.isBlank(token)) {
             return authentication;
         }
-        if (!redisUtil.hasKey("52cbc2725f1243da8132e741984f0289")) {
+        if (!redisUtil.hasKey(token)) {
             throw new BusinessException(ApiResponseEnum.NOT_VALID_CREDENTIAL);
         }
         String username = (String) redisUtil.get(token);

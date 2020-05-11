@@ -1,8 +1,10 @@
 package com.harry.renthouse.web.dto;
 
+import com.harry.renthouse.web.form.PhotoForm;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  *  房源信息dto
@@ -60,4 +62,14 @@ public class HouseDTO {
 
     /* 街道 */
     private String street;
+
+    /* 标签 */
+    private List<String> tags;
+
+    /* 房屋照片集合 */
+    private List<HousePictureDTO> housePictureList;
+
+    /* 房屋信息 */
+    private HouseDetailDTO houseDetail;
+
 }

@@ -62,6 +62,15 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    public ServiceMultiResult<SupportAddressDTO> findAreaInEnName(List<String> enNameList) {
+        List<SupportAddressDTO> list = Optional.ofNullable(supportAddressRepository.findAllByEnNameIn(enNameList))
+                .orElse(Collections.emptyList())
+                .stream().map(item -> modelMapper.map(item, SupportAddressDTO.class))
+                .collect(Collectors.toList());
+        return new ServiceMultiResult<>(list.size(), list);
+    }
+
+    @Override
     public ServiceMultiResult<SubwayDTO> findAllSubwayByCityEnName(String cityEnName) {
         List<SubwayDTO> subWayDtoList = Optional.ofNullable(subwayRepository.findAllByCityEnName(cityEnName))
                 .orElse(Collections.emptyList()).stream().map(subway -> modelMapper.map(subway, SubwayDTO.class)).collect(Collectors.toList());
@@ -75,4 +84,5 @@ public class AddressServiceImpl implements AddressService {
                 .map(subwayStation -> modelMapper.map(subwayStation, SubwayStationDTO.class)).collect(Collectors.toList());
         return new ServiceMultiResult<>(subwayStationDTOList.size(), subwayStationDTOList);
     }
+
 }

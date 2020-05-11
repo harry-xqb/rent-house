@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.ToString;
 
 /**
+ *  七牛云上传结果
  * create by： harry
  * date:  2020/5/10 0010 下午 8:02
  **/

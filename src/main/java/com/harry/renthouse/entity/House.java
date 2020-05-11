@@ -1,6 +1,8 @@
 package com.harry.renthouse.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,6 +17,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Data
+@DynamicInsert
+@DynamicUpdate
 public class House {
 
     @Id
@@ -49,6 +53,7 @@ public class House {
 
     private String cover;
 
+    /* 房屋朝向: 1:东 2:南 3:西  4:北 */
     private Integer direction;
 
     /* 到地铁的距离 */

@@ -4,13 +4,16 @@ import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.security.RentHouseUserDetailService;
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
+import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
+import com.harry.renthouse.web.dto.SupportAddressDTO;
 import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.web.form.UserNamePasswordLoginForm;
 import com.qiniu.common.QiniuException;
@@ -29,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -47,6 +51,9 @@ public class AdminController {
     private QiniuService qiniuService;
 
     @Autowired
+    private AddressService addressService;
+
+    @Autowired
     private Gson gson;
 
     @Autowired
@@ -57,6 +64,10 @@ public class AdminController {
 
     @PostMapping(value = "add/house")
     public ApiResponse addHouse(@RequestBody HouseForm houseForm){
+        ServiceMultiResult<SupportAddressDTO> areaList = addressService.findAreaInEnName(Arrays.asList(houseForm.getCityEnName(), houseForm.getRegionEnName()));
+        if(areaList.getTotal() != 2){
+            return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
+        }
         HouseDTO houseDto = houseService.addHouse(houseForm);
         return ApiResponse.ofSuccess(houseDto);
     }

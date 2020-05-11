@@ -5,6 +5,8 @@ import com.harry.renthouse.web.dto.SubwayStationDTO;
 import com.harry.renthouse.web.dto.SupportAddressDTO;
 import com.harry.renthouse.service.ServiceMultiResult;
 
+import java.util.List;
+
 /**
  *  支持的地区service
  * @author Harry Xu
@@ -25,6 +27,13 @@ public interface AddressService {
      * @return  行政单位列表
      */
     ServiceMultiResult<SupportAddressDTO> findAreaByBelongToAndLevel(String belongTo, String level);
+
+    /**
+     * 查找所有给定的enName地址
+     * @param enNameList 城市/区域 enName
+     * @return 行政单位列表
+     */
+    ServiceMultiResult<SupportAddressDTO> findAreaInEnName(List<String> enNameList);
 
     /**
      * 通过城市英文名获取所有地铁线路
