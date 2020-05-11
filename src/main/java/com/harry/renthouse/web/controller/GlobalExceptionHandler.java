@@ -34,4 +34,9 @@ public class GlobalExceptionHandler {
     public ApiResponse businessExceptionHandler(BusinessException businessException){
         return ApiResponse.ofMessage(businessException.getCode(), businessException.getMessage());
     }
+
+    @ExceptionHandler(value = Exception.class)
+    public ApiResponse exceptionHandler(Exception e){
+        return ApiResponse.ofStatus(ApiResponseEnum.NOT_SUPPORTED_OPERATION);
+    }
 }

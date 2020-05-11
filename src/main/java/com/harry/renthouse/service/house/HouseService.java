@@ -1,7 +1,11 @@
 package com.harry.renthouse.service.house;
 
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
+
+import java.util.List;
 
 /**
  * 房屋service
@@ -17,4 +21,11 @@ public interface HouseService {
      * @return 房源信息
      */
     HouseDTO addHouse(HouseForm houseForm);
+
+    /**
+     * 管理员房源列表搜索
+     * @param adminHouseSearchForm 管理员房源列表搜索
+     * @return
+     */
+    ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm adminHouseSearchForm);
 }

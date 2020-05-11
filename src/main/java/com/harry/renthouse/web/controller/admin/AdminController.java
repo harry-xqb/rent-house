@@ -3,6 +3,7 @@ package com.harry.renthouse.web.controller.admin;
 import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.security.RentHouseUserDetailService;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
@@ -14,6 +15,7 @@ import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
 import com.harry.renthouse.web.dto.SupportAddressDTO;
+import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.web.form.UserNamePasswordLoginForm;
 import com.qiniu.common.QiniuException;
@@ -96,10 +98,15 @@ public class AdminController {
         }
     }
 
+    @PostMapping(value = "list/houses")
+    public ApiResponse listHouses(@RequestBody AdminHouseSearchForm adminHouseSearchForm){
+        ServiceMultiResult<HouseDTO> houseDTOServiceMultiResult = houseService.adminSearch(adminHouseSearchForm);
+        return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
+    }
+
     @PostMapping(value = "login")
     public ApiResponse login(@RequestBody UserNamePasswordLoginForm form){
         AuthenticationDTO authenticationDTO = authenticationService.adminLogin(form.getUsername(), form.getPassword());
         return ApiResponse.ofSuccess(authenticationDTO);
     }
-
 }

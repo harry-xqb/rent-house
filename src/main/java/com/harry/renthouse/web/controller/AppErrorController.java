@@ -2,6 +2,7 @@ package com.harry.renthouse.web.controller;
 
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.exception.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
@@ -30,6 +31,7 @@ public class AppErrorController implements ErrorController {
         return ERROR_PATH;
     }
 
+
     /**
      * 除Web页面外的错误处理，比如Json/XML等
      */
@@ -39,13 +41,6 @@ public class AppErrorController implements ErrorController {
     public ApiResponse errorApiHandler(WebRequest req) {
         Map<String, Object> attr = this.errorAttributes.getErrorAttributes(req, false);
         int status = (int) attr.get("status");
-        String message = "";
-        switch (status){
-            case 404: message = ApiResponseEnum.NOT_FOUND.getMessage();break;
-            case 500: message = ApiResponseEnum.INTERNAL_SERVER_ERROR.getMessage();break;
-            case 401: message = ApiResponseEnum.NOT_LOGIN.getMessage(); break;
-            default: message = ApiResponseEnum.INTERNAL_SERVER_ERROR.getMessage();
-        }
-        return ApiResponse.ofMessage(status, message);
+        return ApiResponse.ofMessage(status, String.valueOf(attr.getOrDefault("message", "error")));
     }
 }

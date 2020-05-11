@@ -5,10 +5,12 @@ import com.harry.renthouse.base.AuthenticatedUserUtil;
 import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.dto.HouseDetailDTO;
 import com.harry.renthouse.web.dto.HousePictureDTO;
+import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.web.form.PhotoForm;
 import org.modelmapper.ModelMapper;
@@ -25,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
+ * 房源service实现
  * @author Harry Xu
  * @date 2020/5/9 15:12
  */
@@ -80,6 +83,13 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setHousePictureList(housePictureDTOList);
         houseDTO.setTags(houseForm.getTags());
         return houseDTO;
+    }
+
+    @Override
+    public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm adminHouseSearchForm) {
+        List<House> houses = houseRepository.findAll();
+        List<HouseDTO> houseDTOList = houses.stream().map(house -> modelMapper.map(house, HouseDTO.class)).collect(Collectors.toList());
+        return new ServiceMultiResult<>(houses.size(), houseDTOList);
     }
 
     /**
