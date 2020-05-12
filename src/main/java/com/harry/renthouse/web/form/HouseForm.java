@@ -4,15 +4,20 @@ import lombok.Data;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.groups.Default;
 import java.util.List;
 
 /**
+ * 房屋表单
  * @author Harry Xu
  * @date 2020/5/9 14:45
  */
 @Data
 public class HouseForm {
 
+    public interface Edit  extends Default {};
+
+    @NotNull(groups = {Edit.class}, message = "房屋id不能为空")
     private Long id;
 
     @NotBlank(message = "房源标题不能为空")
@@ -101,6 +106,6 @@ public class HouseForm {
     private List<String> tags;
 
     /*房屋照片*/
-    private List<PhotoForm> photos;
+    private List<PictureForm> pictures;
 
 }

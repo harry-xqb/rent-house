@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
  * @date 2020/5/11 15:47
  */
 @Data
-public class PhotoForm {
+public class PictureForm {
 
     private Long id;
 

@@ -1,11 +1,13 @@
 package com.harry.renthouse.service.house;
 
+import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.web.dto.SubwayDTO;
 import com.harry.renthouse.web.dto.SubwayStationDTO;
 import com.harry.renthouse.web.dto.SupportAddressDTO;
 import com.harry.renthouse.service.ServiceMultiResult;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  *  支持的地区service
@@ -48,4 +50,23 @@ public interface AddressService {
      * @return 地铁站列表
      */
     ServiceMultiResult<SubwayStationDTO> findAllSubwayStationBySubwayId(Long subwayId);
+
+    /**
+     * 获取城市和区县
+     * @param cityEnName 城市英文简称
+     * @param regionEnName 区县英文简称
+     */
+    Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName);
+
+    /**
+     * 获取地铁站
+     * @param subwayStationId 地铁站id
+     */
+    SubwayStationDTO findSubwayStation(Long subwayStationId);
+
+    /**
+     * 获取地铁线路信息
+     * @param subwayId 地铁线路id
+     */
+    SubwayDTO findSubway(Long subwayId);
 }

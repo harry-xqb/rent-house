@@ -26,7 +26,17 @@ public enum ApiResponseEnum {
     SUPPORT_ADDRESS_ERROR(50002, "地址选择有误"),
     SUBWAY_LINE_ERROR(50003, "地铁线路有误"),
     SUBWAY_STATION_ERROR(50004, "地铁站有误"),
-    SUBWAY_AND_STATION_MATCH_ERROR(50005, "地铁线路与地铁站匹配错误")
+    SUBWAY_AND_STATION_MATCH_ERROR(50005, "地铁线路与地铁站匹配错误"),
+    HOUSE_NOT_FOUND_ERROR(50006, "房屋信息未找到"),
+    HOUSE_DETAIL_NOT_FOUND_ERROR(50007, "房屋详情未找到"),
+    ADDRESS_CITY_NOT_FOUND(50008, "城市未找到"),
+    ADDRESS_REGION_NOT_FOUND(50009, "区县未找到"),
+    TAG_ADD_FAIL(50010, "添加标签失败"),
+    TAG_DELETE_FAIL(50011, "删除标签失败"),
+    TAG_ALREADY_EXIST(50012, "标签已存在"),
+    TAG_NOT_EXIST(50013, "标签不存在"),
+    PICTURE_NOT_EXIST(50014, "图片不存在"),
+    PICTURE_DELETE_FAIL(50015, "图片删除失败"),
     ;
 
     private Integer code;

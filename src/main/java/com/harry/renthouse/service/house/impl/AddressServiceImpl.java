@@ -1,5 +1,9 @@
 package com.harry.renthouse.service.house.impl;
 
+import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.entity.Subway;
+import com.harry.renthouse.entity.SubwayStation;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.web.dto.SubwayDTO;
 import com.harry.renthouse.web.dto.SubwayStationDTO;
 import com.harry.renthouse.web.dto.SupportAddressDTO;
@@ -13,9 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -83,6 +85,30 @@ public class AddressServiceImpl implements AddressService {
                 .getAllBySubwayId(subwayId)).orElse(Collections.emptyList()).stream()
                 .map(subwayStation -> modelMapper.map(subwayStation, SubwayStationDTO.class)).collect(Collectors.toList());
         return new ServiceMultiResult<>(subwayStationDTOList.size(), subwayStationDTOList);
+    }
+
+    @Override
+    public Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName) {
+        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(regionEnName, SupportAddress.AddressLevel.REGION.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+        Map<SupportAddress.AddressLevel, SupportAddressDTO> map = new HashMap();
+        map.put(SupportAddress.AddressLevel.CITY, modelMapper.map(city, SupportAddressDTO.class));
+        map.put(SupportAddress.AddressLevel.REGION, modelMapper.map(region, SupportAddressDTO.class));
+        return map;
+    }
+
+    @Override
+    public SubwayStationDTO findSubwayStation(Long subwayStationId) {
+        SubwayStation subwayStation = subwayStationRepository.findById(subwayStationId).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
+        return modelMapper.map(subwayStation, SubwayStationDTO.class);
+    }
+
+    @Override
+    public SubwayDTO findSubway(Long subwayId) {
+        Subway subway = subwayRepository.findById(subwayId).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_LINE_ERROR));
+        return modelMapper.map(subway, SubwayDTO.class);
     }
 
 }

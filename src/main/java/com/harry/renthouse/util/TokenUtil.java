@@ -38,4 +38,20 @@ public class TokenUtil {
         boolean isSuccess = redisUtil.expire(token, DEFAULT_TOKEN_EXPIRE_TIME);
         return isSuccess;
     }
+
+    /**
+     * 判断token是否存在
+     * @param token
+     */
+    public Boolean hasToken(String token){
+        return redisUtil.hasKey(token);
+    }
+
+    /**
+     * 通过token获取用户名
+     * @param token
+     */
+    public String getUsername(String token){
+        return (String) redisUtil.get(token);
+    }
 }

@@ -3,41 +3,27 @@ package com.harry.renthouse.web.controller.admin;
 import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
-import com.harry.renthouse.exception.BusinessException;
-import com.harry.renthouse.security.RentHouseUserDetailService;
+import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
-import com.harry.renthouse.util.RedisUtil;
-import com.harry.renthouse.web.dto.AuthenticationDTO;
-import com.harry.renthouse.web.dto.HouseDTO;
-import com.harry.renthouse.web.dto.QiniuUploadResult;
-import com.harry.renthouse.web.dto.SupportAddressDTO;
+import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
+import com.harry.renthouse.web.form.TagForm;
 import com.harry.renthouse.web.form.UserNamePasswordLoginForm;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.Map;
 
 /**
  * @author Harry Xu
@@ -65,10 +51,10 @@ public class AdminController {
     @Value("${spring.servlet.multipart.location}")
     private String fileStorePath;
 
-    @PostMapping(value = "add/house")
+    @PostMapping(value = "house/add")
     public ApiResponse addHouse(@Validated @RequestBody HouseForm houseForm){
-        ServiceMultiResult<SupportAddressDTO> areaList = addressService.findAreaInEnName(Arrays.asList(houseForm.getCityEnName(), houseForm.getRegionEnName()));
-        if(areaList.getTotal() != 2){
+        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
+        if(cityAndRegion.size() != 2){
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
         }
         HouseDTO houseDto = houseService.addHouse(houseForm);
@@ -99,10 +85,68 @@ public class AdminController {
         }
     }
 
-    @PostMapping(value = "list/houses")
+
+    @PostMapping(value = "houses")
     public ApiResponse listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
         ServiceMultiResult<HouseDTO> houseDTOServiceMultiResult = houseService.adminSearch(adminHouseSearchForm);
         return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
+    }
+
+    @PostMapping("house/edit")
+    public ApiResponse editHouse(@RequestBody @Validated({HouseForm.Edit.class}) HouseForm houseForm){
+        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
+        if(cityAndRegion.size() != 2){
+            return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
+        }
+        HouseDTO houseDto = houseService.editHouse(houseForm);
+        return ApiResponse.ofSuccess(houseDto);
+    }
+
+    @GetMapping("house/{houseId}")
+    public ApiResponse findHouse(@PathVariable Long houseId){
+        // 获取房源信息
+        HouseDTO houseDTO = houseService.findCompleteHouse(houseId);
+        // 获取城市信息
+        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseDTO.getCityEnName(), houseDTO.getRegionEnName());
+        // 设置地铁线路信息
+        Long subwayLineId = houseDTO.getHouseDetail().getSubwayLineId();
+        String subWayName = houseDTO.getHouseDetail().getSubwayLineName();
+        SubwayDTO subwayDTO = new SubwayDTO();
+        subwayDTO.setId(subwayLineId);
+        subwayDTO.setName(subWayName);
+        // 设置地铁站信息
+        Long subwayStationId = houseDTO.getHouseDetail().getSubwayStationId();
+        String subwayStationName = houseDTO.getHouseDetail().getSubwayStationName();
+        SubwayStationDTO subwayStationDTO = new SubwayStationDTO();
+        subwayStationDTO.setId(subwayStationId);
+        subwayStationDTO.setName(subwayStationName);
+
+        // 返回结果
+        HouseCompleteInfoDTO houseCompleteInfoDTO = new HouseCompleteInfoDTO();
+        houseCompleteInfoDTO.setHouse(houseDTO);
+        houseCompleteInfoDTO.setCity(cityAndRegion.get(SupportAddress.AddressLevel.CITY));
+        houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
+        houseCompleteInfoDTO.setSubway(subwayDTO);
+        houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
+        return ApiResponse.ofSuccess(houseCompleteInfoDTO);
+    }
+
+    @PostMapping("house/tag")
+    public ApiResponse addTag(@RequestBody @Validated TagForm tagForm){
+        houseService.addTag(tagForm);
+        return ApiResponse.ofSuccess();
+    }
+
+    @DeleteMapping("house/tag")
+    public ApiResponse deleteTag(@RequestBody @Validated TagForm tagForm){
+        houseService.deleteTag(tagForm);
+        return ApiResponse.ofSuccess();
+    }
+
+    @DeleteMapping("house/picture/{pictureId}")
+    public ApiResponse deletePicture(@PathVariable Long pictureId){
+        houseService.deletePicture(pictureId);
+        return ApiResponse.ofSuccess();
     }
 
     @PostMapping(value = "login")

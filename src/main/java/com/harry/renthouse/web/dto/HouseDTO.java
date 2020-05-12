@@ -1,6 +1,5 @@
 package com.harry.renthouse.web.dto;
 
-import com.harry.renthouse.web.form.PhotoForm;
 import lombok.Data;
 
 import java.time.LocalDateTime;

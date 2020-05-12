@@ -8,12 +8,17 @@ import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
+import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.dto.HouseDetailDTO;
 import com.harry.renthouse.web.dto.HousePictureDTO;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
-import com.harry.renthouse.web.form.PhotoForm;
+import com.harry.renthouse.web.form.PictureForm;
+import com.harry.renthouse.web.form.TagForm;
+import com.qiniu.common.QiniuException;
+import com.qiniu.http.Response;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,15 +32,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,6 +43,7 @@ import java.util.stream.Collectors;
  * @date 2020/5/9 15:12
  */
 @Service
+@Slf4j
 public class HouseServiceImpl implements HouseService {
 
     @Autowired
@@ -67,6 +67,9 @@ public class HouseServiceImpl implements HouseService {
     @Autowired
     private HouseDetailRepository houseDetailRepository;
 
+    @Autowired
+    private QiniuService qiniuService;
+
     @Value("${qiniu.cdnPrefix}")
     private String cdnPrefix;
 
@@ -87,7 +90,8 @@ public class HouseServiceImpl implements HouseService {
         List<HousePicture> housePictures = housePictureRepository.saveAll(generateHousePicture(houseForm, house.getId()));
         List<HousePictureDTO> housePictureDTOList = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 新增房屋标签信息
-        houseTagRepository.saveAll(generateHouseTag(houseForm, house.getId()));
+        List<HouseTag> houseTagList = generateHouseTag(houseForm, house.getId());
+        houseTagRepository.saveAll(houseTagList);
         // 设置返回结果
         HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
@@ -96,6 +100,38 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setTags(houseForm.getTags());
         return houseDTO;
     }
+
+    @Override
+    @Transactional
+    public HouseDTO editHouse(HouseForm houseForm) {
+        Long houseId = houseForm.getId();
+        // 查看房源id是否存在
+        House house = houseRepository.findByIdAndAdminId(houseId, AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        // 查看房屋详情是否存在
+        HouseDetail houseDetail = houseDetailRepository.findByHouseId(house.getId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_DETAIL_NOT_FOUND_ERROR));
+        // 更新房屋信息
+        modelMapper.map(houseForm, house);
+        HouseDTO houseDTO = modelMapper.map(houseRepository.save(house), HouseDTO.class);
+        // 更新房屋详情
+        HouseDetail updateHouseDetail = generateHouseDetail(houseForm);
+        updateHouseDetail.setId(houseDetail.getId());
+        updateHouseDetail.setHouseId(houseId);
+        updateHouseDetail = houseDetailRepository.save(updateHouseDetail);
+        HouseDetailDTO houseDetailDTO = modelMapper.map(updateHouseDetail, HouseDetailDTO.class);
+        // 获取照片信息
+        List<HousePicture> housePictures = housePictureRepository.saveAll(generateHousePicture(houseForm, houseId));
+        List<HousePictureDTO> housePicturesDTO = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
+        // 获取标签信息
+        List<HouseTag> houseTagList = houseTagRepository.findAllByHouseId(houseId);
+        List<String> tagNameList = houseTagList.stream().map(tag -> tag.getName()).collect(Collectors.toList());
+        // 填充房屋信息
+        houseDTO.setHouseDetail(houseDetailDTO);
+        houseDTO.setHousePictureList(housePicturesDTO);
+        houseDTO.setTags(tagNameList);
+        houseDTO.setCover(cdnPrefix + houseDTO.getCover());
+        return houseDTO;
+    }
+
 
     @Override
     public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm searchForm) {
@@ -135,6 +171,70 @@ public class HouseServiceImpl implements HouseService {
         return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
+    @Override
+    public HouseDTO findCompleteHouse(Long houseId) {
+        // 查找房屋信息
+        House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        // 查找房屋详情
+        HouseDetail houseDetail = houseDetailRepository.findByHouseId(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_DETAIL_NOT_FOUND_ERROR));
+        // 查找房屋标签
+        List<HouseTag> tags = houseTagRepository.findAllByHouseId(houseId);
+        // 查找房屋照片
+        List<HousePicture> housePictureList = housePictureRepository.findAllByHouseId(houseId);
+        // 组装成DTO对象
+        HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
+        HouseDetailDTO houseDetailDTO = modelMapper.map(houseDetail, HouseDetailDTO.class);
+        List<String> tagStringList = tags.stream().map(tag -> tag.getName()).collect(Collectors.toList());
+        List<HousePictureDTO> housePictureDTO = housePictureList.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
+        // 设置组装houseDTO
+        houseDTO.setCover(cdnPrefix + houseDTO.getCover());
+        houseDTO.setTags(tagStringList);
+        houseDTO.setHouseDetail(houseDetailDTO);
+        houseDTO.setHousePictureList(housePictureDTO);
+        return houseDTO;
+    }
+
+    @Override
+    @Transactional
+    public void addTag(TagForm tagForm) {
+        House house = houseRepository.findById(tagForm.getHouseId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        Optional<HouseTag> houseTagOptional = houseTagRepository.findByNameAndHouseId(tagForm.getName(), tagForm.getHouseId());
+        houseTagOptional.ifPresent(tag -> {
+            throw new BusinessException(ApiResponseEnum.TAG_ALREADY_EXIST);
+        });
+        HouseTag houseTag = new HouseTag();
+        houseTag.setHouseId(house.getId());
+        houseTag.setName(tagForm.getName());
+        houseTagRepository.save(houseTag);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTag(TagForm tagForm) {
+        houseRepository.findById(tagForm.getHouseId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        HouseTag houseTag = houseTagRepository.findByNameAndHouseId(tagForm.getName(), tagForm.getHouseId())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.TAG_NOT_EXIST));
+        houseTagRepository.delete(houseTag);
+    }
+
+    @Override
+    @Transactional
+    public void deletePicture(Long pictureId) {
+        HousePicture housePicture = housePictureRepository.findById(pictureId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
+        try {
+            Response response = qiniuService.deleteFile(housePicture.getPath());
+            if(response.isOK()){
+                housePictureRepository.delete(housePicture);
+            }else{
+                log.error("删除七牛云图片失败:{}", response.error);
+                throw new BusinessException(ApiResponseEnum.PICTURE_DELETE_FAIL);
+            }
+        } catch (QiniuException e) {
+            e.printStackTrace();
+            throw new BusinessException(ApiResponseEnum.PICTURE_DELETE_FAIL);
+        }
+    }
+
     /**
      * 注入房屋详情信息
      */
@@ -165,10 +265,10 @@ public class HouseServiceImpl implements HouseService {
      */
     private List<HousePicture> generateHousePicture(HouseForm houseForm, Long houseId){
         List<HousePicture> housePictures = new ArrayList<>();
-        if(CollectionUtils.isEmpty(houseForm.getPhotos())){
+        if(CollectionUtils.isEmpty(houseForm.getPictures())){
             return housePictures;
         }
-        List<PhotoForm> photos = houseForm.getPhotos();
+        List<PictureForm> photos = houseForm.getPictures();
         housePictures = photos.stream().map(item -> {
             HousePicture housePicture = new HousePicture();
             housePicture.setCdnPrefix(cdnPrefix);
@@ -185,7 +285,7 @@ public class HouseServiceImpl implements HouseService {
      * 生成房屋标签集合
      */
     private List<HouseTag> generateHouseTag(HouseForm houseForm, Long houseId){
-        if(!CollectionUtils.isEmpty(houseForm.getTags())){
+        if(CollectionUtils.isEmpty(houseForm.getTags())){
             return Collections.emptyList();
         }
         List<HouseTag> houseTagList = houseForm.getTags().stream().map(tag -> {

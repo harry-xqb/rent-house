@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  *  支持的地区dao
@@ -35,4 +36,11 @@ public interface SupportAddressRepository  extends JpaRepository<SupportAddress,
      * @return 行政单位列表
      */
     List<SupportAddress> findAllByEnNameIn(List<String> enNameList);
+
+    /**
+     * 通过英文简称和等级查找地区
+     * @param enName 英文简称
+     * @param level 等级
+     */
+    Optional<SupportAddress> findByEnNameAndLevel(String enName, String level);
 }

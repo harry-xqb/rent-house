@@ -4,6 +4,7 @@ import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.util.RedisUtil;
+import com.harry.renthouse.util.TokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -20,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
-    private RedisUtil redisUtil;
+    private TokenUtil tokenUtil;
     @Autowired
     private RentHouseUserDetailService rentHouseUserDetailService;
 
@@ -35,10 +36,11 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         if (StringUtils.isBlank(token)) {
             return authentication;
         }
-        if (!redisUtil.hasKey(token)) {
+        if (!tokenUtil.hasToken(token)) {
             throw new BusinessException(ApiResponseEnum.NOT_VALID_CREDENTIAL);
         }
-        String username = (String) redisUtil.get(token);
+        tokenUtil.refresh(token);
+        String username = tokenUtil.getUsername(token);
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
         // 返回新的认证信息，带上 token 和反查出的用户信息
         Authentication auth = new PreAuthenticatedAuthenticationToken(user, token, user.getAuthorities());
