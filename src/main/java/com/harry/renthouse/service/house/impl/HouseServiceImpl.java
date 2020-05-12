@@ -2,6 +2,7 @@ package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
+import com.harry.renthouse.base.HouseStatusEnum;
 import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
@@ -13,15 +14,26 @@ import com.harry.renthouse.web.dto.HousePictureDTO;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.web.form.PhotoForm;
+import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,10 +98,41 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm adminHouseSearchForm) {
-        List<House> houses = houseRepository.findAll();
-        List<HouseDTO> houseDTOList = houses.stream().map(house -> modelMapper.map(house, HouseDTO.class)).collect(Collectors.toList());
-        return new ServiceMultiResult<>(houses.size(), houseDTOList);
+    public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm searchForm) {
+        // 条件查询
+        Specification querySpec = (Specification) (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            // 管理员id必须为当前认证用户
+            predicates.add(criteriaBuilder.equal(root.get("adminId"), AuthenticatedUserUtil.getUserId()));
+            // 搜索的房源状态必须为未删除
+            predicates.add(criteriaBuilder.notEqual(root.get("status"), HouseStatusEnum.DELETED.getValue()));
+            // 如果城市不为空则将城市加入模糊查询
+            if(StringUtils.isNotBlank(searchForm.getCity())){
+                predicates.add(criteriaBuilder.like(root.get("city"), "%" + searchForm.getCity() + "%"));
+            }
+            // 如果创建时间起始不为空加入搜索条件
+            if(searchForm.getCreateTimeMin() != null){
+                LocalDateTime minDate = searchForm.getCreateTimeMin().atStartOfDay();
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), minDate));
+            }
+            // 如果创建时间结束不为空加入搜索条件
+            if(searchForm.getCreateTimeMax() != null){
+                LocalDateTime maxDate = searchForm.getCreateTimeMax().atStartOfDay().plusDays(1);
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), maxDate));
+            }
+            // 如果标题不为空加入模糊搜索条件
+            if(StringUtils.isNotBlank(searchForm.getTitle())){
+                predicates.add(criteriaBuilder.like(root.get("title"), "%" + searchForm.getTitle() + "%"));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+        };
+        // 分页条件
+        Sort sort = Sort.by(Sort.Direction.valueOf(searchForm.getDirection()), searchForm.getOrderBy());
+        int page = searchForm.getPage() - 1;
+        Pageable pageable = PageRequest.of(page, searchForm.getSize(), sort);
+        Page<House> houses = houseRepository.findAll(querySpec, pageable);
+        List<HouseDTO> houseDTOList = houses.getContent().stream().map(house -> modelMapper.map(house, HouseDTO.class)).collect(Collectors.toList());
+        return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
     /**

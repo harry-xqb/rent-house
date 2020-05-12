@@ -27,6 +27,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -65,7 +66,7 @@ public class AdminController {
     private String fileStorePath;
 
     @PostMapping(value = "add/house")
-    public ApiResponse addHouse(@RequestBody HouseForm houseForm){
+    public ApiResponse addHouse(@Validated @RequestBody HouseForm houseForm){
         ServiceMultiResult<SupportAddressDTO> areaList = addressService.findAreaInEnName(Arrays.asList(houseForm.getCityEnName(), houseForm.getRegionEnName()));
         if(areaList.getTotal() != 2){
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
@@ -99,13 +100,13 @@ public class AdminController {
     }
 
     @PostMapping(value = "list/houses")
-    public ApiResponse listHouses(@RequestBody AdminHouseSearchForm adminHouseSearchForm){
+    public ApiResponse listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
         ServiceMultiResult<HouseDTO> houseDTOServiceMultiResult = houseService.adminSearch(adminHouseSearchForm);
         return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
     }
 
     @PostMapping(value = "login")
-    public ApiResponse login(@RequestBody UserNamePasswordLoginForm form){
+    public ApiResponse login(@Validated @RequestBody UserNamePasswordLoginForm form){
         AuthenticationDTO authenticationDTO = authenticationService.adminLogin(form.getUsername(), form.getPassword());
         return ApiResponse.ofSuccess(authenticationDTO);
     }
