@@ -222,6 +222,7 @@ public class HouseServiceImpl implements HouseService {
     public void deletePicture(Long pictureId) {
         HousePicture housePicture = housePictureRepository.findById(pictureId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
         try {
+            // TODO 七牛云中相同图片只存一份，如果删除的话会导致其他引用改图片的房屋照片也被删除
             Response response = qiniuService.deleteFile(housePicture.getPath());
             if(response.isOK()){
                 housePictureRepository.delete(housePicture);
@@ -233,6 +234,14 @@ public class HouseServiceImpl implements HouseService {
             e.printStackTrace();
             throw new BusinessException(ApiResponseEnum.PICTURE_DELETE_FAIL);
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateCover(Long coverId, Long houseId) {
+        HousePicture housePicture = housePictureRepository.findById(coverId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
+        House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        houseRepository.updateCover(housePicture.getPath(), house.getId());
     }
 
     /**

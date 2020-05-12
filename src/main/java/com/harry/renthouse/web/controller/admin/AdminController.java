@@ -10,10 +10,7 @@ import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.web.dto.*;
-import com.harry.renthouse.web.form.AdminHouseSearchForm;
-import com.harry.renthouse.web.form.HouseForm;
-import com.harry.renthouse.web.form.TagForm;
-import com.harry.renthouse.web.form.UserNamePasswordLoginForm;
+import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,6 +143,12 @@ public class AdminController {
     @DeleteMapping("house/picture/{pictureId}")
     public ApiResponse deletePicture(@PathVariable Long pictureId){
         houseService.deletePicture(pictureId);
+        return ApiResponse.ofSuccess();
+    }
+
+    @PutMapping("house/cover")
+    public ApiResponse updateCover(@RequestBody @Validated CoverForm coverForm){
+        houseService.updateCover(coverForm.getCoverId(), coverForm.getHouseId());
         return ApiResponse.ofSuccess();
     }
 

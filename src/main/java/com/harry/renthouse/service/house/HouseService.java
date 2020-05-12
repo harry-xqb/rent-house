@@ -62,4 +62,10 @@ public interface HouseService {
      * @param pictureId 图片id
      */
     void deletePicture(Long pictureId);
+
+    /**
+     * 更新封面
+     * @param coverId 封面id
+     */
+    void updateCover(Long coverId, Long houseId);
 }
