@@ -14,6 +14,7 @@ import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
@@ -29,6 +30,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("admin")
+@Api (tags = "管理员接口")
 public class AdminController {
 
     @Autowired
@@ -49,8 +51,9 @@ public class AdminController {
     @Value("${spring.servlet.multipart.location}")
     private String fileStorePath;
 
+    @ApiOperation(value = "新增房源接口")
     @PostMapping(value = "house/add")
-    public ApiResponse addHouse(@Validated @RequestBody HouseForm houseForm){
+    public ApiResponse<HouseDTO> addHouse(@Validated @RequestBody HouseForm houseForm){
         Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
         if(cityAndRegion.size() != 2){
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
@@ -60,7 +63,8 @@ public class AdminController {
     }
 
     @PostMapping(value = "upload/photo")
-    public ApiResponse uploadPhoto(MultipartFile file){
+    @ApiOperation(value = "上传图片接口")
+    public ApiResponse<QiniuUploadResult> uploadPhoto(@ApiParam(value = "图片文件") MultipartFile file){
         if(file == null){
             return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
         }
@@ -85,13 +89,15 @@ public class AdminController {
 
 
     @PostMapping(value = "houses")
-    public ApiResponse listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
+    @ApiOperation(value = "分页查找房源")
+    public ApiResponse<ServiceMultiResult> listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
         ServiceMultiResult<HouseDTO> houseDTOServiceMultiResult = houseService.adminSearch(adminHouseSearchForm);
         return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
     }
 
     @PostMapping("house/edit")
-    public ApiResponse editHouse(@RequestBody @Validated({HouseForm.Edit.class}) HouseForm houseForm){
+    @ApiOperation(value = "房源信息编辑")
+    public ApiResponse<HouseDTO> editHouse(@RequestBody @Validated({HouseForm.Edit.class}) HouseForm houseForm){
         Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
         if(cityAndRegion.size() != 2){
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
@@ -101,7 +107,8 @@ public class AdminController {
     }
 
     @GetMapping("house/{houseId}")
-    public ApiResponse findHouse(@PathVariable Long houseId){
+    @ApiOperation(value = "通过房屋id获取房屋信息")
+    public ApiResponse<HouseCompleteInfoDTO> findHouse(@PathVariable @ApiParam(value = "房屋id", required = true) Long houseId){
         // 获取房源信息
         HouseDTO houseDTO = houseService.findCompleteHouse(houseId);
         // 获取城市信息
@@ -130,30 +137,40 @@ public class AdminController {
     }
 
     @PostMapping("house/tag")
+    @ApiOperation("添加标签")
     public ApiResponse addTag(@RequestBody @Validated TagForm tagForm){
         houseService.addTag(tagForm);
         return ApiResponse.ofSuccess();
     }
 
     @DeleteMapping("house/tag")
+    @ApiOperation("删除标签")
     public ApiResponse deleteTag(@RequestBody @Validated TagForm tagForm){
         houseService.deleteTag(tagForm);
         return ApiResponse.ofSuccess();
     }
 
     @DeleteMapping("house/picture/{pictureId}")
-    public ApiResponse deletePicture(@PathVariable long pictureId){
+    @ApiOperation("删除图片")
+    public ApiResponse deletePicture(@ApiParam(value = "图片id", required = true) @PathVariable long pictureId){
         houseService.deletePicture(pictureId);
         return ApiResponse.ofSuccess();
     }
 
     @PutMapping("house/cover")
+    @ApiOperation("更新封面")
     public ApiResponse updateCover(@RequestBody @Validated CoverForm coverForm){
         houseService.updateCover(coverForm.getCoverId(), coverForm.getHouseId());
         return ApiResponse.ofSuccess();
     }
 
     @PutMapping("house/operate/{id}/{operation}")
+    @ApiOperation("修改房屋状态")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "房屋id", required = true),
+            @ApiImplicitParam(name = "operation", value = "操作类型(0: 下架, 1: 审核通过  2: 出租  3: 删除)", required = true,
+                    example = "1", allowableValues = "0,1,2,3"),
+    })
     public ApiResponse operateHouse(@PathVariable long id, @PathVariable int operation){
         HouseOperationEnum houseOperationEnum = HouseOperationEnum.of(operation);
         houseService.updateStatus(id, houseOperationEnum);
@@ -162,7 +179,8 @@ public class AdminController {
 
 
     @PostMapping(value = "login")
-    public ApiResponse login(@Validated @RequestBody UserNamePasswordLoginForm form){
+    @ApiOperation("管理员登录")
+    public ApiResponse<AuthenticationDTO> login(@Validated @RequestBody UserNamePasswordLoginForm form){
         AuthenticationDTO authenticationDTO = authenticationService.adminLogin(form.getUsername(), form.getPassword());
         return ApiResponse.ofSuccess(authenticationDTO);
     }

@@ -49,11 +49,11 @@ spring:
       stat-view-servlet:
         url-pattern: "/druid/*"
         #允许那些ip
-        allow: 127.0.0.1
+#        allow: 127.0.0.1
         login-username: admin
-        login-password: 123456
+        login-password: q1w2@#E$R
         #禁止那些ip
-        deny: 192.168.1.102
+#        deny: 192.168.1.102
         #是否可以重置
         reset-enable: true
         #启用
@@ -83,6 +83,7 @@ logging:
     org:
       hibernate:
         SQL: debug
+    io.swagger.models.parameters.AbstractSerializableParameter: error
 # 七牛云配置
 qiniu:
   accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo

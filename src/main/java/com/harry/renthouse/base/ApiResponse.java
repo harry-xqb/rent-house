@@ -1,5 +1,6 @@
 package com.harry.renthouse.base;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -10,20 +11,23 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class ApiResponse {
+public class ApiResponse<T> {
 
+    @ApiModelProperty(value = "状态码: 200为成功, 其他的为失败", example = "200")
     private Integer code;
 
+    @ApiModelProperty(value = "返回信息", example = "成功")
     private String message;
 
-    private Object data;
+    @ApiModelProperty(value = "返回数据对象")
+    private T data;
 
-    public static ApiResponse ofMessage(int code, String message){
-        return new ApiResponse(code, message, null);
+    public static<T> ApiResponse<T> ofMessage(int code, String message){
+        return new ApiResponse<T>(code, message, null);
     }
 
-    public static ApiResponse ofSuccess(Object data){
-        return new ApiResponse(ApiResponseEnum.SUCCESS.getCode(), ApiResponseEnum.SUCCESS.getMessage(), data);
+    public static<T> ApiResponse<T> ofSuccess(T data){
+        return new ApiResponse<T>(ApiResponseEnum.SUCCESS.getCode(), ApiResponseEnum.SUCCESS.getMessage(), data);
     }
     public static ApiResponse ofSuccess(){
         return ApiResponse.ofSuccess(null);

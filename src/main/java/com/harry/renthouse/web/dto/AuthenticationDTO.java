@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -10,7 +11,9 @@ import lombok.Data;
 @Data
 public class AuthenticationDTO{
 
+    @ApiModelProperty(value = "登入成功后token凭证")
     private String token;
 
+    @ApiModelProperty(value = "用户信息")
     private UserDTO user;
 }

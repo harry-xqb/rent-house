@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -10,10 +11,13 @@ import lombok.Data;
 @Data
 public class SubwayStationDTO {
 
+    @ApiModelProperty(value = "地铁站id", example = "33")
     private Long id;
 
+    @ApiModelProperty(value = "地铁线路id", example = "2")
     private Long subwayId;
 
+    @ApiModelProperty(value = "地铁站名称", example = "萍水街")
     private String name;
 
 }

@@ -7,6 +7,9 @@ import com.harry.renthouse.web.dto.SupportAddressDTO;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2020/5/9 14:44
  */
 @RestController
+@Api(tags = "地区与地铁接口")
 public class AddressController {
 
     @Autowired
@@ -26,25 +30,31 @@ public class AddressController {
 
 
     @GetMapping("address/support/cities")
-    public ApiResponse getSupportCities(){
+    @ApiOperation(value = "获取所有支持的城市列表")
+    public ApiResponse<ServiceMultiResult<SupportAddressDTO>>  getSupportCities(){
         ServiceMultiResult<SupportAddressDTO> cities = addressService.findAllCities();
         return ApiResponse.ofSuccess(cities);
     }
 
     @GetMapping("address/support/regions/{cityEnName}")
-    public ApiResponse getSupportRegionsByBelongTo(@PathVariable String cityEnName){
+    @ApiOperation(value = "获取城市下的所有区县")
+    public ApiResponse<ServiceMultiResult<SupportAddressDTO>>  getSupportRegionsByBelongTo(
+            @ApiParam(value = "城市英文缩写", required = true, example = "bj") @PathVariable String cityEnName){
         ServiceMultiResult<SupportAddressDTO> result = addressService.findAreaByBelongToAndLevel(cityEnName, SupportAddress.AddressLevel.REGION.getValue());
         return ApiResponse.ofSuccess(result);
     }
 
     @GetMapping("address/support/subways/{cityEnName}")
-    public ApiResponse getSubwaysByCityEnName(@PathVariable String cityEnName){
+    @ApiOperation(value = "获取城市下的所有地铁线路")
+    public ApiResponse<ServiceMultiResult<SubwayDTO>> getSubwaysByCityEnName(
+            @ApiParam(value = "城市英文缩写", required = true, example = "bj") @PathVariable String cityEnName){
         ServiceMultiResult<SubwayDTO> result = addressService.findAllSubwayByCityEnName(cityEnName);
         return ApiResponse.ofSuccess(result);
     }
 
     @GetMapping("address/support/subwayStations/{subwayId}")
-    public ApiResponse getSubwayStationsBySubwayId(@PathVariable Long subwayId){
+    @ApiOperation(value = "获取地铁线路下的所有地铁站")
+    public ApiResponse<ServiceMultiResult<SubwayStationDTO>> getSubwayStationsBySubwayId(@ApiParam(value = "地铁线路id", required = true, example = "4") @PathVariable Long subwayId){
         ServiceMultiResult<SubwayStationDTO> result = addressService.findAllSubwayStationBySubwayId(subwayId);
         return ApiResponse.ofSuccess(result);
     }

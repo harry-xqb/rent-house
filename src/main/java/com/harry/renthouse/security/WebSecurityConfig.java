@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -27,6 +28,12 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private AjaxAuthenticationEntryPoint ajaxAuthenticationEntryPoint;
+
+    @Autowired
+    private UserDetailsService  rentHouseUserDetailService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
     /**
      * http权限控制
      * @param http
@@ -34,19 +41,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      */
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf()
-                .disable()
+        http.csrf().disable()
                 .httpBasic()
-                .authenticationEntryPoint(ajaxAuthenticationEntryPoint)
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .authenticationEntryPoint(ajaxAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
+                .antMatchers("/login").permitAll()
+                .antMatchers("/druid/**").permitAll()
                 .antMatchers("/admin/login").permitAll()
                 .antMatchers("/user/login").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
+                .anyRequest()
+                .authenticated()
                 .and()
                 .addFilterAfter(tokenAuthenticationFilter, BasicAuthenticationFilter.class);
     }
@@ -55,5 +62,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 加入自定义的安全认证
         auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
+        auth.userDetailsService(rentHouseUserDetailService).passwordEncoder(passwordEncoder);
     }
 }

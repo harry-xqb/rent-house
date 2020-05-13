@@ -1,5 +1,6 @@
 package com.harry.renthouse.service;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,8 +19,10 @@ import java.util.Optional;
 @NoArgsConstructor
 public class ServiceMultiResult<T> {
 
+    @ApiModelProperty(value = "总数")
     private Integer total;
 
+    @ApiModelProperty(value = "结果集")
     private List<T> list;
 
     public int getResultSize(){
