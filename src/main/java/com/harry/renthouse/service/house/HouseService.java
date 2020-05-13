@@ -1,5 +1,6 @@
 package com.harry.renthouse.service.house;
 
+import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
@@ -68,4 +69,11 @@ public interface HouseService {
      * @param coverId 封面id
      */
     void updateCover(Long coverId, Long houseId);
+
+    /**
+     * 更新房屋状态
+     * @param houseId  房屋id
+     * @param houseOperationEnum 操作码
+     */
+    void updateStatus(Long houseId, HouseOperationEnum houseOperationEnum);
 }

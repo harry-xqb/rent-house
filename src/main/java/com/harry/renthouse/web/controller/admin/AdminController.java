@@ -3,6 +3,7 @@ package com.harry.renthouse.web.controller.admin;
 import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
@@ -141,7 +142,7 @@ public class AdminController {
     }
 
     @DeleteMapping("house/picture/{pictureId}")
-    public ApiResponse deletePicture(@PathVariable Long pictureId){
+    public ApiResponse deletePicture(@PathVariable long pictureId){
         houseService.deletePicture(pictureId);
         return ApiResponse.ofSuccess();
     }
@@ -151,6 +152,14 @@ public class AdminController {
         houseService.updateCover(coverForm.getCoverId(), coverForm.getHouseId());
         return ApiResponse.ofSuccess();
     }
+
+    @PutMapping("house/operate/{id}/{operation}")
+    public ApiResponse operateHouse(@PathVariable long id, @PathVariable int operation){
+        HouseOperationEnum houseOperationEnum = HouseOperationEnum.of(operation);
+        houseService.updateStatus(id, houseOperationEnum);
+        return ApiResponse.ofSuccess();
+    }
+
 
     @PostMapping(value = "login")
     public ApiResponse login(@Validated @RequestBody UserNamePasswordLoginForm form){

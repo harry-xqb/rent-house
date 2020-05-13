@@ -2,6 +2,7 @@ package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
+import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.base.HouseStatusEnum;
 import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
@@ -241,8 +242,16 @@ public class HouseServiceImpl implements HouseService {
     public void updateCover(Long coverId, Long houseId) {
         HousePicture housePicture = housePictureRepository.findById(coverId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
         House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
-        houseRepository.updateCover(housePicture.getPath(), house.getId());
+        houseRepository.updateCover(house.getId(), housePicture.getPath());
     }
+
+    @Override
+    @Transactional
+    public void updateStatus(Long houseId, HouseOperationEnum houseOperationEnum) {
+        houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
+    }
+
 
     /**
      * 注入房屋详情信息

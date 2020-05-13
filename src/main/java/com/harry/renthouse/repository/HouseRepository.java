@@ -19,7 +19,10 @@ public interface HouseRepository  extends JpaRepository<House, Long>, JpaSpecifi
     Optional<House> findByIdAndAdminId(Long id, Long adminId);
 
     @Modifying
-    @Query("update House as house set house.cover = :cover where house.id = :houseId")
-    void updateCover(String cover, Long houseId);
+    @Query("update House as house set house.cover = :cover where house.id = :id")
+    void updateCover(Long id, String cover);
 
+    @Modifying
+    @Query("update House as house set house.status = :status where house.id = :id")
+    void updateStatus(Long id, int status);
 }

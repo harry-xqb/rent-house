@@ -19,7 +19,7 @@ public enum ApiResponseEnum {
     USERNAME_PASSWORD_ERROR(40002, "用户名密码错误"),
     NO_PRIORITY_ERROR(40003, "无权访问"),
     NOT_VALID_PARAM(40005, "无效的参数"),
-    NOT_SUPPORTED_OPERATION(40006, "不支持的操作"),
+    UNSUPPORTED_OPERATION(40006, "不支持的操作"),
     NO_AUTHENTICATED_USER_ERROR(40007, "获取认证用户失败"),
     NOT_VALID_CREDENTIAL(40008, "无效的凭据"),
     FILE_UPLOAD_ERROR(50001, "文件上传失败"),
