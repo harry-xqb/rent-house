@@ -27,8 +27,8 @@ public enum ApiResponseEnum {
     SUBWAY_LINE_ERROR(50003, "地铁线路有误"),
     SUBWAY_STATION_ERROR(50004, "地铁站有误"),
     SUBWAY_AND_STATION_MATCH_ERROR(50005, "地铁线路与地铁站匹配错误"),
-    HOUSE_NOT_FOUND_ERROR(50006, "房屋信息未找到"),
-    HOUSE_DETAIL_NOT_FOUND_ERROR(50007, "房屋详情未找到"),
+    HOUSE_NOT_FOUND_ERROR(50006, "房源信息未找到"),
+    HOUSE_DETAIL_NOT_FOUND_ERROR(50007, "房源详情未找到"),
     ADDRESS_CITY_NOT_FOUND(50008, "城市未找到"),
     ADDRESS_REGION_NOT_FOUND(50009, "区县未找到"),
     TAG_ADD_FAIL(50010, "添加标签失败"),
@@ -37,6 +37,9 @@ public enum ApiResponseEnum {
     TAG_NOT_EXIST(50013, "标签不存在"),
     PICTURE_NOT_EXIST(50014, "图片不存在"),
     PICTURE_DELETE_FAIL(50015, "图片删除失败"),
+    HOUSE_STATUS_NOT_CHANGE(50016, "房源状态未改变"),
+    HOUSE_STATUS_CHANGE_ERROR_RENTED(50017, "不允许修改已出租房源状态"),
+    HOUSE_STATUS_CHANGE_ERROR_DELETED(50018, "不允许修改已删除房源状态")
     ;
 
     private Integer code;

@@ -248,7 +248,17 @@ public class HouseServiceImpl implements HouseService {
     @Override
     @Transactional
     public void updateStatus(Long houseId, HouseOperationEnum houseOperationEnum) {
-        houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        int status = house.getStatus();
+        if(status == houseOperationEnum.getCode()){
+            throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_NOT_CHANGE);
+        }
+        if(status == HouseStatusEnum.DELETED.getValue()){
+            throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_DELETED);
+        }
+        if(status == HouseStatusEnum.RENTED.getValue()){
+            throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_RENTED);
+        }
         houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
     }
 
