@@ -2,8 +2,10 @@ package com.harry.renthouse.web.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,6 +14,7 @@ import java.util.List;
  * @date 2020/5/9 15:09
  */
 @Data
+@ToString
 public class HouseDTO {
 
     @ApiModelProperty(value = "房源id", example = "29")
@@ -87,7 +90,7 @@ public class HouseDTO {
 
     /* 标签 */
     @ApiModelProperty(value = "标签", example = "['交通便利', '精装修']")
-    private List<String> tags;
+    private List<String> tags = new ArrayList<>();
 
     /* 房屋照片集合 */
     @ApiModelProperty(value = "房屋照片集合", example = "[{'path': 'Fn6szUiUydhr3XE5xF55XCDvlc2E', 'width': 50}, 'height': 50]")

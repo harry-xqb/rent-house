@@ -39,7 +39,8 @@ public enum ApiResponseEnum {
     PICTURE_DELETE_FAIL(50015, "图片删除失败"),
     HOUSE_STATUS_NOT_CHANGE(50016, "房源状态未改变"),
     HOUSE_STATUS_CHANGE_ERROR_RENTED(50017, "不允许修改已出租房源状态"),
-    HOUSE_STATUS_CHANGE_ERROR_DELETED(50018, "不允许修改已删除房源状态")
+    HOUSE_STATUS_CHANGE_ERROR_DELETED(50018, "不允许修改已删除房源状态"),
+    PRICE_RAGE_ERROR(50019, "价格区间有误")
     ;
 
     private Integer code;

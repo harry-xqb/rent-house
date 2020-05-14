@@ -1,22 +1,18 @@
 package com.harry.renthouse.service.house.impl;
 
-import com.harry.renthouse.base.ApiResponseEnum;
-import com.harry.renthouse.base.AuthenticatedUserUtil;
-import com.harry.renthouse.base.HouseOperationEnum;
-import com.harry.renthouse.base.HouseStatusEnum;
+import com.harry.renthouse.base.*;
 import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.dto.HouseDetailDTO;
 import com.harry.renthouse.web.dto.HousePictureDTO;
-import com.harry.renthouse.web.form.AdminHouseSearchForm;
-import com.harry.renthouse.web.form.HouseForm;
-import com.harry.renthouse.web.form.PictureForm;
-import com.harry.renthouse.web.form.TagForm;
+import com.harry.renthouse.web.dto.SupportAddressDTO;
+import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +25,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.*;
+import javax.xml.ws.soap.Addressing;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -70,6 +68,9 @@ public class HouseServiceImpl implements HouseService {
 
     @Autowired
     private QiniuService qiniuService;
+
+    @Autowired
+    private SupportAddressRepository supportAddressRepository;
 
     @Value("${qiniu.cdnPrefix}")
     private String cdnPrefix;
@@ -124,7 +125,7 @@ public class HouseServiceImpl implements HouseService {
         List<HousePictureDTO> housePicturesDTO = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 获取标签信息
         List<HouseTag> houseTagList = houseTagRepository.findAllByHouseId(houseId);
-        List<String> tagNameList = houseTagList.stream().map(tag -> tag.getName()).collect(Collectors.toList());
+        List<String> tagNameList = houseTagList.stream().map(HouseTag::getName).collect(Collectors.toList());
         // 填充房屋信息
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePicturesDTO);
@@ -137,7 +138,7 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm searchForm) {
         // 条件查询
-        Specification querySpec = (Specification) (root, query, criteriaBuilder) -> {
+        Specification<House> querySpec = (Specification<House>) (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             // 管理员id必须为当前认证用户
             predicates.add(criteriaBuilder.equal(root.get("adminId"), AuthenticatedUserUtil.getUserId()));
@@ -161,14 +162,14 @@ public class HouseServiceImpl implements HouseService {
             if(StringUtils.isNotBlank(searchForm.getTitle())){
                 predicates.add(criteriaBuilder.like(root.get("title"), "%" + searchForm.getTitle() + "%"));
             }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         // 分页条件
         Sort sort = Sort.by(Sort.Direction.valueOf(searchForm.getDirection()), searchForm.getOrderBy());
         int page = searchForm.getPage() - 1;
-        Pageable pageable = PageRequest.of(page, searchForm.getSize(), sort);
+        Pageable pageable = PageRequest.of(page, searchForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(querySpec, pageable);
-        List<HouseDTO> houseDTOList = houses.getContent().stream().map(house -> modelMapper.map(house, HouseDTO.class)).collect(Collectors.toList());
+        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);
         return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
@@ -262,6 +263,122 @@ public class HouseServiceImpl implements HouseService {
         houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
     }
 
+    @Override
+    public ServiceMultiResult<HouseDTO> search(SearchHouseForm searchHouseForm) {
+        // 检查城市是否正确
+        if(searchHouseForm.getCityEnName() == null){
+            throw new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND);
+        }
+        // 价格区间监测是否正确
+        if(searchHouseForm.getPriceMin() != null && searchHouseForm.getPriceMax() != null){
+            if(searchHouseForm.getPriceMax() < searchHouseForm.getPriceMin()){
+                throw new BusinessException(ApiResponseEnum.PRICE_RAGE_ERROR);
+            }
+        }
+        supportAddressRepository
+                .findByEnNameAndLevel(searchHouseForm.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        Specification<House> specification = (Specification<House>) (root, query, criteriaBuilder) -> {
+            List<Predicate> predicates = new ArrayList<>();
+            // 搜索出所有审核通过的
+            predicates.add(criteriaBuilder.equal(root.get("status"), HouseStatusEnum.AUDIT_PASSED.getValue()));
+            // 搜索按城市英文呢简称搜索
+            predicates.add(criteriaBuilder.equal(root.get("cityEnName"), searchHouseForm.getCityEnName()));
+            // 如果区县不为空，则继续搜索区县
+            if(StringUtils.isNotBlank(searchHouseForm.getRegionEnName())){
+                // 查询区县是否存在
+                supportAddressRepository
+                        .findByEnNameAndLevel(searchHouseForm.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
+                        .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+                predicates.add(criteriaBuilder.equal(root.get("regionEnName"), searchHouseForm.getRegionEnName()));
+            }
+            // 如果地铁线路不为空，搜索地铁线路
+            if(searchHouseForm.getSubwayLineId() != null){
+                Subway subway = subwayRepository.findById(searchHouseForm.getSubwayLineId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_LINE_ERROR));
+                predicates.add(criteriaBuilder.equal(root.get("subwayId"), searchHouseForm.getSubwayLineId()));
+                // 如果地铁站不为空，搜索地铁站
+                if(searchHouseForm.getSubwayStationId() != null){
+                    SubwayStation subwayStation = subwayStationRepository.findById(searchHouseForm.getSubwayStationId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
+                    if(subwayStation.getSubwayId() != subway.getId()){
+                        throw new BusinessException(ApiResponseEnum.SUBWAY_AND_STATION_MATCH_ERROR);
+                    }
+                    predicates.add(criteriaBuilder.equal(root.get("subwayStationId"), searchHouseForm.getSubwayStationId()));
+                }
+            }
+            // 出租方式
+            if(searchHouseForm.getRentWay() != null){
+                RentWayEnum.fromValue(searchHouseForm.getRentWay()).ifPresent(item -> {
+                    log.debug("获取到出租方式:{}", item.getValue());
+                    List<Long> houseIdList = houseDetailRepository.findAllByRentWay(item.getValue()).stream().map(HouseDetail::getHouseId).collect(Collectors.toList());
+                    predicates.add(root.get("id").in(houseIdList));
+                });
+            }
+            // 价格区间
+            if(searchHouseForm.getPriceMin() != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("price"), searchHouseForm.getPriceMin()));
+            }
+            if(searchHouseForm.getPriceMax() != null){
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("price"), searchHouseForm.getPriceMax()));
+            }
+            // 房源标签
+            if(searchHouseForm.getTags() != null && !searchHouseForm.getTags().isEmpty()){
+                List<Long> houseIdList = houseTagRepository.findAllByNameIn(searchHouseForm.getTags()).stream().map(HouseTag::getHouseId).collect(Collectors.toList());
+             /*   Join<House, HouseTag> joinTag = root.join("houseId", JoinType.RIGHT);
+                predicates.add(joinTag.get("name").in(searchHouseForm.getTags()));*/
+                predicates.add(root.get("id").in(houseIdList));
+            }
+            // 房屋朝向
+            if(searchHouseForm.getDirection() != null){
+                predicates.add(criteriaBuilder.equal(root.get("direction"), searchHouseForm.getDirection()));
+            }
+            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+        };
+        Sort.Direction sortDirection = Sort.Direction.fromOptionalString(searchHouseForm.getSortDirection()).orElse(Sort.Direction.DESC);
+        Sort sort = Sort.by(sortDirection, searchHouseForm.getOrderBy());
+        Pageable pageable = PageRequest.of(searchHouseForm.getPage() - 1, searchHouseForm.getPageSize(), sort);
+        Page<House> houses = houseRepository.findAll(specification, pageable);
+        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);
+        wrapHouseDTOList(houseDTOList);
+        return new ServiceMultiResult<>((int) houses.getTotalElements(), houseDTOList);
+    }
+
+    /**
+     * 包裹房屋标签与房屋详情
+     * @param houseDTOList 房屋dto列表
+     */
+    private void wrapHouseDTOList(List<HouseDTO> houseDTOList){
+        Map<Long, HouseDTO> houseDTOMap = new HashMap<>();
+        List<Long> houseIdList = new ArrayList<>();
+        houseDTOList.forEach(houseDTO -> {
+            houseDTOMap.put(houseDTO.getId(), houseDTO);
+            houseIdList.add(houseDTO.getId());
+        });
+        List<HouseTag> houseTagList = houseTagRepository.findAllByHouseIdIn(houseIdList);
+        // 房屋设置标签
+        houseTagList.forEach(houseTag -> {
+            HouseDTO houseDTO = houseDTOMap.get(houseTag.getHouseId());
+            houseDTO.getTags().add(houseTag.getName());
+        });
+        // 房屋设置详情
+        List<HouseDetail> houseDetailList = houseDetailRepository.findAllByHouseIdIn(houseIdList);
+        houseDetailList.forEach(houseDetail -> {
+            HouseDetailDTO detailDTO = modelMapper.map(houseDetail, HouseDetailDTO.class);
+            houseDTOMap.get(detailDTO.getHouseId()).setHouseDetail(detailDTO);
+        });
+    }
+
+    /**
+     * 转换为houseDto列表
+     * @param houses 分页查询结果
+     */
+    private List<HouseDTO> convertToHouseDTOList(Page<House> houses){
+        // 查询出房屋列表
+        return houses.getContent().stream().map(house -> {
+            HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
+            houseDTO.setCover(cdnPrefix + houseDTO.getCover());
+            return houseDTO;
+        }).collect(Collectors.toList());
+    }
 
     /**
      * 注入房屋详情信息
@@ -316,12 +433,11 @@ public class HouseServiceImpl implements HouseService {
         if(CollectionUtils.isEmpty(houseForm.getTags())){
             return Collections.emptyList();
         }
-        List<HouseTag> houseTagList = houseForm.getTags().stream().map(tag -> {
+        return houseForm.getTags().stream().map(tag -> {
             HouseTag houseTag = new HouseTag();
             houseTag.setName(tag);
             houseTag.setHouseId(houseId);
             return houseTag;
         }).collect(Collectors.toList());
-        return houseTagList;
     }
 }

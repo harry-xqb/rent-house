@@ -3,6 +3,7 @@ package com.harry.renthouse.repository;
 import com.harry.renthouse.entity.HouseDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -13,4 +14,8 @@ import java.util.Optional;
 public interface HouseDetailRepository extends JpaRepository<HouseDetail, Long> {
 
     Optional<HouseDetail> findByHouseId(Long id);
+
+    List<HouseDetail> findAllByHouseIdIn(List<Long> houseIdList);
+
+    List<HouseDetail> findAllByRentWay(int rentWay);
 }

@@ -12,7 +12,6 @@ import java.util.Optional;
  * @author Harry Xu
  * @date 2020/5/8 17:04
  */
-@Repository
 public interface SupportAddressRepository  extends JpaRepository<SupportAddress, Long> {
 
     /**

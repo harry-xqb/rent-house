@@ -33,7 +33,7 @@ public class HouseDetailDTO {
     private String roundService;
 
     /* 出租方式, 1:整租  2: 合租 */
-    @ApiModelProperty(value = "租房方式： 1: 整租 2: 合租", example = "1")
+    @ApiModelProperty(value = "租房方式： 0: 合租 1: 整租", example = "0")
     private Integer rentWay;
 
     @ApiModelProperty(value = "房源地址", example = "拱墅区阮家桥公寓")

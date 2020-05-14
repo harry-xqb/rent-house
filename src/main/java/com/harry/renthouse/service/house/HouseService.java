@@ -5,6 +5,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
+import com.harry.renthouse.web.form.SearchHouseForm;
 import com.harry.renthouse.web.form.TagForm;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 
@@ -76,4 +77,11 @@ public interface HouseService {
      * @param houseOperationEnum 操作码
      */
     void updateStatus(Long houseId, HouseOperationEnum houseOperationEnum);
+
+    /**
+     * 房源搜索
+     * @param searchHouseForm 房源搜索表单
+     */
+    ServiceMultiResult<HouseDTO> search(SearchHouseForm searchHouseForm);
+
 }

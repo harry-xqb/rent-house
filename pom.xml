@@ -127,8 +127,34 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven-jar-plugin.version}</version>
+                <configuration>
+                    <excludes>
+                        <exclude>application-*.yml</exclude>
+                        <exclude>rebel.xml</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
+       <!-- <resources>
+            <resource>
+                <directory>src\main\resources</directory>
+                <excludes>
+                    <exclude>application-*.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>-->
     </build>
 
 </project>

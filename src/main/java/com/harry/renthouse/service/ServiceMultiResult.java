@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class ServiceMultiResult<T> {
 
     @ApiModelProperty(value = "总数")

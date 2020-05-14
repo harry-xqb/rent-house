@@ -25,8 +25,8 @@ public class AdminHouseSearchForm {
     private int page = 1;
 
     @Min(value = 1, message = "页面大小不能小于1")
-    @ApiModelProperty(value = "页面大小， 默认为10， 不能小于1", example = "10")
-    private int size = 10;
+    @ApiModelProperty(value = "页面大小， 默认为10， 不能小于1", example = "15")
+    private int pageSize = 15;
 
     @ApiModelProperty(value = "房源状态", allowableValues = "0,1,2,3", example = "1", notes = "0: 未审核 1:已发布  2：已出租 3: 已删除")
     private Integer status;
