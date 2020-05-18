@@ -2,14 +2,12 @@ package com.harry.renthouse.service.house;
 
 import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.web.dto.HouseCompleteInfoDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.form.AdminHouseSearchForm;
 import com.harry.renthouse.web.form.HouseForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import com.harry.renthouse.web.form.TagForm;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.util.List;
 
 /**
  * 房屋service
@@ -45,7 +43,7 @@ public interface HouseService {
      * @param houseId 房源id
      * @return
      */
-    HouseDTO findCompleteHouse(Long houseId);
+    HouseCompleteInfoDTO findCompleteHouse(Long houseId);
 
     /**
      * 为房屋添加标签

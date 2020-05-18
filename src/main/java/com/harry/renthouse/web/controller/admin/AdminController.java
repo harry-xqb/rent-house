@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.controller.admin;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
@@ -106,34 +107,11 @@ public class AdminController {
         return ApiResponse.ofSuccess(houseDto);
     }
 
-    @GetMapping("house/{houseId}")
+    @GetMapping("house/{id}")
     @ApiOperation(value = "通过房屋id获取房屋信息")
-    public ApiResponse<HouseCompleteInfoDTO> findHouse(@PathVariable @ApiParam(value = "房屋id", required = true) Long houseId){
+    public ApiResponse<HouseCompleteInfoDTO> findHouse(@PathVariable @ApiParam(value = "房屋id", required = true) Long id){
         // 获取房源信息
-        HouseDTO houseDTO = houseService.findCompleteHouse(houseId);
-        // 获取城市信息
-        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseDTO.getCityEnName(), houseDTO.getRegionEnName());
-        // 设置地铁线路信息
-        Long subwayLineId = houseDTO.getHouseDetail().getSubwayLineId();
-        String subWayName = houseDTO.getHouseDetail().getSubwayLineName();
-        SubwayDTO subwayDTO = new SubwayDTO();
-        subwayDTO.setId(subwayLineId);
-        subwayDTO.setName(subWayName);
-        // 设置地铁站信息
-        Long subwayStationId = houseDTO.getHouseDetail().getSubwayStationId();
-        String subwayStationName = houseDTO.getHouseDetail().getSubwayStationName();
-        SubwayStationDTO subwayStationDTO = new SubwayStationDTO();
-        subwayStationDTO.setId(subwayStationId);
-        subwayStationDTO.setName(subwayStationName);
-
-        // 返回结果
-        HouseCompleteInfoDTO houseCompleteInfoDTO = new HouseCompleteInfoDTO();
-        houseCompleteInfoDTO.setHouse(houseDTO);
-        houseCompleteInfoDTO.setCity(cityAndRegion.get(SupportAddress.AddressLevel.CITY));
-        houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
-        houseCompleteInfoDTO.setSubway(subwayDTO);
-        houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
-        return ApiResponse.ofSuccess(houseCompleteInfoDTO);
+        return ApiResponse.ofSuccess(houseService.findCompleteHouse(id));
     }
 
     @PostMapping("house/tag")

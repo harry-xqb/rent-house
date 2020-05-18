@@ -3,13 +3,15 @@ package com.harry.renthouse.exception;
 import com.harry.renthouse.base.ApiResponseEnum;
 import lombok.Data;
 
+import java.util.function.Supplier;
+
 /**
  * 自定义业务异常
  * @author Harry Xu
  * @date 2020/5/9 14:41
  */
 @Data
-public class BusinessException extends RuntimeException{
+public class BusinessException extends RuntimeException {
 
     private Integer code;
 

@@ -8,10 +8,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
-import com.harry.renthouse.web.dto.HouseDTO;
-import com.harry.renthouse.web.dto.HouseDetailDTO;
-import com.harry.renthouse.web.dto.HousePictureDTO;
-import com.harry.renthouse.web.dto.SupportAddressDTO;
+import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
@@ -71,6 +68,9 @@ public class HouseServiceImpl implements HouseService {
 
     @Autowired
     private SupportAddressRepository supportAddressRepository;
+
+    @Autowired
+    private AddressService addressService;
 
     @Value("${qiniu.cdnPrefix}")
     private String cdnPrefix;
@@ -174,7 +174,7 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public HouseDTO findCompleteHouse(Long houseId) {
+    public HouseCompleteInfoDTO findCompleteHouse(Long houseId) {
         // 查找房屋信息
         House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
         // 查找房屋详情
@@ -193,7 +193,28 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setTags(tagStringList);
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePictureDTO);
-        return houseDTO;
+        // 设置地铁信息
+        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseDTO.getCityEnName(), houseDTO.getRegionEnName());
+        // 获取地铁线路信息
+        Long subwayLineId = houseDTO.getHouseDetail().getSubwayLineId();
+        String subWayName = houseDTO.getHouseDetail().getSubwayLineName();
+        SubwayDTO subwayDTO = new SubwayDTO();
+        subwayDTO.setId(subwayLineId);
+        subwayDTO.setName(subWayName);
+        // 获取地铁站信息
+        Long subwayStationId = houseDTO.getHouseDetail().getSubwayStationId();
+        String subwayStationName = houseDTO.getHouseDetail().getSubwayStationName();
+        SubwayStationDTO subwayStationDTO = new SubwayStationDTO();
+        subwayStationDTO.setId(subwayStationId);
+        subwayStationDTO.setName(subwayStationName);
+        // 拼装返回信息
+        HouseCompleteInfoDTO houseCompleteInfoDTO = new HouseCompleteInfoDTO();
+        houseCompleteInfoDTO.setHouse(houseDTO);
+        houseCompleteInfoDTO.setCity(cityAndRegion.get(SupportAddress.AddressLevel.CITY));
+        houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
+        houseCompleteInfoDTO.setSubway(subwayDTO);
+        houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
+        return houseCompleteInfoDTO;
     }
 
     @Override
@@ -331,10 +352,14 @@ public class HouseServiceImpl implements HouseService {
             if(searchHouseForm.getDirection() != null){
                 predicates.add(criteriaBuilder.equal(root.get("direction"), searchHouseForm.getDirection()));
             }
+            // 如果按地铁距离排序不为空，则过滤掉距离地铁为-1的地铁站
+            if(StringUtils.equals(searchHouseForm.getOrderBy(), SortOrderByEnum.DISTANCE_TO_SUBWAY.getValue())){
+                predicates.add(criteriaBuilder.greaterThan(root.get("distanceToSubway"), -1));
+            }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         Sort.Direction sortDirection = Sort.Direction.fromOptionalString(searchHouseForm.getSortDirection()).orElse(Sort.Direction.DESC);
-        Sort sort = Sort.by(sortDirection, searchHouseForm.getOrderBy());
+        Sort sort = Sort.by(sortDirection, SortOrderByEnum.from(searchHouseForm.getOrderBy()).orElse(SortOrderByEnum.DEFAULT).getValue());
         Pageable pageable = PageRequest.of(searchHouseForm.getPage() - 1, searchHouseForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(specification, pageable);
         List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);

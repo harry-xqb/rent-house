@@ -1,7 +1,9 @@
 package com.harry.renthouse.web.dto;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+
 
 /**
  * @author Harry Xu
@@ -24,5 +26,6 @@ public class HouseCompleteInfoDTO {
 
     @ApiModelProperty(value = "地铁站信息")
     private SubwayStationDTO subwayStation;
+
 
 }
