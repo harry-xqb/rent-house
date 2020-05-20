@@ -42,6 +42,7 @@ public enum ApiResponseEnum {
     HOUSE_STATUS_CHANGE_ERROR_DELETED(50018, "不允许修改已删除房源状态"),
     PRICE_RAGE_ERROR(50019, "价格区间有误"),
     USER_NOT_FOUND(50020, "用户未找到"),
+    ELASTIC_HOUSE_NOT_FOUND(50021, "房屋索引不存在")
     ;
 
     private Integer code;

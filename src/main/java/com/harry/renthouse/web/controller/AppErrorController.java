@@ -1,9 +1,6 @@
 package com.harry.renthouse.web.controller;
 
 import com.harry.renthouse.base.ApiResponse;
-import com.harry.renthouse.base.ApiResponseEnum;
-import com.harry.renthouse.exception.BusinessException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
@@ -11,6 +8,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
+
+import javax.annotation.Resource;
 import java.util.Map;
 
 /**
@@ -21,9 +20,9 @@ import java.util.Map;
 @Controller
 public class AppErrorController implements ErrorController {
 
-    public static final String ERROR_PATH = "/error";
+    private static final String ERROR_PATH = "/error";
 
-    @Autowired
+    @Resource
     private ErrorAttributes errorAttributes;
 
     @Override

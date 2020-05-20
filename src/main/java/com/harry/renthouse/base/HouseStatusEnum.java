@@ -15,7 +15,7 @@ public enum HouseStatusEnum {
     RENTED(2, "已出租"),
     DELETED(3, "已删除"), // 逻辑删除
     ;
-    private Integer value;
+    private int value;
 
     private String msg;
 }

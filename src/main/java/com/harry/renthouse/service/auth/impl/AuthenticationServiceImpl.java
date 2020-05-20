@@ -18,6 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -28,16 +29,16 @@ import java.util.Optional;
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Resource
     private TokenUtil tokenUtil;
 
-    @Autowired
+    @Resource
     private RentHouseUserDetailService rentHouseUserDetailService;
 
-    @Autowired
+    @Resource
     private ModelMapper modelMapper;
 
     public static final String ROLE_ADMIN = "ADMIN";

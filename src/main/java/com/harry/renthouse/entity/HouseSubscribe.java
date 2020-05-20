@@ -32,12 +32,12 @@ public class HouseSubscribe {
     /* 预约状态: 1: 加入待看清单  2: 已约看房时间  3: 看房完成*/
     private Integer status;
 
-    private LocalDateTime createTime;
+    private Date createTime;
 
-    private LocalDateTime lastUpdateTime;
+    private Date lastUpdateTime;
 
     /* 预约时间 */
-    private LocalDateTime orderTime;
+    private Date orderTime;
 
     private  String telephone;
 

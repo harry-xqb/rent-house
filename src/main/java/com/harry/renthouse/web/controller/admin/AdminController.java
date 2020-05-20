@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Map;
 
@@ -34,19 +35,19 @@ import java.util.Map;
 @Api (tags = "管理员接口")
 public class AdminController {
 
-    @Autowired
+    @Resource
     private HouseService houseService;
 
-    @Autowired
+    @Resource
     private QiniuService qiniuService;
 
-    @Autowired
+    @Resource
     private AddressService addressService;
 
-    @Autowired
+    @Resource
     private Gson gson;
 
-    @Autowired
+    @Resource
     private AuthenticationService authenticationService;
 
     @Value("${spring.servlet.multipart.location}")

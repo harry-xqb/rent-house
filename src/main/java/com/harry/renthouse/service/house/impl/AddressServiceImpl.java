@@ -17,6 +17,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,16 +28,16 @@ import java.util.stream.Collectors;
 @Service
 public class AddressServiceImpl implements AddressService {
 
-    @Autowired
+    @Resource
     private SupportAddressRepository supportAddressRepository;
 
-    @Autowired
+    @Resource
     private ModelMapper modelMapper;
 
-    @Autowired
+    @Resource
     private SubwayRepository subwayRepository;
 
-    @Autowired
+    @Resource
     private SubwayStationRepository subwayStationRepository;
 
     /**

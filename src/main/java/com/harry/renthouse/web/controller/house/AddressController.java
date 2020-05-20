@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+
 /**
  *
  *  城市地区及地铁站控制器
@@ -24,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "地区与地铁接口")
 public class AddressController {
 
-    @Autowired
+    @Resource
     private AddressService addressService;
 
 

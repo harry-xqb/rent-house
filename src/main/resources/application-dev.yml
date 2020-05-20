@@ -78,6 +78,9 @@ spring:
     host: touchfish.top
     password: q1w2@#E$R
     port: 6380
+  elasticsearch:
+    rest:
+      uris: http://localhost:9200
 logging:
   level:
     org:

@@ -10,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 
 /**
  * 房屋实体类
@@ -44,9 +45,9 @@ public class House {
 
     private Integer status;
 
-    private LocalDateTime createTime;
+    private Date createTime;
 
-    private LocalDateTime lastUpdateTime;
+    private Date lastUpdateTime;
 
     private String cityEnName;
 

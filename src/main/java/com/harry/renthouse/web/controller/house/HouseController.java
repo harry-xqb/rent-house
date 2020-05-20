@@ -13,6 +13,7 @@ import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -46,7 +47,8 @@ public class HouseController {
     }
 
     @GetMapping("{id}")
-    public ApiResponse<HouseCompleteInfoDetailDTO> getHouseById(@PathVariable Long id){
+    @ApiOperation(value = "获取房源完整信息")
+    public ApiResponse<HouseCompleteInfoDetailDTO> getHouseById(@ApiParam(value = "房屋id") @PathVariable Long id){
         HouseCompleteInfoDTO houseInfo = houseService.findCompleteHouse(id);
         HouseCompleteInfoDetailDTO result = modelMapper.map(houseInfo, HouseCompleteInfoDetailDTO.class);
         // 获取用户信息

@@ -8,6 +8,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
@@ -22,14 +23,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import javax.persistence.criteria.*;
-import javax.xml.ws.soap.Addressing;
+import javax.annotation.Resource;
+import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,38 +43,41 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HouseServiceImpl implements HouseService {
 
-    @Autowired
+    @Resource
     private HouseRepository houseRepository;
 
-    @Autowired
+    @Resource
     private ModelMapper modelMapper;
 
-    @Autowired
+    @Resource
     private SubwayRepository subwayRepository;
 
-    @Autowired
+    @Resource
     private SubwayStationRepository subwayStationRepository;
 
-    @Autowired
+    @Resource
     private HousePictureRepository housePictureRepository;
 
-    @Autowired
+    @Resource
     private HouseTagRepository houseTagRepository;
 
-    @Autowired
+    @Resource
     private HouseDetailRepository houseDetailRepository;
 
-    @Autowired
+    @Resource
     private QiniuService qiniuService;
 
-    @Autowired
+    @Resource
     private SupportAddressRepository supportAddressRepository;
 
-    @Autowired
+    @Resource
     private AddressService addressService;
 
     @Value("${qiniu.cdnPrefix}")
     private String cdnPrefix;
+
+    @Resource
+    private HouseElasticSearchService houseElasticSearchService;
 
     @Transactional
     @Override
@@ -131,6 +135,11 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setHousePictureList(housePicturesDTO);
         houseDTO.setTags(tagNameList);
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
+
+        // 简历索引
+        if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
+            houseElasticSearchService.save(houseId);
+        }
         return houseDTO;
     }
 
@@ -151,12 +160,12 @@ public class HouseServiceImpl implements HouseService {
             // 如果创建时间起始不为空加入搜索条件
             if(searchForm.getCreateTimeMin() != null){
                 LocalDateTime minDate = searchForm.getCreateTimeMin().atStartOfDay();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), minDate));
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), Date.from(minDate.atZone(ZoneId.systemDefault()).toInstant())));
             }
             // 如果创建时间结束不为空加入搜索条件
             if(searchForm.getCreateTimeMax() != null){
                 LocalDateTime maxDate = searchForm.getCreateTimeMax().atStartOfDay().plusDays(1);
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), maxDate));
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), Date.from(maxDate.atZone(ZoneId.systemDefault()).toInstant())));
             }
             // 如果标题不为空加入模糊搜索条件
             if(StringUtils.isNotBlank(searchForm.getTitle())){
@@ -186,7 +195,7 @@ public class HouseServiceImpl implements HouseService {
         // 组装成DTO对象
         HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
         HouseDetailDTO houseDetailDTO = modelMapper.map(houseDetail, HouseDetailDTO.class);
-        List<String> tagStringList = tags.stream().map(tag -> tag.getName()).collect(Collectors.toList());
+        List<String> tagStringList = tags.stream().map(HouseTag::getName).collect(Collectors.toList());
         List<HousePictureDTO> housePictureDTO = housePictureList.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 设置组装houseDTO
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
@@ -282,6 +291,12 @@ public class HouseServiceImpl implements HouseService {
             throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_RENTED);
         }
         houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
+        // 如果房源更新为审核通过则建立
+        if(houseOperationEnum.getCode() == HouseOperationEnum.PASS.getCode()){
+            houseElasticSearchService.save(houseId);
+        }else{
+            houseElasticSearchService.delete(houseId);
+        }
     }
 
     @Override
@@ -320,7 +335,7 @@ public class HouseServiceImpl implements HouseService {
                 // 如果地铁站不为空，搜索地铁站
                 if(searchHouseForm.getSubwayStationId() != null){
                     SubwayStation subwayStation = subwayStationRepository.findById(searchHouseForm.getSubwayStationId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
-                    if(subwayStation.getSubwayId() != subway.getId()){
+                    if(subwayStation.getSubwayId().longValue() != subway.getId().longValue()){
                         throw new BusinessException(ApiResponseEnum.SUBWAY_AND_STATION_MATCH_ERROR);
                     }
                     predicates.add(criteriaBuilder.equal(root.get("subwayStationId"), searchHouseForm.getSubwayStationId()));
@@ -413,7 +428,7 @@ public class HouseServiceImpl implements HouseService {
         if(houseForm.getSubwayLineId() != null && houseForm.getSubwayStationId() != null){
             Subway subway = subwayRepository.findById(houseForm.getSubwayLineId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_LINE_ERROR));
             SubwayStation subwayStation = subwayStationRepository.findById(houseForm.getSubwayStationId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
-            if(subway.getId() != subwayStation.getSubwayId()){
+            if(subway.getId().longValue() != subwayStation.getSubwayId().longValue()){
                 throw new BusinessException(ApiResponseEnum.SUBWAY_AND_STATION_MATCH_ERROR);
             }
             houseDetail.setSubwayLineId(subway.getId());

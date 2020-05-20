@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.File;
 import java.io.InputStream;
 
@@ -23,13 +24,13 @@ import java.io.InputStream;
 @Service
 public class QiniuServiceImpl implements QiniuService, InitializingBean {
 
-    @Autowired
+    @Resource
     private Auth auth;
 
-    @Autowired
+    @Resource
     private UploadManager uploadManager;
 
-    @Autowired
+    @Resource
     private BucketManager bucketManager;
 
     @Value("${qiniu.bucket}")

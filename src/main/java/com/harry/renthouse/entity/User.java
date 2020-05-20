@@ -10,6 +10,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Set;
 
 /**
@@ -37,11 +38,11 @@ public class User implements UserDetails, Serializable {
 
     private Integer status;
 
-    private LocalDateTime createTime;
+    private Date createTime;
 
-    private LocalDateTime lastLoginTime;
+    private Date lastLoginTime;
 
-    private LocalDateTime lastUpdateTime;
+    private Date lastUpdateTime;
 
     private String avatar;
 
