@@ -10,11 +10,13 @@
 1. spring boot
 2. spring security （权限控制）
 3. spring data jpa 
-4. elasticsearch （全文搜索引擎，复杂条件搜索房源）
-5. hadoop + spark (大数据框架，实现推荐房源)
+4. spring data elasticsearch （全文搜索）
+5. kafka (消息队列->进行异步索引)
+6. hadoop + spark (大数据框架，实现推荐房源)
 ### 环境
 数据库: mysql  
 缓存: redis  
+全文搜索引擎: elasticsearch
+elasticsearch可视化工具: kibana
 jdk: 1.8  
-
-### [前端源码点这里]()
+### [前端源码点这里](https://github.com/night-233/rent-house-admin)

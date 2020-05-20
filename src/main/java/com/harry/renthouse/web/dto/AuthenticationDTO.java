@@ -14,6 +14,6 @@ public class AuthenticationDTO{
     @ApiModelProperty(value = "登入成功后token凭证")
     private String token;
 
-    @ApiModelProperty(value = "用户信息")
-    private UserDTO user;
+   /* @ApiModelProperty(value = "用户信息")
+    private UserDTO user;*/
 }

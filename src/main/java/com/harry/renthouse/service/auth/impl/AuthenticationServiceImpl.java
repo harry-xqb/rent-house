@@ -38,9 +38,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Resource
     private RentHouseUserDetailService rentHouseUserDetailService;
 
-    @Resource
-    private ModelMapper modelMapper;
-
     public static final String ROLE_ADMIN = "ADMIN";
 
     public static final String ROLE_USER = "USER";
@@ -64,7 +61,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = tokenUtil.generate(user.getUsername());
         AuthenticationDTO authenticationDTO = new AuthenticationDTO();
         authenticationDTO.setToken(token);
-        authenticationDTO.setUser(modelMapper.map(user, UserDTO.class));
+//        authenticationDTO.setUser(modelMapper.map(user, UserDTO.class));
         return authenticationDTO;
     }
 
