@@ -14,4 +14,6 @@ public interface UserService {
      * @return
      */
     UserDTO findUserById(Long id);
+
+    void updateAvatar(String avatar);
 }

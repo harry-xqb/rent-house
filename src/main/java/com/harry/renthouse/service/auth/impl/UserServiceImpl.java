@@ -1,6 +1,7 @@
 package com.harry.renthouse.service.auth.impl;
 
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.base.AuthenticatedUserUtil;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.UserRepository;
@@ -29,5 +30,11 @@ public class UserServiceImpl implements UserService {
     public UserDTO findUserById(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         return modelMapper.map(user, UserDTO.class);
+    }
+
+    @Override
+    public void updateAvatar(String avatar) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        userRepository.updateAvatar(userId, avatar);
     }
 }

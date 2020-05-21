@@ -70,19 +70,8 @@ public class AdminController {
         if(file == null){
             return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
         }
-        Response response;
         try {
-            response = qiniuService.uploadFile(file.getInputStream());
-            QiniuUploadResult uploadResult = gson.fromJson(response.bodyString(), QiniuUploadResult.class);
-            return ApiResponse.ofSuccess(uploadResult);
-        }catch (QiniuException e){
-            response = e.response;
-            try {
-                return ApiResponse.ofMessage(response.statusCode, response.bodyString());
-            } catch (QiniuException e1) {
-                e1.printStackTrace();
-                return ApiResponse.ofStatus(ApiResponseEnum.FILE_UPLOAD_ERROR);
-            }
+            return ApiResponse.ofSuccess(qiniuService.uploadFile(file.getInputStream()));
         } catch (IOException e) {
             e.printStackTrace();
             return ApiResponse.ofStatus(ApiResponseEnum.FILE_UPLOAD_ERROR);

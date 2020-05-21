@@ -1,5 +1,6 @@
 package com.harry.renthouse.service.house;
 
+import com.harry.renthouse.web.dto.QiniuUploadResult;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 
@@ -15,7 +16,7 @@ public interface QiniuService {
 
     Response uploadFile(File file) throws QiniuException;
 
-    Response uploadFile(InputStream inputStream) throws QiniuException;
+    QiniuUploadResult uploadFile(InputStream inputStream) throws QiniuException;
 
     Response deleteFile(String key) throws QiniuException;
 }

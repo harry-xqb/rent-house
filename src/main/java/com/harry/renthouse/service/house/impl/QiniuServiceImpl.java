@@ -1,6 +1,11 @@
 package com.harry.renthouse.service.house.impl;
 
+import com.google.gson.Gson;
+import com.harry.renthouse.base.ApiResponse;
+import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.web.dto.QiniuUploadResult;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
 import com.qiniu.storage.BucketManager;
@@ -14,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -33,6 +39,9 @@ public class QiniuServiceImpl implements QiniuService, InitializingBean {
     @Resource
     private BucketManager bucketManager;
 
+    @Resource
+    private Gson gson;
+
     @Value("${qiniu.bucket}")
     private String bucket;
 
@@ -51,14 +60,24 @@ public class QiniuServiceImpl implements QiniuService, InitializingBean {
     }
 
     @Override
-    public Response uploadFile(InputStream inputStream) throws QiniuException {
+    public QiniuUploadResult uploadFile(InputStream inputStream) throws QiniuException {
         String token = getUploadToken();
         Response response = uploadManager.put(inputStream, null, token, null, null);
         int retryCount = 0;
         while(response.needRetry() && retryCount++ < 3){
             response = uploadManager.put(inputStream, null, token, null, null);
         }
-        return response;
+        try {
+            return gson.fromJson(response.bodyString(), QiniuUploadResult.class);
+        }catch (QiniuException e){
+            response = e.response;
+            try {
+                throw new BusinessException(response.bodyString(), response.statusCode);
+            } catch (QiniuException e1) {
+                e1.printStackTrace();
+                throw new BusinessException(ApiResponseEnum.FILE_UPLOAD_ERROR);
+            }
+        }
     }
 
     @Override
