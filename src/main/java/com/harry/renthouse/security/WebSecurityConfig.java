@@ -11,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
 /**
@@ -27,9 +28,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private TokenAuthenticationProvider tokenAuthenticationProvider;
 
     @Autowired
-    private AjaxAuthenticationEntryPoint ajaxAuthenticationEntryPoint;
-
-    @Autowired
     private UserDetailsService  rentHouseUserDetailService;
 
     @Autowired
@@ -43,7 +41,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .httpBasic()
-//                .authenticationEntryPoint(ajaxAuthenticationEntryPoint)
                 .and()
                 .authorizeRequests()
                 .antMatchers("/login").permitAll()
@@ -53,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                 .and()
-                .addFilterAfter(tokenAuthenticationFilter, BasicAuthenticationFilter.class);
+                .addFilterAfter(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

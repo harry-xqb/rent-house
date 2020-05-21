@@ -15,6 +15,9 @@ import java.util.List;
 @Data
 public class SearchHouseForm {
 
+    @ApiModelProperty(value = "关键词", example = "城西银泰")
+    private String keyword;
+
     @NotNull(message = "城市英文简称不能为空")
     @ApiModelProperty(value = "城市英文缩写", required = true ,example = "bj")
     private String cityEnName;
@@ -58,4 +61,10 @@ public class SearchHouseForm {
 
     @ApiModelProperty(value = "升序还是降序", allowableValues = "ASC,DESC", example = "ASC")
     private String sortDirection = "ASC";
+
+    @Min(value = 0, message = "面积值不能小于0")
+    private Integer areaMin;
+
+    @Min(value = 0, message = "面积值不能小于0")
+    private Integer areaMax;
 }

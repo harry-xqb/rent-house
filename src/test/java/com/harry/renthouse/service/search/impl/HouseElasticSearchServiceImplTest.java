@@ -2,10 +2,16 @@ package com.harry.renthouse.service.search.impl;
 
 import com.harry.renthouse.RentHouseApplicationTests;
 import com.harry.renthouse.elastic.entity.HouseElastic;
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
+import com.harry.renthouse.web.form.SearchHouseForm;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,13 +24,27 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
     @Autowired
     private HouseElasticSearchService houseElasticSearchService;
 
+
     @Test
     void save() {
-        houseElasticSearchService.save(25L);
+        List<Long> list = new ArrayList<>(Arrays.asList(15L, 16L, 17L, 18L, 19L, 20L, 21L, 24L, 25L, 29L));
+        for(int i = 0; i < list.size(); i++){
+            houseElasticSearchService.save(list.get(i));
+        }
     }
 
     @Test
     void delete() {
         houseElasticSearchService.delete(25L);
+    }
+
+    @Test
+    void search(){
+        SearchHouseForm searchHouseForm = new SearchHouseForm();
+        searchHouseForm.setCityEnName("bj");
+        searchHouseForm.setPageSize(10);
+        searchHouseForm.setPage(1);
+        ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
+        Assert.isTrue(result.getTotal() == 10, "获取的房源数量不匹配");
     }
 }

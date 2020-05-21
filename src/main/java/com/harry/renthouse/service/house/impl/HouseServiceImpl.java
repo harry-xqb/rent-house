@@ -16,7 +16,6 @@ import com.qiniu.http.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -78,6 +77,7 @@ public class HouseServiceImpl implements HouseService {
 
     @Resource
     private HouseElasticSearchService houseElasticSearchService;
+
 
     @Transactional
     @Override
@@ -308,9 +308,46 @@ public class HouseServiceImpl implements HouseService {
         // 价格区间监测是否正确
         if(searchHouseForm.getPriceMin() != null && searchHouseForm.getPriceMax() != null){
             if(searchHouseForm.getPriceMax() < searchHouseForm.getPriceMin()){
-                throw new BusinessException(ApiResponseEnum.PRICE_RAGE_ERROR);
+                throw new BusinessException(ApiResponseEnum.HOUSE_PRICE_RAGE_ERROR);
             }
         }
+        // 面积区间检测是否正确
+        if(searchHouseForm.getAreaMin() != null && searchHouseForm.getAreaMax() != null){
+            if(searchHouseForm.getAreaMax() < searchHouseForm.getAreaMin()){
+                throw new BusinessException(ApiResponseEnum.HOUSE_AREA_RANGE_ERROR);
+            }
+        }
+        if(StringUtils.isNotBlank(searchHouseForm.getKeyword())){
+            ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.search(searchHouseForm);
+            if(houseIdResult.getTotal() == 0){
+                return new ServiceMultiResult<>(0, Collections.emptyList());
+            }
+            return new ServiceMultiResult<>(houseIdResult.getTotal(), wrapperHouseResult(houseIdResult.getList()));
+        }
+
+        return simpleSearch(searchHouseForm);
+    }
+
+    /**
+     * 通过id集合获取房源信息
+     * @param houseIdList id集合列表
+     * @return 房源dto列表
+     */
+    private List<HouseDTO> wrapperHouseResult(List<Long> houseIdList){
+        List<House> houseList = houseRepository.findAllById(houseIdList);
+        List<HouseDTO> houseDTOList = houseList.stream().map(item -> modelMapper.map(item, HouseDTO.class))
+                .collect(Collectors.toList());
+        Map<Long, HouseDTO> houseDTOMap = houseDTOList.stream().collect(Collectors.toMap(HouseDTO::getId, house -> house));
+        wrapHouseDTOList(houseDTOList);
+        List<HouseDTO> result = new ArrayList<>();
+        houseIdList.forEach(id -> result.add(houseDTOMap.get(id)));
+        return result;
+    }
+
+    /**
+     * 基本sql查询
+     */
+    private ServiceMultiResult<HouseDTO> simpleSearch(SearchHouseForm searchHouseForm){
         supportAddressRepository
                 .findByEnNameAndLevel(searchHouseForm.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
@@ -368,13 +405,20 @@ public class HouseServiceImpl implements HouseService {
                 predicates.add(criteriaBuilder.equal(root.get("direction"), searchHouseForm.getDirection()));
             }
             // 如果按地铁距离排序不为空，则过滤掉距离地铁为-1的地铁站
-            if(StringUtils.equals(searchHouseForm.getOrderBy(), SortOrderByEnum.DISTANCE_TO_SUBWAY.getValue())){
+            if(StringUtils.equals(searchHouseForm.getOrderBy(), HouseSortOrderByEnum.DISTANCE_TO_SUBWAY.getValue())){
                 predicates.add(criteriaBuilder.greaterThan(root.get("distanceToSubway"), -1));
+            }
+            // 房屋面积区间
+            if(searchHouseForm.getAreaMin() != null){
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("area"), searchHouseForm.getAreaMin()));
+            }
+            if(searchHouseForm.getAreaMax() != null){
+                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("area"), searchHouseForm.getAreaMax()));
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         Sort.Direction sortDirection = Sort.Direction.fromOptionalString(searchHouseForm.getSortDirection()).orElse(Sort.Direction.DESC);
-        Sort sort = Sort.by(sortDirection, SortOrderByEnum.from(searchHouseForm.getOrderBy()).orElse(SortOrderByEnum.DEFAULT).getValue());
+        Sort sort = Sort.by(sortDirection, HouseSortOrderByEnum.from(searchHouseForm.getOrderBy()).orElse(HouseSortOrderByEnum.DEFAULT).getValue());
         Pageable pageable = PageRequest.of(searchHouseForm.getPage() - 1, searchHouseForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(specification, pageable);
         List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);

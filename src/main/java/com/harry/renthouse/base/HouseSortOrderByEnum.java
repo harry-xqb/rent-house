@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 @Getter
 @AllArgsConstructor
-public enum  SortOrderByEnum {
+public enum HouseSortOrderByEnum {
     DEFAULT("lastUpdateTime", "默认-最新"),
     NEWEST("lastUpdateTime", "最近更新时间"),
     PRICE("price", "价格"),
@@ -26,7 +26,7 @@ public enum  SortOrderByEnum {
 
     private String message;
 
-    public static Optional<SortOrderByEnum> from(String key){
-        return Arrays.stream(SortOrderByEnum.values()).filter(item -> StringUtils.equals(key, item.getValue())).findFirst();
+    public static Optional<HouseSortOrderByEnum> from(String key){
+        return Arrays.stream(HouseSortOrderByEnum.values()).filter(item -> StringUtils.equals(key, item.getValue())).findFirst();
     }
 }
