@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * 用户dao
  * @author Harry Xu
@@ -13,9 +15,11 @@ import org.springframework.stereotype.Repository;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    User findUserByName(String name);
+    Optional<User> findUserByName(String name);
 
     @Modifying
-    @Query("update User as user set user.avatar = :avatar where house.id = :id")
+    @Query("update User as user set user.avatar = :avatar where user.id = :id")
     void updateAvatar(Long id, String avatar);
+
+    Optional<User> findByPhoneNumber(String phoneNumber);
 }

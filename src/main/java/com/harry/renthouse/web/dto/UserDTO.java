@@ -46,6 +46,12 @@ public class UserDTO {
     @ApiModelProperty(value = "头像地址", example = "http://7xo6gy.com1.z0.glb.clouddn.com/99ff568bd61c744bf31185aeddf13580.png\"")
     private String avatar;
 
+    @ApiModelProperty(value = "昵称")
+    private String nickName;
+
+    @ApiModelProperty(value = "个人介绍")
+    private String introduction;
+
     @ApiModelProperty(value = "权限", example = "[{'authority': 'ROLE_ADMIN'}]")
     private Set<GrantedAuthority> authorities;
 }

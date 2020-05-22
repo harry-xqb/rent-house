@@ -1,23 +1,32 @@
 package com.harry.renthouse.web.controller.user;
 
-import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
+import com.harry.renthouse.base.UserRoleEnum;
+import com.harry.renthouse.service.auth.AuthenticationService;
+import com.harry.renthouse.service.auth.SmsCodeService;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
+import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
 import com.harry.renthouse.web.dto.UserDTO;
-import com.qiniu.common.QiniuException;
-import com.qiniu.http.Response;
+import com.harry.renthouse.web.form.SendSmsForm;
+import com.harry.renthouse.web.form.UserBasicInfoForm;
+import com.harry.renthouse.web.form.PhonePasswordLoginForm;
+import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  * @author Harry Xu
@@ -35,7 +44,13 @@ public class UserController {
     private QiniuService qiniuService;
 
     @Resource
-    private Gson gson;
+    private AuthenticationService authenticationService;
+
+    @Value("${qiniu.cdnPrefix}")
+    private String cndPrefix;
+
+    @Resource
+    private SmsCodeService smsCodeService;
 
     @GetMapping
     @ApiOperation("获取当前用户信息")
@@ -45,11 +60,12 @@ public class UserController {
         return ApiResponse.ofSuccess(userDTO);
     }
 
-    @PutMapping("{avatar}")
+    @PutMapping("avatar/{path}")
     @ApiOperation("更新头像")
-    public ApiResponse updateAvatar(@ApiParam(value = "图片上传的地址")  @PathVariable String avatar){
+    public ApiResponse updateAvatar(@ApiParam(value = "图片上传的地址")  @PathVariable String path){
+        String avatar = cndPrefix + path;
         userService.updateAvatar(avatar);
-        return ApiResponse.ofSuccess();
+        return ApiResponse.ofSuccess(avatar);
     }
 
     @PostMapping(value = "upload/photo")
@@ -66,4 +82,33 @@ public class UserController {
         }
     }
 
+    @PutMapping("basicInfo")
+    @ApiOperation("更新用户基本信息")
+    public ApiResponse<UserDTO> updateUser(@RequestBody UserBasicInfoForm userForm){
+        Long userId = AuthenticatedUserUtil.getUserId();
+        return ApiResponse.ofSuccess(userService.updateUserInfo(userId, userForm));
+    }
+
+    @PostMapping("registryByPhone")
+    @ApiOperation("通过手机号注册用户")
+    public ApiResponse<UserDTO> phoneRegistry(@Validated @RequestBody UserPhoneRegisterForm userPhoneRegisterForm){
+        smsCodeService.validate(userPhoneRegisterForm.getPhoneNumber(),
+                userPhoneRegisterForm.getVerifyCode(),
+                ValidateCodeTypeEnum.SIGN_UP.getValue());
+        return ApiResponse.ofSuccess(userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN)));
+    }
+
+    @PostMapping("login")
+    @ApiOperation("用户登录")
+    public ApiResponse<AuthenticationDTO> login(@Validated @RequestBody PhonePasswordLoginForm form){
+        AuthenticationDTO authenticationDTO = authenticationService.loginByPhone(form.getPhone(), form.getPassword());
+        return ApiResponse.ofSuccess(authenticationDTO);
+    }
+
+    @PostMapping("sendSmsToPhone")
+    @ApiOperation("发送短信")
+    public ApiResponse sendSmsToPhone(@Validated @RequestBody SendSmsForm sendSmsForm){
+        smsCodeService.sendSms(sendSmsForm);
+        return ApiResponse.ofSuccess();
+    }
 }

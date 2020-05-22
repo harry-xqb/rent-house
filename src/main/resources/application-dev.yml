@@ -108,3 +108,13 @@ qiniu:
   secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7
   bucket: hz-rent-house
   cdnPrefix: http://qa22ygxo8.bkt.clouddn.com/
+# 阿里云配置
+aliyun:
+  sms:
+    accessKey: LTAI4GJSvFeHdWRuRdGXE9jR
+    accessSecret: LFMKe43mxGdpQ8EjoVJ6KlQHZyzv8P
+    templateCode: SMS_190792051
+    signName: touchfish
+    length: 4
+    expireIn: 300 # 5分钟过期
+    resendInterval: 60 # 1分钟重发

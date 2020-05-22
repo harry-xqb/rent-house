@@ -8,6 +8,7 @@ import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
+import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -48,6 +50,9 @@ public class AdminController {
     private Gson gson;
 
     @Resource
+    private UserService userService;
+
+    @Resource
     private AuthenticationService authenticationService;
 
     @Value("${spring.servlet.multipart.location}")
@@ -62,20 +67,6 @@ public class AdminController {
         }
         HouseDTO houseDto = houseService.addHouse(houseForm);
         return ApiResponse.ofSuccess(houseDto);
-    }
-
-    @PostMapping(value = "upload/photo")
-    @ApiOperation(value = "上传图片接口")
-    public ApiResponse<QiniuUploadResult> uploadPhoto(@ApiParam(value = "图片文件") MultipartFile file){
-        if(file == null){
-            return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
-        }
-        try {
-            return ApiResponse.ofSuccess(qiniuService.uploadFile(file.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ApiResponse.ofStatus(ApiResponseEnum.FILE_UPLOAD_ERROR);
-        }
     }
 
 
@@ -145,11 +136,4 @@ public class AdminController {
         return ApiResponse.ofSuccess();
     }
 
-
-    @PostMapping(value = "login")
-    @ApiOperation("管理员登录")
-    public ApiResponse<AuthenticationDTO> login(@Validated @RequestBody UserNamePasswordLoginForm form){
-        AuthenticationDTO authenticationDTO = authenticationService.adminLogin(form.getUsername(), form.getPassword());
-        return ApiResponse.ofSuccess(authenticationDTO);
-    }
 }

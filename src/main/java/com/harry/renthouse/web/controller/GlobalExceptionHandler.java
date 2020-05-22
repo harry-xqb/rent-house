@@ -38,6 +38,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = Exception.class)
     public ApiResponse exceptionHandler(Exception e){
         e.printStackTrace();
-        return ApiResponse.ofMessage(ApiResponseEnum.INTERNAL_SERVER_ERROR.getCode(), e.getMessage());
+        return ApiResponse.ofStatus(ApiResponseEnum.INTERNAL_SERVER_ERROR);
     }
 }

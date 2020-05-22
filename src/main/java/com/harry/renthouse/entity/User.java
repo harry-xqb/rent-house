@@ -3,6 +3,8 @@ package com.harry.renthouse.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -22,6 +24,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@DynamicInsert
+@DynamicUpdate
 public class User implements UserDetails, Serializable {
 
     @Id
@@ -45,6 +49,10 @@ public class User implements UserDetails, Serializable {
     private Date lastUpdateTime;
 
     private String avatar;
+
+    private String nickName;
+
+    private String introduction;
 
     @Transient
     private Set<GrantedAuthority> authorities;

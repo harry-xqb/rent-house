@@ -11,9 +11,7 @@ import java.util.Optional;
  */
 public interface AuthenticationService {
 
-    AuthenticationDTO login(String username, String password, String role);
+    AuthenticationDTO loginByUsername(String username, String password);
 
-    AuthenticationDTO adminLogin(String username, String password);
-
-    AuthenticationDTO userLogin(String username, String password);
+    AuthenticationDTO loginByPhone(String phone, String password);
 }

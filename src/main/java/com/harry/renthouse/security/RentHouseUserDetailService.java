@@ -3,6 +3,7 @@ package com.harry.renthouse.security;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.Role;
 import com.harry.renthouse.entity.User;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.RoleRepository;
 import com.harry.renthouse.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +38,21 @@ public class RentHouseUserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findUserByName(username);
-        if(user == null){
-            return null;
-        }
+        User user = userRepository.findUserByName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        wrapperRole(user);
+        return user;
+    }
+
+    public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
+        User user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        wrapperRole(user);
+        return user;
+    }
+    private void wrapperRole(User user){
         List<Role> roleList = Optional.ofNullable(roleRepository.findRolesByUserId(user.getId()))
                 .orElseThrow(() -> new DisabledException(ApiResponseEnum.NO_PRIORITY_ERROR.getMessage()));
         Set<GrantedAuthority> authorities = new HashSet<>();
         roleList.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
         user.setAuthorities(authorities);
-        return user;
     }
 }

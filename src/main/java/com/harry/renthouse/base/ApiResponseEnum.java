@@ -42,8 +42,14 @@ public enum ApiResponseEnum {
     HOUSE_STATUS_CHANGE_ERROR_DELETED(50018, "不允许修改已删除房源状态"),
     HOUSE_PRICE_RAGE_ERROR(50019, "价格区间有误"),
     HOUSE_AREA_RANGE_ERROR(50020, "面积区间有误"),
-    USER_NOT_FOUND(50021, "用户未找到"),
+    USER_NOT_FOUND(50021, "用户不存在"),
     ELASTIC_HOUSE_NOT_FOUND(50022, "房屋索引不存在"),
+    PHONE_ALREADY_REGISTERED(50023, "手机号已被注册"),
+    PHONE_SEND_SMS_ERROR(50024, "发送短信失败"),
+    PHONE_SEND_SMS_BUSY(50025, "短信发送太频繁"),
+    PHONE_SMS_NOT_VALID_TYPE(50026, "无效的验证码类型"),
+    PHONE_SMS_CODE_ERROR(50027, "验证码错误"),
+    PHONE_SMS_CODE_EXPIRE(50028, "验证码已过期"),
     ;
 
     private Integer code;

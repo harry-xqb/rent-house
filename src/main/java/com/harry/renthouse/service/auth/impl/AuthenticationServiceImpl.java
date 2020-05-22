@@ -4,8 +4,10 @@ import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
+import com.harry.renthouse.repository.UserRepository;
 import com.harry.renthouse.security.RentHouseUserDetailService;
 import com.harry.renthouse.service.auth.AuthenticationService;
+import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.util.TokenUtil;
 import com.harry.renthouse.web.dto.AuthenticationDTO;
@@ -38,24 +40,23 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Resource
     private RentHouseUserDetailService rentHouseUserDetailService;
 
-    public static final String ROLE_ADMIN = "ADMIN";
-
-    public static final String ROLE_USER = "USER";
 
     @Override
-    public AuthenticationDTO login(String username, String password, String role) {
+    public AuthenticationDTO loginByUsername(String username, String password) {
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
-        // TODO 用户新增接口完成后需要删除该行
-        String encode = passwordEncoder.encode(password);
+        return tokenGenerate(user, password);
+    }
+
+    @Override
+    public AuthenticationDTO loginByPhone(String phone, String password) {
+        User user = (User)rentHouseUserDetailService.loadUserByPhone(phone);
+        return tokenGenerate(user, password);
+    }
+
+    private AuthenticationDTO tokenGenerate(User user, String password){
         // 如果用户不存在或者密码不匹配
-        if(user == null || !passwordEncoder.matches(password, user.getPassword())){
+        if(!passwordEncoder.matches(password, user.getPassword())){
             throw new BusinessException(ApiResponseEnum.USERNAME_PASSWORD_ERROR);
-        }
-        Collection<? extends GrantedAuthority> authorities = user.getAuthorities();
-        boolean hasRole = authorities.stream().anyMatch(grantedAuthority -> StringUtils.equals("ROLE_" + role, grantedAuthority.getAuthority()));
-        // 如果没有权限
-        if(!hasRole){
-            throw new BusinessException(ApiResponseEnum.NO_PRIORITY_ERROR);
         }
         // 生成token并设置过期时间
         String token = tokenUtil.generate(user.getUsername());
@@ -63,15 +64,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         authenticationDTO.setToken(token);
 //        authenticationDTO.setUser(modelMapper.map(user, UserDTO.class));
         return authenticationDTO;
-    }
-
-    @Override
-    public AuthenticationDTO adminLogin(String username, String password) {
-        return login(username, password, ROLE_ADMIN);
-    }
-
-    @Override
-    public AuthenticationDTO userLogin(String username, String password) {
-        return login(username, password, ROLE_USER);
     }
 }

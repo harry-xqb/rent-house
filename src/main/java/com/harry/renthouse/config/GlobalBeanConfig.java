@@ -1,11 +1,18 @@
 package com.harry.renthouse.config;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 /**
  * @author Harry Xu
@@ -22,11 +29,12 @@ public class GlobalBeanConfig {
 
     @Bean
     public Gson gson(){
-        return new Gson();
+        return  new Gson();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
     }
+
 }
