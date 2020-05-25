@@ -75,14 +75,14 @@ spring:
       repositories:
         enabled: false
   redis:
-    host: localhost
+    host: 127.0.0.1
     port: 6379
   elasticsearch:
     rest:
-      uris: http://localhost:9200
+      uris: http://127.0.0.1:9200
   kafka:
     consumer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: 127.0.0.1:9092
       group-id: rent-house
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

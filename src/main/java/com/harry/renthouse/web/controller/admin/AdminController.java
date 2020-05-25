@@ -77,7 +77,7 @@ public class AdminController {
         return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
     }
 
-    @PostMapping("house/edit")
+    @PutMapping("house/edit")
     @ApiOperation(value = "房源信息编辑")
     public ApiResponse<HouseDTO> editHouse(@RequestBody @Validated({HouseForm.Edit.class}) HouseForm houseForm){
         Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
