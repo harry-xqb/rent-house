@@ -62,12 +62,27 @@ public class UserController {
         return ApiResponse.ofSuccess(userDTO);
     }
 
-    @PutMapping("avatar/{path}")
-    @ApiOperation("更新头像")
-    public ApiResponse updateAvatar(@ApiParam(value = "图片上传的地址")  @PathVariable String path){
-        String avatar = cndPrefix + path;
+    @PutMapping("avatar/qiniu/{key}")
+    @ApiOperation("更新头像通过七牛云key")
+    public ApiResponse updateAvatar(@ApiParam(value = "图片上传的地址")  @PathVariable String key){
+        String avatar = cndPrefix + key;
         userService.updateAvatar(avatar);
         return ApiResponse.ofSuccess(avatar);
+    }
+
+    @PutMapping("avatar/img")
+    @ApiOperation("更新头像通过文件")
+    public ApiResponse updateAvatar(@ApiParam(value = "头像图片") MultipartFile file){
+        try {
+            QiniuUploadResult qiniuUploadResult = qiniuService.uploadFile(file.getInputStream());
+            String key = qiniuUploadResult.getKey();
+            String avatar = cndPrefix + key;
+            userService.updateAvatar(avatar);
+            return ApiResponse.ofSuccess(avatar);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiResponse.ofStatus(ApiResponseEnum.FILE_UPLOAD_ERROR);
+        }
     }
 
     @PostMapping(value = "upload/photo")
