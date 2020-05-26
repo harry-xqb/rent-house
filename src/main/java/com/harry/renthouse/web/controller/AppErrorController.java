@@ -1,6 +1,7 @@
 package com.harry.renthouse.web.controller;
 
 import com.harry.renthouse.base.ApiResponse;
+import com.harry.renthouse.exception.BusinessException;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
@@ -36,8 +37,8 @@ public class AppErrorController implements ErrorController {
      */
     @RequestMapping(value = ERROR_PATH)
     @ResponseBody
-    @ExceptionHandler(value = {Exception.class})
-    public ApiResponse errorApiHandler(WebRequest req) {
+    @ExceptionHandler(value = {Exception.class, BusinessException.class})
+    public ApiResponse errorApiHandler(WebRequest req, Exception e) {
         Map<String, Object> attr = this.errorAttributes.getErrorAttributes(req, false);
         int status = (int) attr.get("status");
         return ApiResponse.ofMessage(status, String.valueOf(attr.getOrDefault("message", "error")));

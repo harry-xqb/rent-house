@@ -36,8 +36,8 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         if (StringUtils.isBlank(token)) {
             return authentication;
         }
-        if (!tokenUtil.hasToken(token)) {
-            throw new BusinessException(ApiResponseEnum.NOT_VALID_CREDENTIAL);
+        if (!tokenUtil.hasToken(token)){
+            throw new BadCredentialsException(ApiResponseEnum.UNAUTHORIZED.getMessage());
         }
         tokenUtil.refresh(token);
         String username = tokenUtil.getUsername(token);
