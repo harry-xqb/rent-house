@@ -4,6 +4,8 @@ import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.form.SearchHouseForm;
 
+import javax.xml.ws.Service;
+
 /**
  * @author Harry Xu
  * @date 2020/5/20 13:34
@@ -28,4 +30,19 @@ public interface HouseElasticSearchService {
      * @return 房源id
      */
     ServiceMultiResult<Long> search(SearchHouseForm searchHouseForm);
+
+    /**
+     * 搜索建议：自动补全
+     * @param prefix 关键词前缀, 默认5条
+     * @return 建议结果集
+     */
+    ServiceMultiResult<String> suggest(String prefix);
+
+    /**
+     * 搜索建议：自动补全
+     * @param prefix 关键词前缀, 默认5条
+     * @param size 结果大小
+     * @return 建议结果集
+     */
+    ServiceMultiResult<String> suggest(String prefix, int size);
 }

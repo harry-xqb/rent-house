@@ -4,6 +4,7 @@ import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
 import com.harry.renthouse.base.UserRoleEnum;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.service.auth.AuthenticationService;
 import com.harry.renthouse.service.auth.SmsCodeService;
 import com.harry.renthouse.service.auth.UserService;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Harry Xu
@@ -111,4 +113,14 @@ public class UserController {
         smsCodeService.sendSms(sendSmsForm);
         return ApiResponse.ofSuccess();
     }
+
+    @GetMapping("nickName")
+    @ApiOperation("校验用户名是否存在")
+    public ApiResponse checkNickNameExist(@ApiParam(value = "昵称") @RequestParam String nickName){
+        userService.findByNickName(nickName).ifPresent(user -> {
+            throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
+        });
+        return ApiResponse.ofSuccess();
+    }
+
 }

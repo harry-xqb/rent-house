@@ -24,7 +24,7 @@ public class HouseElastic {
     @Field(type = FieldType.Long)
     private Long houseId;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String title;
 
     @Field(type = FieldType.Integer)
@@ -57,7 +57,7 @@ public class HouseElastic {
     @Field(type = FieldType.Keyword)
     private String subwayStationName;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private List<String> tags;
 
     @Field(type = FieldType.Keyword)
@@ -66,19 +66,22 @@ public class HouseElastic {
     @Field(type = FieldType.Keyword)
     private String district;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String description;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String layoutDesc;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String traffic;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private String roundService;
 
     @Field(type = FieldType.Integer)
     private Integer rentWay;
+
+    @Field(type =  FieldType.Object, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
+    private List<HouseSuggestion> suggests;
 
 }

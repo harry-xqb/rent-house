@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    public static final String DEFAULT_NICNk_NAME_PREFIX = "zfyh";
+    public static final String DEFAULT_NICk_NAME_PREFIX = "zfyh";
 
     @Resource
     private UserRepository userRepository;
@@ -68,6 +68,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO updateUserInfo(Long userId, UserBasicInfoForm userBasicInfoForm) {
+        // 判断用户昵称是否存在
+        userRepository.findByPhoneNumber(userBasicInfoForm.getNickName()).ifPresent(user -> {
+            throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
+        });
         User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         modelMapper.map(userBasicInfoForm, user);
         user = userRepository.save(user);
@@ -84,9 +88,9 @@ public class UserServiceImpl implements UserService {
         // 执行注册用户逻辑
         User user = new User();
         user.setPhoneNumber(phoneRegisterForm.getPhoneNumber());
-        user.setName(DEFAULT_NICNk_NAME_PREFIX + phoneRegisterForm.getPhoneNumber());
+        user.setName(DEFAULT_NICk_NAME_PREFIX + phoneRegisterForm.getPhoneNumber());
         user.setPassword(passwordEncoder.encode(phoneRegisterForm.getPassword()));
-        user.setNickName(DEFAULT_NICNk_NAME_PREFIX + phoneRegisterForm.getPhoneNumber());
+        user.setNickName(DEFAULT_NICk_NAME_PREFIX + phoneRegisterForm.getPhoneNumber());
         User result = userRepository.save(user);
         // 获取用户id设置角色
         Long userId = result.getId();
@@ -101,5 +105,10 @@ public class UserServiceImpl implements UserService {
         roles.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
         user.setAuthorities(authorities);
         return modelMapper.map(user, UserDTO.class);
+    }
+
+    @Override
+    public Optional<UserDTO> findByNickName(String nickName) {
+        return  userRepository.findByNickName(nickName).map(user -> modelMapper.map(user, UserDTO.class));
     }
 }

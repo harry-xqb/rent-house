@@ -9,6 +9,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
+import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import io.swagger.annotations.Api;
@@ -19,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,14 +33,17 @@ import java.util.Map;
 @RequestMapping("house")
 public class HouseController {
 
-    @Autowired
+    @Resource
     private HouseService houseService;
 
-    @Autowired
+    @Resource
     private UserService userService;
 
-    @Autowired
+    @Resource
     private ModelMapper modelMapper;
+
+    @Resource
+    private HouseElasticSearchService houseElasticSearchService;
 
     @PostMapping("houses")
     @ApiOperation(value = "按条件搜索房源")
@@ -59,5 +65,12 @@ public class HouseController {
         result.setAgent(agent);
         result.setHouseCountInDistrict(houseCountInDistrict);
         return ApiResponse.ofSuccess(result);
+    }
+
+    @GetMapping("search/autocomplete")
+    @ApiOperation("房源搜索自动补全")
+    public ApiResponse<List<String>> searchAutoComplete(@ApiParam("关键词前缀") @RequestParam String prefix){
+        ServiceMultiResult<String> result = houseElasticSearchService.suggest(prefix);
+        return ApiResponse.ofSuccess(result.getList());
     }
 }

@@ -50,6 +50,8 @@ public enum ApiResponseEnum {
     PHONE_SMS_NOT_VALID_TYPE(50026, "无效的验证码类型"),
     PHONE_SMS_CODE_ERROR(50027, "验证码错误"),
     PHONE_SMS_CODE_EXPIRE(50028, "验证码已过期"),
+    ELASTIC_HOUSE_SUGGEST_CREATE_ERROR(50029, "房源补全分词错误"),
+    USER_NICK_NAME_ALREADY_EXIST(50030, "用户名已存在"),
     ;
 
     private Integer code;

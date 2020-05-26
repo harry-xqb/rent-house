@@ -6,6 +6,7 @@ import com.harry.renthouse.web.form.UserBasicInfoForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Harry Xu
@@ -45,4 +46,10 @@ public interface UserService {
      * @param roleList 用户角色集合
      */
     UserDTO registerUserByPhone(UserPhoneRegisterForm phoneRegisterForm, List<UserRoleEnum> roleList);
+
+    /**
+     * 通过昵称查找用户
+     * @param nickName 用户昵称
+     */
+    Optional<UserDTO> findByNickName(String nickName);
 }

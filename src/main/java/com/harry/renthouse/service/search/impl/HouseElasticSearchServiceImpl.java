@@ -6,6 +6,7 @@ import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.HouseSortOrderByEnum;
 import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.elastic.entity.HouseKafkaMessage;
+import com.harry.renthouse.elastic.entity.HouseSuggestion;
 import com.harry.renthouse.elastic.key.HouseElasticKey;
 import com.harry.renthouse.elastic.repository.HouseElasticRepository;
 import com.harry.renthouse.entity.House;
@@ -20,25 +21,33 @@ import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.elasticsearch.action.admin.indices.analyze.AnalyzeAction;
+import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequestBuilder;
+import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
-import org.elasticsearch.search.suggest.SortBy;
+import org.elasticsearch.search.suggest.Suggest;
+import org.elasticsearch.search.suggest.SuggestBuilder;
+import org.elasticsearch.search.suggest.SuggestBuilders;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
+import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -49,7 +58,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HouseElasticSearchServiceImpl implements HouseElasticSearchService {
 
-    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC";
+    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC2";
+
+    private static final String IK_SMART = "IK_SMART";
+
+    private static final String INDEX_NAME = "rent-house";
+
+    public static final int DEFAULT_SUGGEST_SIZE = 5;
+
 
     @Resource
     private HouseElasticRepository houseElasticRepository;
@@ -72,7 +88,10 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     @Resource
     private Gson gson;
 
-    @KafkaListener(topics = "HOUSE_INDEX_TOPIC")
+    @Resource
+    private ElasticsearchRestTemplate elasticsearchRestTemplate;
+
+    @KafkaListener(topics = HOUSE_INDEX_TOPIC)
     public void handleMessage(String message){
         try{
             HouseKafkaMessage houseKafkaMessage = gson.fromJson(message, HouseKafkaMessage.class);
@@ -103,8 +122,42 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         List<HouseTag> tags = houseTagRepository.findAllByHouseId(houseId);
         List<String> tagList = tags.stream().map(HouseTag::getName).collect(Collectors.toList());
         houseElastic.setTags(tagList);
+        // 设置推荐词
+        updateSuggests(houseElastic);
         // 存储至elastic中
         houseElasticRepository.save(houseElastic);
+    }
+
+    private void updateSuggests(HouseElastic houseElastic){
+        // 对关键词进行分析
+        // todo 需要对相关描述进行分词
+        /*AnalyzeRequestBuilder analyzeRequestBuilder = new AnalyzeRequestBuilder(
+                elasticsearchClient,
+                AnalyzeAction.INSTANCE, INDEX_NAME,
+                houseElastic.getTitle(), houseElastic.getLayoutDesc(),
+                houseElastic.getRoundService(),
+                houseElastic.getDescription());
+        analyzeRequestBuilder.setAnalyzer(IK_SMART);
+        // 处理分析结果
+        AnalyzeResponse response = analyzeRequestBuilder.get();
+        List<AnalyzeResponse.AnalyzeToken> tokens = response.getTokens();
+        if(tokens == null){
+            log.warn("无法对当前房源关键词进行分析:" + houseElastic);
+            throw new BusinessException(ApiResponseEnum.ELASTIC_HOUSE_SUGGEST_CREATE_ERROR);
+        }
+        List<HouseSuggestion> suggestionList = tokens.stream().filter(token -> !StringUtils.equals("<NUM>", token.getType())
+                && StringUtils.isNotBlank(token.getTerm()) && token.getTerm().length() > 2).map(item -> {
+            HouseSuggestion houseSuggestion = new HouseSuggestion();
+            houseSuggestion.setInput(item.getTerm());
+            return houseSuggestion;
+        }).collect(Collectors.toList());
+        log.debug("包括对象------------------------");*/
+        List<HouseSuggestion> suggestionList = new ArrayList<>();
+        suggestionList.add(new HouseSuggestion(houseElastic.getTitle(), 30));
+        suggestionList.add(new HouseSuggestion(houseElastic.getDistrict(), 20));
+        suggestionList.add(new HouseSuggestion(houseElastic.getSubwayLineName(), 15));
+        suggestionList.add(new HouseSuggestion(houseElastic.getSubwayStationName(), 15));
+        houseElastic.setSuggests(suggestionList);
     }
 
     private void kafkaDelete(HouseKafkaMessage houseKafkaMessage){
@@ -184,4 +237,46 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         List<Long> result = page.getContent().stream().map(HouseElastic::getHouseId).collect(Collectors.toList());
         return new ServiceMultiResult<>(total, result);
     }
+
+    @Override
+    public ServiceMultiResult<String> suggest(String prefix) {
+        return suggest(prefix, DEFAULT_SUGGEST_SIZE);
+    }
+
+    @Override
+    public ServiceMultiResult<String> suggest(String prefix, int size) {
+        // 构建推荐查询
+        CompletionSuggestionBuilder suggestionBuilder = SuggestBuilders.completionSuggestion(HouseElasticKey.SUGGESTS)
+                .prefix(prefix).size(size);
+        SuggestBuilder suggestBuilders = new SuggestBuilder();
+        suggestBuilders.addSuggestion("autoComplete", suggestionBuilder);
+        // 获取查询响应结果
+        SearchResponse response = elasticsearchRestTemplate.suggest(suggestBuilders, HouseElastic.class);
+        Suggest suggest = response.getSuggest();
+        Suggest.Suggestion result = suggest.getSuggestion("autoComplete");
+
+        // 构造推荐结果集
+        Set<String> suggestSet = new HashSet<>();
+        for (Object term : result.getEntries()) {
+            if(term instanceof CompletionSuggestion.Entry){
+                CompletionSuggestion.Entry item = (CompletionSuggestion.Entry) term;
+                // 如果option不为空
+                if(!CollectionUtils.isEmpty(item.getOptions())){
+                    for (CompletionSuggestion.Entry.Option option : item.getOptions()) {
+                        String tip = option.getText().string();
+                        suggestSet.add(tip);
+                        if(suggestSet.size() >= size){
+                            break;
+                        }
+                    }
+                }
+            }
+            if(suggestSet.size() >= size){
+                break;
+            }
+        }
+        List<String> list = Arrays.asList(suggestSet.toArray(new String[0]));
+        return new ServiceMultiResult<>(list.size(), list);
+    }
+
 }

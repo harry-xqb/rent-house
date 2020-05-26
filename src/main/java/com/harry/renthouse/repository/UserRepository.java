@@ -22,4 +22,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void updateAvatar(Long id, String avatar);
 
     Optional<User> findByPhoneNumber(String phoneNumber);
+
+    Optional<User> findByNickName(String nickName);
 }

@@ -51,4 +51,6 @@ public class HouseElasticKey {
     public static String ROUND_SERVICE = "roundService";
 
     public static String RENT_WAY = "rentWay";
+
+    public static String SUGGESTS = "suggests";
 }

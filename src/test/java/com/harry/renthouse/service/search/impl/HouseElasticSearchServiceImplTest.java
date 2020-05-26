@@ -28,8 +28,8 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
     @Test
     void save() {
         List<Long> list = new ArrayList<>(Arrays.asList(15L, 16L, 17L, 18L, 19L, 20L, 21L, 24L, 25L, 29L));
-        for(int i = 0; i < list.size(); i++){
-            houseElasticSearchService.save(list.get(i));
+        for (Long aLong : list) {
+            houseElasticSearchService.save(aLong);
         }
     }
 
@@ -46,5 +46,11 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
         searchHouseForm.setPage(1);
         ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
         Assert.isTrue(result.getTotal() == 10, "获取的房源数量不匹配");
+    }
+
+    @Test
+    void suggest(){
+        ServiceMultiResult<String> result = houseElasticSearchService.suggest("富力");
+        Assert.isTrue(result.getTotal() > 0, "查询数目不匹配");
     }
 }
