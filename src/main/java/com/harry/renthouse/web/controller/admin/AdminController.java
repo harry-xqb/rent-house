@@ -46,18 +46,6 @@ public class AdminController {
     @Resource
     private AddressService addressService;
 
-    @Resource
-    private Gson gson;
-
-    @Resource
-    private UserService userService;
-
-    @Resource
-    private AuthenticationService authenticationService;
-
-    @Value("${spring.servlet.multipart.location}")
-    private String fileStorePath;
-
     @ApiOperation(value = "新增房源接口")
     @PostMapping(value = "house/add")
     public ApiResponse<HouseDTO> addHouse(@Validated @RequestBody HouseForm houseForm){

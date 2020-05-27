@@ -1,7 +1,9 @@
 package com.harry.renthouse.web.form.annotation.validate;
 
+import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.web.form.annotation.PasswordStrongAnnotation;
 
+import javax.annotation.Resource;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
@@ -11,11 +13,13 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class PasswordStrongValidate implements ConstraintValidator<PasswordStrongAnnotation, String> {
 
-    // 数字和字母组合8-16位
-    private static String regex = "^(?=.*\\d)((?=.*[a-z])|(?=.*[A-Z])).{8,16}$";
+    @Resource
+    private LimitsProperty limitsProperty;
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        // 数字和字母组合8-16位
+        String regex = limitsProperty.getUserPasswordRegex();
         return value.matches(regex);
     }
 }

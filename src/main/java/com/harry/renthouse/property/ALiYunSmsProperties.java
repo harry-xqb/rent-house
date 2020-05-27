@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 @ConfigurationProperties(prefix = "aliyun.sms")
+@EnableConfigurationProperties
 @Data
 public class ALiYunSmsProperties {
 

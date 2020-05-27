@@ -33,7 +33,6 @@ public enum ApiResponseEnum {
     ADDRESS_CITY_NOT_FOUND(50106, "城市未找到"),
     ADDRESS_REGION_NOT_FOUND(50107, "区县未找到"),
     // 房源相关
-    FILE_UPLOAD_ERROR(50201, "文件上传失败"),
     HOUSE_NOT_FOUND_ERROR(50206, "房源信息未找到"),
     HOUSE_DETAIL_NOT_FOUND_ERROR(50207, "房源详情未找到"),
     TAG_ADD_FAIL(50210, "添加标签失败"),
@@ -57,6 +56,11 @@ public enum ApiResponseEnum {
     // 搜索相关
     ELASTIC_HOUSE_SUGGEST_CREATE_ERROR(50429, "房源补全分词错误"),
     ELASTIC_HOUSE_NOT_FOUND(50430, "房屋索引不存在"),
+
+    // 文件相关
+    FILE_UPLOAD_ERROR(50501, "文件上传失败"),
+    FILE_SIZE_EXCEED_ERROR(50502, "文件超过限制大小:{0}"),
+    FILE_TYPE_UNSUPPORTED_ERROR(50502, "文件类型不支持"),
     ;
 
     private Integer code;

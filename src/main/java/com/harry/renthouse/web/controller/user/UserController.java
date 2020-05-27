@@ -5,10 +5,12 @@ import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
 import com.harry.renthouse.base.UserRoleEnum;
 import com.harry.renthouse.exception.BusinessException;
+import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.service.auth.AuthenticationService;
 import com.harry.renthouse.service.auth.SmsCodeService;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.util.FileUploaderChecker;
 import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
 import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
@@ -27,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,6 +57,9 @@ public class UserController {
     @Resource
     private SmsCodeService smsCodeService;
 
+    @Resource
+    private LimitsProperty limitsProperty;
+
     @GetMapping
     @ApiOperation("获取当前用户信息")
     public ApiResponse<UserDTO> getUserInfo(){
@@ -74,6 +80,7 @@ public class UserController {
     @ApiOperation("更新头像通过文件")
     public ApiResponse updateAvatar(@ApiParam(value = "头像图片") MultipartFile file){
         try {
+            FileUploaderChecker.validTypeAndSize(limitsProperty.getAvatarTypeLimit(), file.getOriginalFilename(), limitsProperty.getAvatarSizeLimit(), file.getSize());
             QiniuUploadResult qiniuUploadResult = qiniuService.uploadFile(file.getInputStream());
             String key = qiniuUploadResult.getKey();
             String avatar = cndPrefix + key;

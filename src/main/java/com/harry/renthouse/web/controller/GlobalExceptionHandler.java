@@ -4,9 +4,13 @@ import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
+import java.text.MessageFormat;
 
 /**
  *  全局异常处理
@@ -16,6 +20,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @Value("${spring.servlet.multipart.max-file-size}")
+    private String maxUploadSize;
 
     /**
      * 参数校验异常数据
@@ -33,6 +40,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = BusinessException.class)
     public ApiResponse businessExceptionHandler(BusinessException businessException){
         return ApiResponse.ofMessage(businessException.getCode(), businessException.getMessage());
+    }
+
+    @ExceptionHandler(value = MaxUploadSizeExceededException.class)
+    public ApiResponse fileSizeExceptionHandler(MaxUploadSizeExceededException e){
+        log.error("文件上传大小超限:{}", e.getMessage());
+        return ApiResponse.ofMessage(ApiResponseEnum.FILE_SIZE_EXCEED_ERROR.getCode(),
+                MessageFormat.format(ApiResponseEnum.FILE_SIZE_EXCEED_ERROR.getMessage(), maxUploadSize));
     }
 
     @ExceptionHandler(value = Exception.class)
