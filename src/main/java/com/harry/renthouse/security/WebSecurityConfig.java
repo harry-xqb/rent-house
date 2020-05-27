@@ -46,6 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/druid/**").permitAll()
                 .antMatchers("/user/registryByPhone").permitAll()
                 .antMatchers("/user/sendSmsToPhone").permitAll()
+                .antMatchers("/user/nickName").permitAll()
                 .antMatchers("/user/login").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")

@@ -52,4 +52,5 @@ public interface UserService {
      * @param nickName 用户昵称
      */
     Optional<UserDTO> findByNickName(String nickName);
+
 }

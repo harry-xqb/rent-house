@@ -145,4 +145,11 @@ public class UserController {
         return ApiResponse.ofSuccess();
     }
 
+    @DeleteMapping("avatar")
+    @ApiOperation("移除用户头像")
+    public ApiResponse removeAvatar(){
+        userService.updateAvatar(null);
+        return ApiResponse.ofSuccess();
+    }
+
 }

@@ -111,4 +111,5 @@ public class UserServiceImpl implements UserService {
     public Optional<UserDTO> findByNickName(String nickName) {
         return  userRepository.findByNickName(nickName).map(user -> modelMapper.map(user, UserDTO.class));
     }
+
 }
