@@ -7,12 +7,16 @@ import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.util.TokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  * token认证提供者
@@ -33,13 +37,6 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         }
         // 从 TokenAuthentication 中获取 token
         String token = authentication.getCredentials().toString();
-        if (StringUtils.isBlank(token)) {
-            return authentication;
-        }
-        if (!tokenUtil.hasToken(token)){
-            throw new BadCredentialsException(ApiResponseEnum.UNAUTHORIZED.getMessage());
-        }
-        tokenUtil.refresh(token);
         String username = tokenUtil.getUsername(token);
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
         // 返回新的认证信息，带上 token 和反查出的用户信息

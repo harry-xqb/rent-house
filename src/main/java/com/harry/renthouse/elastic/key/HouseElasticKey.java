@@ -53,4 +53,6 @@ public class HouseElasticKey {
     public static String RENT_WAY = "rentWay";
 
     public static String SUGGESTS = "suggests";
+
+    public static String AGGS_DISTRICT_HOUSE = "aggsDistrict";
 }

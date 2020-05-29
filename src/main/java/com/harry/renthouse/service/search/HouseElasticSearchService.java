@@ -45,4 +45,14 @@ public interface HouseElasticSearchService {
      * @return 建议结果集
      */
     ServiceMultiResult<String> suggest(String prefix, int size);
+
+
+    /**
+     * 获取小区的房源数量
+     * @param cityEnName 城市名称(英文缩写)
+     * @param regionEnName 区县名称（英文缩写）
+     * @param district 小区名称
+     * @return 房源数量
+     */
+    int aggregateDistrictHouse(String cityEnName, String regionEnName, String district);
 }

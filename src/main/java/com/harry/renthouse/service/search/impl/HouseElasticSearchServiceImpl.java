@@ -24,10 +24,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeAction;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeRequestBuilder;
 import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.elasticsearch.search.suggest.Suggest;
@@ -40,6 +47,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.elasticsearch.core.aggregation.AggregatedPage;
+import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -277,6 +287,33 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         }
         List<String> list = Arrays.asList(suggestSet.toArray(new String[0]));
         return new ServiceMultiResult<>(list.size(), list);
+    }
+
+    @Override
+    public int aggregateDistrictHouse(String cityEnName, String regionEnName, String district) {
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        // 过滤出当前小区
+        boolQueryBuilder.filter( QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, cityEnName))
+                .filter(QueryBuilders.termQuery(HouseElasticKey.REGION_EN_NAME, regionEnName))
+                .filter(QueryBuilders.termQuery(HouseElasticKey.DISTRICT, district))
+        ;
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
+        nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+        /*// 添加聚合条件
+        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms(HouseElasticKey.AGGS_DISTRICT_HOUSE)
+        .field(HouseElasticKey.DISTRICT));
+        // 过滤不包括任何字段
+        nativeSearchQueryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{}, null));
+
+        AggregatedPage<HouseElastic> houseAggPage = (AggregatedPage<HouseElastic>)houseElasticRepository.search(nativeSearchQueryBuilder.build());
+
+        ParsedStringTerms houseTerm =(ParsedStringTerms) houseAggPage.getAggregation(HouseElasticKey.AGGS_DISTRICT_HOUSE);
+
+        List<? extends Terms.Bucket> buckets = houseTerm.getBuckets();*/
+        NativeSearchQuery query = nativeSearchQueryBuilder.build();
+        log.debug(query.getQuery().toString());
+        Page<HouseElastic> result = houseElasticRepository.search(query);
+        return result.getSize();
     }
 
 }

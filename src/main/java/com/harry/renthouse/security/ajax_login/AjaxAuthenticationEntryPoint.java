@@ -17,6 +17,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Enumeration;
 import java.util.Optional;
 
 /**
@@ -28,19 +30,7 @@ import java.util.Optional;
 public class AjaxAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException e) throws IOException, ServletException {
-        RedirectStrategy redirectStrategy = new DefaultRedirectStrategy();
-        RequestCache requestCache = new HttpSessionRequestCache();
-        Optional<SavedRequest> savedRequest = Optional.ofNullable(requestCache.getRequest(request, response));
-        savedRequest.ifPresent(req -> {
-            if(StringUtils.endsWith(req.getRedirectUrl(), ".html")){
-                /*try {
-                    redirectStrategy.sendRedirect(request,response, "/login.html");
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }*/
-                return;
-            }
-        });
+        String requestURI = request.getRequestURI();
         response.setCharacterEncoding("UTF-8");//设置服务器的编码，默认是ISO-8859-1
         response.setContentType("application/json; charset = utf-8");//告诉浏览器服务器的编码格式
         response.getWriter().write(new Gson().toJson(ApiResponse.ofStatus(ApiResponseEnum.NOT_LOGIN)));

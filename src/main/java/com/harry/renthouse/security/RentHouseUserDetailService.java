@@ -36,6 +36,9 @@ public class RentHouseUserDetailService implements UserDetailsService {
     @Autowired
     private RoleRepository roleRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findUserByName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));

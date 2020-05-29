@@ -53,4 +53,9 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
         ServiceMultiResult<String> result = houseElasticSearchService.suggest("富力");
         Assert.isTrue(result.getTotal() > 0, "查询数目不匹配");
     }
+
+    @Test
+    void aggregateDistrictHouse() {
+        houseElasticSearchService.aggregateDistrictHouse("bj", "hdq", "融泽嘉园");
+    }
 }

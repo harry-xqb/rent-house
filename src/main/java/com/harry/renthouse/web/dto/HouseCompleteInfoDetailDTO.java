@@ -15,4 +15,5 @@ public class HouseCompleteInfoDetailDTO extends HouseCompleteInfoDTO{
 
     @ApiModelProperty(value = "当前房屋小区的出租房屋数")
     private Integer houseCountInDistrict;
+
 }

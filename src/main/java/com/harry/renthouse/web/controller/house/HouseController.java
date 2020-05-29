@@ -60,7 +60,11 @@ public class HouseController {
         // 获取用户信息
         UserDTO agent = userService.findUserById(houseInfo.getHouse().getAdminId());
         // 获取小区出租房屋数
-        int houseCountInDistrict = 10;
+        int houseCountInDistrict = houseElasticSearchService
+                .aggregateDistrictHouse(houseInfo.getCity().getEnName(),
+                        houseInfo.getRegion().getEnName(),
+                        houseInfo.getHouse().getDistrict()
+                    );
         // 返回结果
         result.setAgent(agent);
         result.setHouseCountInDistrict(houseCountInDistrict);
