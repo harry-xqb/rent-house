@@ -4,6 +4,7 @@ import com.harry.renthouse.RentHouseApplicationTests;
 import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
+import com.harry.renthouse.web.dto.HouseBucketDTO;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,5 +58,12 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
     @Test
     void aggregateDistrictHouse() {
         houseElasticSearchService.aggregateDistrictHouse("bj", "hdq", "融泽嘉园");
+    }
+
+    @Test
+    void mapAggregateRegionsHouse() {
+        ServiceMultiResult<HouseBucketDTO> result = houseElasticSearchService.mapAggregateRegionsHouse("bj");
+        Assert.isTrue(result.getTotal() == 10, "总数不匹配");
+        Assert.isTrue(result.getList().size() == 3, "桶的数量不匹配");
     }
 }

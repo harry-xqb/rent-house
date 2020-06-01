@@ -59,4 +59,5 @@ public class AddressController {
         ServiceMultiResult<SubwayStationDTO> result = addressService.findAllSubwayStationBySubwayId(subwayId);
         return ApiResponse.ofSuccess(result);
     }
+
 }

@@ -22,5 +22,5 @@ public class LimitsProperty{
 
     public long avatarSizeLimit = 5242880;
 
-    public String[] avatarTypeLimit = {".jpg", ".png", "jpeg"};
+    public String[] avatarTypeLimit = {"jpg", "png", "jpeg"};
 }

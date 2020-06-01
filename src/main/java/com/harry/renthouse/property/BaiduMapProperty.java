@@ -7,25 +7,15 @@ import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Harry Xu
- * @date 2020/5/22 13:18
+ * @date 2020/6/1 11:42
  */
 @Configuration
-@ConfigurationProperties(prefix = "aliyun.sms")
+@ConfigurationProperties(prefix = "baidu.map")
 @EnableConfigurationProperties
 @Data
-public class ALiYunSmsProperties {
+public class BaiduMapProperty {
 
     private String accessKey;
 
-    private String accessSecret;
-
-    private String signName;
-
-    private String templateCode;
-
-    private Integer length;
-
-    private Integer expireIn;
-
-    private Integer resendInterval;
+    private String url;
 }

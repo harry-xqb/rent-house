@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.HouseSortOrderByEnum;
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.elastic.entity.HouseKafkaMessage;
 import com.harry.renthouse.elastic.entity.HouseSuggestion;
@@ -12,12 +13,16 @@ import com.harry.renthouse.elastic.repository.HouseElasticRepository;
 import com.harry.renthouse.entity.House;
 import com.harry.renthouse.entity.HouseDetail;
 import com.harry.renthouse.entity.HouseTag;
+import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.HouseDetailRepository;
 import com.harry.renthouse.repository.HouseRepository;
 import com.harry.renthouse.repository.HouseTagRepository;
+import com.harry.renthouse.repository.SupportAddressRepository;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
+import com.harry.renthouse.web.dto.HouseBucketDTO;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -101,6 +106,12 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
 
+    @Resource
+    private SupportAddressRepository supportAddressRepository;
+
+    @Resource
+    private AddressService addressService;
+
     @KafkaListener(topics = HOUSE_INDEX_TOPIC)
     public void handleMessage(String message){
         try{
@@ -134,6 +145,8 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         houseElastic.setTags(tagList);
         // 设置推荐词
         updateSuggests(houseElastic);
+        // 设置经纬度
+        wrapLocation(houseElastic);
         // 存储至elastic中
         houseElasticRepository.save(houseElastic);
     }
@@ -168,6 +181,17 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         suggestionList.add(new HouseSuggestion(houseElastic.getSubwayLineName(), 15));
         suggestionList.add(new HouseSuggestion(houseElastic.getSubwayStationName(), 15));
         houseElastic.setSuggests(suggestionList);
+    }
+
+    private void wrapLocation(HouseElastic houseElastic){
+        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(houseElastic.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(houseElastic.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+        String address = city.getCnName() + region.getCnName() + houseElastic.getAddress();
+        BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
+        houseElastic.setLocation(location);
+
     }
 
     private void kafkaDelete(HouseKafkaMessage houseKafkaMessage){
@@ -314,6 +338,38 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         log.debug(query.getQuery().toString());
         Page<HouseElastic> result = houseElasticRepository.search(query);
         return result.getSize();
+    }
+
+    @Override
+    public ServiceMultiResult<HouseBucketDTO> mapAggregateRegionsHouse(String cityEnName) {
+        // 过滤出当前城市数据
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, cityEnName));
+        NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder();
+        nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+
+        // 根据区县进行聚合
+        nativeSearchQueryBuilder.addAggregation(AggregationBuilders.terms(HouseElasticKey.AGG_REGION_HOUSE)
+                .field(HouseElasticKey.REGION_EN_NAME));
+        // 过滤不包括任何字段
+//        nativeSearchQueryBuilder.withSourceFilter(new FetchSourceFilter(new String[]{}, null));
+
+        NativeSearchQuery query = nativeSearchQueryBuilder.build();
+
+        log.debug(query.getQuery().toString());
+        log.debug(query.getAggregations().toString());
+        Page<HouseElastic> response = houseElasticRepository.search(query);
+
+        AggregatedPage<HouseElastic> aggResult = (AggregatedPage<HouseElastic>)response;
+
+        ParsedStringTerms houseTerm =(ParsedStringTerms) aggResult.getAggregation(HouseElasticKey.AGG_REGION_HOUSE);
+
+        List<? extends Terms.Bucket> termsBuckets = houseTerm.getBuckets();
+
+        List<HouseBucketDTO> houseBucketDTOS = termsBuckets.stream().map(item -> new HouseBucketDTO(((Terms.Bucket) item).getKeyAsString(), ((Terms.Bucket) item).getDocCount()))
+                .collect(Collectors.toList());
+
+        return new ServiceMultiResult<>(aggResult.getSize(), houseBucketDTOS);
     }
 
 }

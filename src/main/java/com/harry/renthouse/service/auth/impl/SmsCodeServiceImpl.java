@@ -6,20 +6,17 @@ import com.aliyuncs.dysmsapi.model.v20170525.SendSmsRequest;
 import com.aliyuncs.dysmsapi.model.v20170525.SendSmsResponse;
 import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
-import com.aliyuncs.profile.IClientProfile;
 import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.exception.BusinessException;
-import com.harry.renthouse.property.ALiYunSmsProperties;
+import com.harry.renthouse.property.ALiYunSmsProperty;
 import com.harry.renthouse.service.auth.SmsCodeService;
-import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.validate.code.SmsCodeGenerator;
 import com.harry.renthouse.validate.code.ValidateCode;
 import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
 import com.harry.renthouse.web.form.SendSmsForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class SmsCodeServiceImpl implements SmsCodeService {
 
     @Resource
-    private ALiYunSmsProperties aLiYunSmsProperties;
+    private ALiYunSmsProperty aLiYunSmsProperties;
 
     @Resource
     private SmsCodeGenerator smsCodeGenerator;

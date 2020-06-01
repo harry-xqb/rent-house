@@ -1,9 +1,13 @@
 package com.harry.renthouse.service.house.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import com.harry.renthouse.entity.Subway;
 import com.harry.renthouse.entity.SubwayStation;
 import com.harry.renthouse.exception.BusinessException;
+import com.harry.renthouse.property.BaiduMapProperty;
 import com.harry.renthouse.web.dto.SubwayDTO;
 import com.harry.renthouse.web.dto.SubwayStationDTO;
 import com.harry.renthouse.web.dto.SupportAddressDTO;
@@ -13,11 +17,24 @@ import com.harry.renthouse.repository.SubwayStationRepository;
 import com.harry.renthouse.repository.SupportAddressRepository;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
+import com.sun.org.apache.bcel.internal.generic.NEW;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,6 +43,7 @@ import java.util.stream.Collectors;
  * @date 2020/5/8 17:24
  */
 @Service
+@Slf4j
 public class AddressServiceImpl implements AddressService {
 
     @Resource
@@ -40,6 +58,11 @@ public class AddressServiceImpl implements AddressService {
     @Resource
     private SubwayStationRepository subwayStationRepository;
 
+    @Resource
+    private BaiduMapProperty baiduMapProperty;
+
+    @Resource
+    private Gson gson;
     /**
      * 获取所有城市
      * @return
@@ -112,4 +135,52 @@ public class AddressServiceImpl implements AddressService {
         return modelMapper.map(subway, SubwayDTO.class);
     }
 
+    @Override
+    public Optional<SupportAddressDTO> findCity(String cityEnName) {
+        return supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
+                .map(item -> modelMapper.map(item, SupportAddressDTO.class));
+    }
+
+    @Override
+    public Optional<BaiduMapLocation> getBaiduMapLocation(String cityCnName, String address) {
+        String accessKey = baiduMapProperty.getAccessKey();
+        String url = baiduMapProperty.getUrl();
+        String encodeCity = "";
+        String encodeAddress = "";
+        try {
+            encodeCity = URLEncoder.encode(cityCnName, "UTF-8");
+            encodeAddress= URLEncoder.encode(address, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("编码房屋地址失败", e);
+            return Optional.empty();
+        }
+        HttpClient httpClient = HttpClients.createDefault();
+        StringBuilder sb = new StringBuilder(url);
+        sb.append("address=").append(encodeAddress).append("&")
+                .append("city=").append(encodeCity).append("&")
+                .append("ak=").append(accessKey);
+        log.debug(sb.toString());
+        HttpGet httpGet = new HttpGet(sb.toString());
+        try {
+            HttpResponse response = httpClient.execute(httpGet);
+            if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                log.warn("获取房屋经纬度失败");
+                return Optional.empty();
+            }
+            JsonObject result = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            if(result.get("status").getAsInt() != 0){
+                log.warn("获取房屋经纬度响应状态失败:{}", result.get("message"));
+                return Optional.empty();
+            }
+            BaiduMapLocation baiduMapLocation = new BaiduMapLocation();
+            JsonObject location = result.get("result").getAsJsonObject().get("location").getAsJsonObject();
+            baiduMapLocation.setLongitude(location.get("lng").getAsDouble());
+            baiduMapLocation.setLatitude(location.get("lat").getAsDouble());
+            return Optional.of(baiduMapLocation);
+
+        } catch (IOException e) {
+            log.error("http client io 异常", e);
+        }
+        return Optional.empty();
+    }
 }

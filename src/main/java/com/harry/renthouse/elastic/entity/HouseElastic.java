@@ -57,6 +57,9 @@ public class HouseElastic {
     @Field(type = FieldType.Keyword)
     private String subwayStationName;
 
+    @Field(type = FieldType.Text)
+    private String address;
+
     @Field(type = FieldType.Text, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private List<String> tags;
 
@@ -83,5 +86,8 @@ public class HouseElastic {
 
     @Field(type =  FieldType.Object, analyzer = "ik_smart", searchAnalyzer = "ik_smart")
     private List<HouseSuggestion> suggests;
+
+    @Field(type = FieldType.Object)
+    private BaiduMapLocation location;
 
 }

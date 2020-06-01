@@ -2,9 +2,11 @@ package com.harry.renthouse.web.controller.house;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import com.harry.renthouse.base.ApiResponse;
+import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.House;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.entity.User;
+import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
@@ -45,6 +47,9 @@ public class HouseController {
     @Resource
     private HouseElasticSearchService houseElasticSearchService;
 
+    @Resource
+    private AddressService addressService;
+
     @PostMapping("houses")
     @ApiOperation(value = "按条件搜索房源")
     public ApiResponse<ServiceMultiResult> searchHouses(@RequestBody @Validated SearchHouseForm searchHouseForm){
@@ -76,5 +81,22 @@ public class HouseController {
     public ApiResponse<List<String>> searchAutoComplete(@ApiParam("关键词前缀") @RequestParam String prefix){
         ServiceMultiResult<String> result = houseElasticSearchService.suggest(prefix);
         return ApiResponse.ofSuccess(result.getList());
+    }
+
+    @GetMapping("map/{cityEnName}/regions")
+    @ApiOperation("根据城市名称，按照区域聚合房源")
+    public ApiResponse<HouseMapRegionsAggDTO> mapAggRegions(@ApiParam("城市英文简称") @PathVariable String cityEnName){
+        // 判断城市是否存在
+        addressService.findCity(cityEnName).orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        // 获取所有区县
+        ServiceMultiResult<SupportAddressDTO> regions = addressService.findAreaByBelongToAndLevel(cityEnName, SupportAddress.AddressLevel.REGION.getValue());
+        // 获取聚合结果
+        ServiceMultiResult<HouseBucketDTO> houseBucketDTOResult = houseElasticSearchService.mapAggregateRegionsHouse(cityEnName);
+        // 整合数据
+        HouseMapRegionsAggDTO houseMapRegionsAggDTO = new HouseMapRegionsAggDTO();
+        houseMapRegionsAggDTO.setRegions(regions.getList());
+        houseMapRegionsAggDTO.setTotalHouse(houseBucketDTOResult.getResultSize());
+        houseMapRegionsAggDTO.setAggData(houseBucketDTOResult.getList());
+        return ApiResponse.ofSuccess(houseMapRegionsAggDTO);
     }
 }

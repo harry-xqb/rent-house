@@ -42,4 +42,5 @@ public interface SupportAddressRepository  extends JpaRepository<SupportAddress,
      * @param level 等级
      */
     Optional<SupportAddress> findByEnNameAndLevel(String enName, String level);
+
 }

@@ -1,11 +1,9 @@
 package com.harry.renthouse.validate.code;
 
-import com.harry.renthouse.property.ALiYunSmsProperties;
+import com.harry.renthouse.property.ALiYunSmsProperty;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Harry Xu
@@ -15,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 public class SmsCodeGenerator {
 
     @Autowired
-    private ALiYunSmsProperties aLiYunSmsProperties;
+    private ALiYunSmsProperty aLiYunSmsProperties;
 
     public ValidateCode generate() {
         String code = RandomStringUtils.randomNumeric(aLiYunSmsProperties.getLength());

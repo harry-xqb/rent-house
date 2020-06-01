@@ -1,5 +1,6 @@
 package com.harry.renthouse.service.house;
 
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.web.dto.SubwayDTO;
 import com.harry.renthouse.web.dto.SubwayStationDTO;
@@ -8,6 +9,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  *  支持的地区service
@@ -69,4 +71,19 @@ public interface AddressService {
      * @param subwayId 地铁线路id
      */
     SubwayDTO findSubway(Long subwayId);
+
+    /**
+     * 通过城市英文简称查找城市
+     * @param cityEnName 城市英文简称
+     * @return
+     */
+    Optional<SupportAddressDTO> findCity(String cityEnName);
+
+    /**
+     * 通过城市详细地址获取经纬度
+     * @param cityCnName 城市中文名称
+     * @param address 详细地址
+     * @return 百度地图经纬度
+     */
+    Optional<BaiduMapLocation> getBaiduMapLocation(String cityCnName, String address);
 }
