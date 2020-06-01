@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -15,6 +16,7 @@ import java.util.List;
  */
 @Data
 @ToString
+@ApiModel("房屋信息")
 public class HouseDTO {
 
     @ApiModelProperty(value = "房源id", example = "29")

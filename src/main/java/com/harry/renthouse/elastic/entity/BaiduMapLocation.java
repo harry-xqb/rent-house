@@ -1,7 +1,10 @@
 package com.harry.renthouse.elastic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+import java.io.Serializable;
 
 /**
  * @author Harry Xu
@@ -10,9 +13,7 @@ import lombok.Data;
 @Data
 public class BaiduMapLocation {
 
-    @JsonProperty("lon")
-    private double longitude;
+    private double lon;
 
-    @JsonProperty("lat")
-    private double latitude;
+    private double lat;
 }

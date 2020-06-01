@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date 2020/5/12 17:19
  */
 @Data
-@ApiModel
+@ApiModel("修改标签表单")
 public class TagForm {
 
     @NotNull(message = "标签名称不能为空")

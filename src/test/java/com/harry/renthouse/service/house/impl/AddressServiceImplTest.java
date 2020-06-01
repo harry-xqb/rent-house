@@ -28,7 +28,7 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
         String address = "杭州市萧山区钱江世纪城广孚联合国际中心";
         Optional<BaiduMapLocation> location = addressService.getBaiduMapLocation(city, address);
         Assert.isTrue(location.isPresent(), "获取位置为空");
-        Assert.isTrue(location.get().getLatitude() > 0 , "获取纬度错误");
-        Assert.isTrue(location.get().getLongitude() > 0 , "获取经度错误");
+        Assert.isTrue(location.get().getLon() > 0 , "获取纬度错误");
+        Assert.isTrue(location.get().getLat() > 0 , "获取经度错误");
     }
 }

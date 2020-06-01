@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -9,6 +10,7 @@ import lombok.Data;
  * @date 2020/5/9 13:55
  */
 @Data
+@ApiModel("地铁站 DTO")
 public class SubwayStationDTO {
 
     @ApiModelProperty(value = "地铁站id", example = "33")

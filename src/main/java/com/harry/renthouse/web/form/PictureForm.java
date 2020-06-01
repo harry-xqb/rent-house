@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
  * @date 2020/5/11 15:47
  */
 @Data
-@ApiModel
+@ApiModel("图片上传表单")
 public class PictureForm {
 
     @ApiModelProperty(value = "id", example = "1")

@@ -2,6 +2,7 @@ package com.harry.renthouse.web.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import java.util.Date;
  * @date 2020/5/11 17:55
  */
 @Data
+@ApiModel("房东房屋搜索表单")
 public class AdminHouseSearchForm {
 
     @Min(value = 1, message = "页号不能小于1")

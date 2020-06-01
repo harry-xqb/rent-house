@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.form;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ import java.util.List;
  * @date 2020/5/14 10:20
  */
 @Data
+@ApiModel("用户房源搜索表单")
 public class SearchHouseForm {
 
     @ApiModelProperty(value = "关键词", example = "城西银泰")

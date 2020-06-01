@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 @Data
 @AllArgsConstructor
+@ApiModel("按区县聚合返回结果")
 public class HouseBucketDTO {
 
     @ApiModelProperty(value = "区县名称")

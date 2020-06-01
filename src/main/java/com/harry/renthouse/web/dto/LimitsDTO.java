@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2020/5/27 11:36
  */
 @Data
+@ApiModel("通用请求接口限制 DTO")
 public class LimitsDTO {
 
     @ApiModelProperty(value = "用户密码正则")

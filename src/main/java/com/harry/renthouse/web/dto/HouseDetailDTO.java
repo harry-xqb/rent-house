@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import javax.persistence.GenerationType;
  * @date 2020/5/11 16:05
  */
 @Data
+@ApiModel("房屋详细信息")
 public class HouseDetailDTO {
 
     @ApiModelProperty(value = "房屋详情id", example = "21")

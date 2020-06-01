@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -8,6 +9,7 @@ import lombok.Data;
  * @date 2020/5/18 19:03
  */
 @Data
+@ApiModel("房屋完整信息详情")
 public class HouseCompleteInfoDetailDTO extends HouseCompleteInfoDTO{
 
     @ApiModelProperty(value = "经纪人")

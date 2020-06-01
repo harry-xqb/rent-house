@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.form;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ import java.util.Date;
  * @date 2020/5/21 18:02
  */
 @Data
+@ApiModel("修改基本信息表单")
 public class UserBasicInfoForm {
 
 /*    @ApiModelProperty(value = "用户id")

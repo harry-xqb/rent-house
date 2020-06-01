@@ -15,7 +15,7 @@ import java.util.List;
  * @date 2020/5/9 14:45
  */
 @Data
-@ApiModel
+@ApiModel("房屋新增与编辑表单")
 public class HouseForm {
 
     public interface Edit  extends Default {};

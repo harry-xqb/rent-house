@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
  * @date 2020/5/12 18:20
  */
 @Data
-@ApiModel
+@ApiModel("封面修改表单")
 public class CoverForm {
 
     @NotNull(message = "封面id不能为空")

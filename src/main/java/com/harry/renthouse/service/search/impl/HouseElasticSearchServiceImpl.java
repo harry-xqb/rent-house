@@ -73,7 +73,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HouseElasticSearchServiceImpl implements HouseElasticSearchService {
 
-    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC";
+    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC_2";
 
     private static final String IK_SMART = "IK_SMART";
 
@@ -191,7 +191,6 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         String address = city.getCnName() + region.getCnName() + houseElastic.getAddress();
         BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
         houseElastic.setLocation(location);
-
     }
 
     private void kafkaDelete(HouseKafkaMessage houseKafkaMessage){

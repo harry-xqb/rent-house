@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,6 +15,7 @@ import java.util.Set;
  * @date 2020/5/11 11:48
  */
 @Data
+@ApiModel("用户信息 DTO")
 public class UserDTO {
 
     @ApiModelProperty(value = "用户id")

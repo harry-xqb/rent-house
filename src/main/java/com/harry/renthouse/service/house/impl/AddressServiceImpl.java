@@ -174,10 +174,9 @@ public class AddressServiceImpl implements AddressService {
             }
             BaiduMapLocation baiduMapLocation = new BaiduMapLocation();
             JsonObject location = result.get("result").getAsJsonObject().get("location").getAsJsonObject();
-            baiduMapLocation.setLongitude(location.get("lng").getAsDouble());
-            baiduMapLocation.setLatitude(location.get("lat").getAsDouble());
+            baiduMapLocation.setLon(location.get("lng").getAsDouble());
+            baiduMapLocation.setLat(location.get("lat").getAsDouble());
             return Optional.of(baiduMapLocation);
-
         } catch (IOException e) {
             log.error("http client io 异常", e);
         }

@@ -1,6 +1,7 @@
 package com.harry.renthouse.web.form;
 
 import com.harry.renthouse.web.form.annotation.PasswordStrongAnnotation;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ import javax.validation.constraints.Pattern;
  * @date 2020/5/22 10:10
  */
 @Data
+@ApiModel("用户手机号注册表单")
 public class UserPhoneRegisterForm {
 
     @ApiModelProperty(value = "手机号", required = true)

@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -9,6 +10,7 @@ import lombok.Data;
  * @date 2020/5/8 17:36
  */
 @Data
+@ApiModel("支持的区域 DTO")
 public class SupportAddressDTO {
 
     @ApiModelProperty(value = "地区id", example = "4")

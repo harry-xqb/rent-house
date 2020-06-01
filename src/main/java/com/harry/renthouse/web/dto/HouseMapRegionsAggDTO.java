@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.List;
  * @date 2020/6/1 10:56
  */
 @Data
+@ApiModel("房屋地图聚合结果")
 public class HouseMapRegionsAggDTO {
 
     @ApiModelProperty(value = "聚合结果")

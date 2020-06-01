@@ -1,6 +1,7 @@
 package com.harry.renthouse.web.form;
 
 import com.harry.renthouse.web.form.annotation.VerifyCodeTypeAnnotation;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import javax.validation.constraints.Pattern;
  * @date 2020/5/22 11:35
  */
 @Data
+@ApiModel("发送短信表单")
 public class SendSmsForm {
 
     @NotNull(message = "手机号不能为空")

@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -11,6 +12,7 @@ import lombok.ToString;
  **/
 @Data
 @ToString
+@ApiModel("七牛云图片上传响应 DTO")
 public class QiniuUploadResult {
 
     @ApiModelProperty(value = "图片key", example = "Fn6szUiUydhr3XE5xF55XCDvlc2E")
