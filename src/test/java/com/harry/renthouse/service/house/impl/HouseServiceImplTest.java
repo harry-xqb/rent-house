@@ -5,6 +5,7 @@ import com.harry.renthouse.base.RentWayEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -67,5 +68,13 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
         searchHouseForm.setRegionEnName("cpq");
         ServiceMultiResult<HouseDTO> search5 = houseService.search(searchHouseForm);
         Assert.isTrue(search5.getTotal() == 1, "查找区县为cpq的不匹配");
+    }
+
+    @Test
+    void mapHouseSearch() {
+        MapSearchForm mapSearchForm = new MapSearchForm();
+        mapSearchForm.setCityEnName("bj");
+        ServiceMultiResult<HouseDTO> result = houseService.mapHouseSearch(mapSearchForm);
+        Assert.isTrue(result.getTotal() == 10, "查询数量不匹配");
     }
 }

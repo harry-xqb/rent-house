@@ -13,6 +13,7 @@ import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.*;
+import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,7 +53,7 @@ public class HouseController {
 
     @PostMapping("houses")
     @ApiOperation(value = "按条件搜索房源")
-    public ApiResponse<ServiceMultiResult> searchHouses(@RequestBody @Validated SearchHouseForm searchHouseForm){
+    public ApiResponse<ServiceMultiResult<HouseDTO>> searchHouses(@RequestBody @Validated SearchHouseForm searchHouseForm){
         ServiceMultiResult<HouseDTO> result = houseService.search(searchHouseForm);
         return ApiResponse.ofSuccess(result);
     }
@@ -84,7 +85,7 @@ public class HouseController {
     }
 
     @GetMapping("map/{cityEnName}/regions")
-    @ApiOperation("根据城市名称，按照区域聚合房源")
+    @ApiOperation("地图-》根据城市名称，按照区域聚合房源")
     public ApiResponse<HouseMapRegionsAggDTO> mapAggRegions(@ApiParam("城市英文简称") @PathVariable String cityEnName){
         // 判断城市是否存在
         addressService.findCity(cityEnName).orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
@@ -98,5 +99,11 @@ public class HouseController {
         houseMapRegionsAggDTO.setTotalHouse(houseBucketDTOResult.getResultSize());
         houseMapRegionsAggDTO.setAggData(houseBucketDTOResult.getList());
         return ApiResponse.ofSuccess(houseMapRegionsAggDTO);
+    }
+
+    @PostMapping("map/city/houses")
+    @ApiOperation("地图->获取当前城市的房源信息")
+    public ApiResponse<ServiceMultiResult<HouseDTO>> mapCityHouses(@Validated @RequestBody MapSearchForm mapSearchForm){
+        return ApiResponse.ofSuccess(houseService.mapHouseSearch(mapSearchForm));
     }
 }

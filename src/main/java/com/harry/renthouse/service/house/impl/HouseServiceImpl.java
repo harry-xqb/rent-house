@@ -317,6 +317,7 @@ public class HouseServiceImpl implements HouseService {
                 throw new BusinessException(ApiResponseEnum.HOUSE_AREA_RANGE_ERROR);
             }
         }
+        // 如果是按关键字搜索
         if(StringUtils.isNotBlank(searchHouseForm.getKeyword())){
             ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.search(searchHouseForm);
             if(houseIdResult.getTotal() == 0){
@@ -326,6 +327,18 @@ public class HouseServiceImpl implements HouseService {
         }
 
         return simpleSearch(searchHouseForm);
+    }
+
+    @Override
+    public ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm) {
+        SearchHouseForm searchHouseForm = new SearchHouseForm();
+        searchHouseForm.setPage(mapSearchForm.getPage());
+        searchHouseForm.setPageSize(mapSearchForm.getPageSize());
+        searchHouseForm.setCityEnName(mapSearchForm.getCityEnName());
+        searchHouseForm.setOrderBy(mapSearchForm.getOrderBy());
+        searchHouseForm.setSortDirection(mapSearchForm.getOrderDirection());
+        ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
+        return new ServiceMultiResult<>(result.getTotal(), wrapperHouseResult(result.getList()));
     }
 
     /**

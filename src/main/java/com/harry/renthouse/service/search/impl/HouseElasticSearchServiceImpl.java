@@ -23,6 +23,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.HouseBucketDTO;
+import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -221,14 +222,16 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
             boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.REGION_EN_NAME, searchHouseForm.getRegionEnName()));
         }
         // 查询关键字
-        boolQueryBuilder.must(QueryBuilders.multiMatchQuery(searchHouseForm.getKeyword(),
-                HouseElasticKey.TITLE,
-                HouseElasticKey.TRAFFIC,
-                HouseElasticKey.DISTRICT,
-                HouseElasticKey.ROUND_SERVICE,
-                HouseElasticKey.SUBWAY_LINE_NAME,
-                HouseElasticKey.SUBWAY_STATION_NAME
-                ));
+        if(StringUtils.isNotBlank(searchHouseForm.getKeyword())){
+            boolQueryBuilder.must(QueryBuilders.multiMatchQuery(searchHouseForm.getKeyword(),
+                    HouseElasticKey.TITLE,
+                    HouseElasticKey.TRAFFIC,
+                    HouseElasticKey.DISTRICT,
+                    HouseElasticKey.ROUND_SERVICE,
+                    HouseElasticKey.SUBWAY_LINE_NAME,
+                    HouseElasticKey.SUBWAY_STATION_NAME
+            ));
+        }
         // 查询面积区间
         if(searchHouseForm.getAreaMin() != null || searchHouseForm.getAreaMax() != null){
             RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery(HouseElasticKey.AREA);
@@ -370,5 +373,6 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
 
         return new ServiceMultiResult<>(aggResult.getSize(), houseBucketDTOS);
     }
+
 
 }

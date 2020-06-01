@@ -4,10 +4,7 @@ import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.HouseCompleteInfoDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
-import com.harry.renthouse.web.form.AdminHouseSearchForm;
-import com.harry.renthouse.web.form.HouseForm;
-import com.harry.renthouse.web.form.SearchHouseForm;
-import com.harry.renthouse.web.form.TagForm;
+import com.harry.renthouse.web.form.*;
 
 /**
  * 房屋service
@@ -81,5 +78,11 @@ public interface HouseService {
      * @param searchHouseForm 房源搜索表单
      */
     ServiceMultiResult<HouseDTO> search(SearchHouseForm searchHouseForm);
+
+    /**
+     * 城市级别搜索房源
+     * @param mapSearchForm 地图搜索表单
+     */
+    ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm);
 
 }

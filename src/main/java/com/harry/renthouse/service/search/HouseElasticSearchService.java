@@ -4,6 +4,7 @@ import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.HouseBucketDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 
 import javax.xml.ws.Service;
@@ -64,4 +65,5 @@ public interface HouseElasticSearchService {
      * @return 每个区县的房源数量
      */
     ServiceMultiResult<HouseBucketDTO> mapAggregateRegionsHouse(String cityEnName);
+
 }
