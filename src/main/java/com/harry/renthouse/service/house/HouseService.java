@@ -85,4 +85,9 @@ public interface HouseService {
      */
     ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm);
 
+    /**
+     * 根据视野查询房源
+     * @param mapBoundSearchForm 视野查询表单
+     */
+    ServiceMultiResult<HouseDTO> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm);
 }

@@ -5,6 +5,7 @@ import com.harry.renthouse.base.RentWayEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.form.MapBoundSearchForm;
 import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
@@ -76,5 +77,17 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
         mapSearchForm.setCityEnName("bj");
         ServiceMultiResult<HouseDTO> result = houseService.mapHouseSearch(mapSearchForm);
         Assert.isTrue(result.getTotal() == 10, "查询数量不匹配");
+    }
+
+    @Test
+    void mapBoundSearch() {
+        MapBoundSearchForm boundSearchForm = new MapBoundSearchForm();
+        boundSearchForm.setCityEnName("bj");
+        boundSearchForm.setLeftTopLongitude(116.264619);
+        boundSearchForm.setLeftTopLatitude(39.99269);
+        boundSearchForm.setRightBottomLongitude(116.32671);
+        boundSearchForm.setRightBottomLatitude(39.953321);
+        ServiceMultiResult<HouseDTO> result = houseService.mapBoundSearch(boundSearchForm);
+        Assert.isTrue(result.getTotal() > 0, "海淀区范围总数有误");
     }
 }

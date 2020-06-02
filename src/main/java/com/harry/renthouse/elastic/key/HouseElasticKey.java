@@ -54,7 +54,9 @@ public class HouseElasticKey {
 
     public static String SUGGESTS = "suggests";
 
-    public static String AGG_DISTRICT_HOUSE = "aggsDistrict";
+    public static String AGG_DISTRICT_HOUSE = "aggDistrict";
 
     public static final String AGG_REGION_HOUSE = "aggRegionHouse";
+
+    public static final String LOCATION = "location";
 }

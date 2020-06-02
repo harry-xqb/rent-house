@@ -13,9 +13,11 @@ import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.*;
+import com.harry.renthouse.web.form.MapBoundSearchForm;
 import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.modelmapper.ModelMapper;
@@ -105,5 +107,11 @@ public class HouseController {
     @ApiOperation("地图->获取当前城市的房源信息")
     public ApiResponse<ServiceMultiResult<HouseDTO>> mapCityHouses(@Validated @RequestBody MapSearchForm mapSearchForm){
         return ApiResponse.ofSuccess(houseService.mapHouseSearch(mapSearchForm));
+    }
+
+    @PostMapping("map/bound/houses")
+    @ApiOperation("地图->根据视野查询房源信息")
+    public ApiResponse<ServiceMultiResult<HouseDTO>> mapBoundHouse(@Validated @RequestBody MapBoundSearchForm mapBoundSearchForm){
+        return ApiResponse.ofSuccess(houseService.mapBoundSearch(mapBoundSearchForm));
     }
 }

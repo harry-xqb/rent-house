@@ -341,6 +341,12 @@ public class HouseServiceImpl implements HouseService {
         return new ServiceMultiResult<>(result.getTotal(), wrapperHouseResult(result.getList()));
     }
 
+    @Override
+    public ServiceMultiResult<HouseDTO> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm) {
+        ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.mapBoundSearch(mapBoundSearchForm);
+        return new ServiceMultiResult<>(houseIdResult.getTotal(), wrapperHouseResult(houseIdResult.getList()));
+    }
+
     /**
      * 通过id集合获取房源信息
      * @param houseIdList id集合列表

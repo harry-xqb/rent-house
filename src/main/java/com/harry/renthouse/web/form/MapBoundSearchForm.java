@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull;
  * @date 2020/6/1 18:04
  */
 @Data
-public class VisualMapSearchForm extends MapSearchForm {
+public class MapBoundSearchForm extends MapSearchForm {
 
     @ApiModelProperty(value = "左上角经度", required = true)
     @NotNull(message = "左上角经度不能为空")

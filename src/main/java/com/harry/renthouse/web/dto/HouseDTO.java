@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,10 +51,10 @@ public class HouseDTO {
     private Integer status;
 
     @ApiModelProperty(value = "创建日期", example = "2020-05-12T01:04:56")
-    private LocalDateTime createTime;
+    private Date createTime;
 
     @ApiModelProperty(value = "上次更新日期", example = "2020-05-13T18:37:48")
-    private LocalDateTime lastUpdateTime;
+    private Date lastUpdateTime;
 
     @ApiModelProperty(value = "城市英文简称", example = "bj")
     private String cityEnName;

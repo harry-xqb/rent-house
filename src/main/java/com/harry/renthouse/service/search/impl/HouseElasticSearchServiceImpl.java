@@ -23,6 +23,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.HouseBucketDTO;
+import com.harry.renthouse.web.form.MapBoundSearchForm;
 import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ import org.elasticsearch.action.admin.indices.analyze.AnalyzeResponse;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -372,6 +374,30 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
                 .collect(Collectors.toList());
 
         return new ServiceMultiResult<>(aggResult.getSize(), houseBucketDTOS);
+    }
+
+    @Override
+    public ServiceMultiResult<Long> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm) {
+        // 过滤城市
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+        boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, mapBoundSearchForm.getCityEnName()));
+        // 过滤视野范围
+        boolQueryBuilder.filter(QueryBuilders.geoBoundingBoxQuery(HouseElasticKey.LOCATION)
+            .setCorners(new GeoPoint(mapBoundSearchForm.getLeftTopLatitude(), mapBoundSearchForm.getLeftTopLongitude()),
+                    new GeoPoint(mapBoundSearchForm.getRightBottomLatitude(), mapBoundSearchForm.getRightBottomLongitude()))
+        );
+        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
+        queryBuilder.withQuery(boolQueryBuilder);
+        queryBuilder.withSort(SortBuilders.fieldSort(HouseSortOrderByEnum
+                .from(mapBoundSearchForm.getOrderBy())
+                .orElse(HouseSortOrderByEnum.DEFAULT).getValue())
+                .order(SortOrder.fromString(mapBoundSearchForm.getOrderDirection())));
+        Pageable pageable = PageRequest.of(mapBoundSearchForm.getPage() - 1, mapBoundSearchForm.getPageSize());
+        queryBuilder.withPageable(pageable);
+        NativeSearchQuery query = queryBuilder.build();
+        log.debug(query.getQuery().toString());
+        Page<HouseElastic> result = houseElasticRepository.search(query);
+        return new ServiceMultiResult<>(result.getSize(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));
     }
 
 
