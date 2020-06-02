@@ -51,6 +51,7 @@ import org.elasticsearch.search.suggest.SuggestBuilders;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestion;
 import org.elasticsearch.search.suggest.completion.CompletionSuggestionBuilder;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -83,6 +84,9 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     private static final String INDEX_NAME = "rent-house";
 
     public static final int DEFAULT_SUGGEST_SIZE = 5;
+
+    @Value("${qiniu.cdnPrefix}")
+    private String cdnPrefix;
 
 
     @Resource
@@ -149,9 +153,21 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         // 设置推荐词
         updateSuggests(houseElastic);
         // 设置经纬度
-        wrapLocation(houseElastic);
+        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(houseElastic.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(houseElastic.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+        String address = city.getCnName() + region.getCnName() + houseElastic.getAddress();
+        BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
+        houseElastic.setLocation(location);
         // 存储至elastic中
         houseElasticRepository.save(houseElastic);
+        // 上传poi数据
+        String lbsTitle = house.getStreet() + house.getDistrict();
+        String lbsAddress = city.getCnName() + region.getCnName() + house.getStreet() + house.getDistrict();
+        String cover = cdnPrefix + house.getCover();
+        addressService.lbsUpload(houseElastic.getLocation(),
+                lbsTitle, lbsAddress, houseId, houseElastic.getPrice(), houseElastic.getArea(), cover);
     }
 
     private void updateSuggests(HouseElastic houseElastic){
@@ -187,19 +203,15 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     }
 
     private void wrapLocation(HouseElastic houseElastic){
-        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(houseElastic.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(houseElastic.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
-        String address = city.getCnName() + region.getCnName() + houseElastic.getAddress();
-        BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
-        houseElastic.setLocation(location);
+
     }
 
     private void kafkaDelete(HouseKafkaMessage houseKafkaMessage){
         Long houseId = houseKafkaMessage.getId();
         houseElasticRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.ELASTIC_HOUSE_NOT_FOUND));
         houseElasticRepository.deleteById(houseId);
+        // 移除POI数据
+        addressService.lbsRemove(houseId);
     }
 
     @Override

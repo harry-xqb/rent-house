@@ -120,7 +120,7 @@ aliyun:
 baidu:
   map:
     accessKey: SEr7pwTtgtPOHnj6dRplmm1fEKLH2zuo
-    url: http://api.map.baidu.com/geocoding/v3/?output=json&
+    geoTableId: 1000007599
 open:
   limits:
     userPasswordRegex: ^(?=.*\d)((?=.*[a-z])|(?=.*[A-Z])).{8,16}$

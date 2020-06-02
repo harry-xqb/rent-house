@@ -86,4 +86,22 @@ public interface AddressService {
      * @return 百度地图经纬度
      */
     Optional<BaiduMapLocation> getBaiduMapLocation(String cityCnName, String address);
+
+    /**
+     * lbs上传poi数据
+     * @param location 麻点位置信息
+     * @param title 标题
+     * @param address 地理位置
+     * @param houseId 房屋id
+     * @param price 价格
+     * @param area 面积
+     */
+    boolean lbsUpload(BaiduMapLocation location, String title, String address,
+                      Long houseId, int price, int area, String cover);
+
+    /**
+     * lbs移除poi数据
+     * @param houseId 房屋id
+     */
+    boolean lbsRemove(Long houseId);
 }

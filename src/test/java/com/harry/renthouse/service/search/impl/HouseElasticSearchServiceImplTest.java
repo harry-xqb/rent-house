@@ -37,7 +37,12 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
 
     @Test
     void delete() {
-        houseElasticSearchService.delete(25L);
+        List<Long> list = new ArrayList<>(Arrays.asList(15L, 16L, 17L, 18L, 19L, 20L, 21L, 24L, 25L, 29L));
+//        List<Long> list = new ArrayList<>(Arrays.asList(15L));
+        for (Long aLong : list) {
+            houseElasticSearchService.delete(aLong);
+        }
+//        houseElasticSearchService.delete(25L);
     }
 
     @Test
@@ -67,4 +72,5 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
         Assert.isTrue(result.getTotal() == 10, "总数不匹配");
         Assert.isTrue(result.getList().size() == 3, "桶的数量不匹配");
     }
+
 }

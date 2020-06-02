@@ -19,13 +19,19 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,7 +150,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public Optional<BaiduMapLocation> getBaiduMapLocation(String cityCnName, String address) {
         String accessKey = baiduMapProperty.getAccessKey();
-        String url = baiduMapProperty.getUrl();
+        String url = baiduMapProperty.getGeoLocationUrl();
         String encodeCity = "";
         String encodeAddress = "";
         try {
@@ -181,5 +187,110 @@ public class AddressServiceImpl implements AddressService {
             log.error("http client io 异常", e);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public boolean lbsUpload(BaiduMapLocation location, String title, String address, Long houseId, int price, int area, String cover) {
+        HttpClient httpClient = HttpClients.createDefault();
+        List<NameValuePair> body = getDefaultPoiBody();
+        body.add(new BasicNameValuePair("title", title));
+        body.add(new BasicNameValuePair("address", address));
+        body.add(new BasicNameValuePair("area", String.valueOf(area)));
+        body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
+        body.add(new BasicNameValuePair("price", String.valueOf(price)));
+        body.add(new BasicNameValuePair("latitude", String.valueOf(location.getLat())));
+        body.add(new BasicNameValuePair("longitude", String.valueOf(location.getLon())));
+//        body.add(new BasicNameValuePair("cover", cover));
+        // 如果房源信息已存在执行更新， 否则执行新增
+        HttpPost httpPost;
+        if(isLbsExist(houseId)){
+            httpPost = new HttpPost(baiduMapProperty.getPoiUpdateUrl());
+        }else{
+            httpPost = new HttpPost(baiduMapProperty.getPoiCreateUrl());
+        }
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            HttpResponse response = httpClient.execute(httpPost);
+            if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                log.error("新增/更新poi数据请求失败: {}", EntityUtils.toString(response.getEntity()));
+                return false;
+            }
+            JsonObject jsonResult = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            if(jsonResult.get("status").getAsInt() != 0){
+                log.error("新增/更新poi数据请求响应失败: {}", jsonResult.get("message"));
+                return false;
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean lbsRemove(Long houseId) {
+        HttpClient httpClient = HttpClients.createDefault();
+
+        List<NameValuePair> body = getDefaultPoiBody();
+        body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
+        body.add(new BasicNameValuePair("is_total_del", "0"));
+
+        HttpPost httpPost = new HttpPost(baiduMapProperty.getPoiDeleteUrl());
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            HttpResponse response = httpClient.execute(httpPost);
+            if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                log.error("删除poi数据请求失败: {}", EntityUtils.toString(response.getEntity()));
+                return false;
+            }
+            JsonObject jsonResult = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            if(jsonResult.get("status").getAsInt() != 0){
+                log.error("删除新poi数据请求响应失败: {}", jsonResult.get("message"));
+                return false;
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean isLbsExist(Long houseId){
+        HttpClient httpClient = HttpClients.createDefault();
+        List<NameValuePair> body = getDefaultPoiBody();
+        body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
+        HttpPost httpPost = new HttpPost(baiduMapProperty.getPoiQueryUrl());
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            HttpResponse response = httpClient.execute(httpPost);
+            String result = EntityUtils.toString(response.getEntity());
+            if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
+                log.error("查询poi是否存在请求失败:{}", result);
+                return false;
+            }
+            JsonObject json = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            if(json.get("status").getAsInt() != 0){
+                log.warn("查询poi是否存在响应状态失败:{}", json.get("message"));
+                return false;
+            }
+            int size = json.get("result").getAsJsonObject().get("size").getAsInt();
+            // 如果查找到的数据大小为0, 则当前数据不存在
+            if(size == 0){
+                return false;
+            }
+            return true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private List<NameValuePair> getDefaultPoiBody(){
+        List<NameValuePair> body = new ArrayList<>();
+        body.add(new BasicNameValuePair("ak", baiduMapProperty.getAccessKey()));
+        body.add(new BasicNameValuePair("geotable_id", baiduMapProperty.getGeoTableId()));
+        body.add(new BasicNameValuePair("coord_type", "3"));
+        return body;
     }
 }

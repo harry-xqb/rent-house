@@ -31,4 +31,18 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
         Assert.isTrue(location.get().getLon() > 0 , "获取纬度错误");
         Assert.isTrue(location.get().getLat() > 0 , "获取经度错误");
     }
+
+    @Test
+    void lbsUpload() {
+        BaiduMapLocation baiduMapLocation = new BaiduMapLocation(117, 40);
+        boolean result = addressService.lbsUpload(baiduMapLocation, "海淀区房子", "北京市海淀区亲亲家园5栋1502",
+                12345L, 25, 66, "http://qa22ygxo8.bkt.clouddn.com/Fka2aHz-0iCj8g47xZVXWj5dF440");
+        Assert.isTrue(result, "上传poi失败");
+    }
+
+    @Test
+    void lbsRemove() {
+        boolean result = addressService.lbsRemove(15L);
+        Assert.isTrue(result, "删除poi失败");
+    }
 }
