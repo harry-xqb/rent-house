@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.form;
 
+import com.harry.renthouse.web.form.annotation.PhoneAnnotation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -17,7 +18,7 @@ public class PhonePasswordLoginForm {
 
     @ApiModelProperty(value = "手机号", required = true)
     @NotNull(message = "手机号不能为空")
-    @Pattern(regexp = "^(1[3-9]\\d{9}$)", message = "手机号格式有误")
+    @PhoneAnnotation()
     private String phone;
 
     @NotNull(message = "密码不能为空")
