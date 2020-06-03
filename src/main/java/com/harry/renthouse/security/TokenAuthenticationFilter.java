@@ -44,12 +44,12 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         if (context.getAuthentication() != null && context.getAuthentication().isAuthenticated()) {
             // do nothing
         } else {
-            String token = req.getHeader(TOKEN_HEADER);
-            if(StringUtils.isNotEmpty(token)){
+            String token = "";
+            String header = req.getHeader(TOKEN_HEADER);
+            if(StringUtils.isNotEmpty(header) && StringUtils.startsWith(header, TOKEN_PREFIX)){
                 //解析Token时将“Bearer ”前缀去掉
-                token = StringUtils.trim(token).replace(TOKEN_PREFIX, "");
-            }
-            if(StringUtils.isBlank(token)){
+                token = StringUtils.trim(header).replace(TOKEN_PREFIX, "");
+            }else if(StringUtils.isBlank(header)){
                 token = req.getParameter("token");
             }
             // 如果请求头中有token,则生成Authentication凭证

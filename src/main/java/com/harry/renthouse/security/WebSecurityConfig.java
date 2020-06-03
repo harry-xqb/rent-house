@@ -40,7 +40,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable()
-                .formLogin()
+                .httpBasic()
                 .and()
                 .authorizeRequests()
                 .antMatchers("/druid/**").permitAll()
@@ -48,7 +48,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/swagger-ui.html/**").authenticated()
                 .and()
-                .addFilterAfter(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling()
+                .authenticationEntryPoint(new AjaxAuthenticationEntryPoint());
     }
 
     @Override
@@ -57,4 +59,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 //        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
         auth.userDetailsService(rentHouseUserDetailService).passwordEncoder(passwordEncoder);
     }
+
+
 }
