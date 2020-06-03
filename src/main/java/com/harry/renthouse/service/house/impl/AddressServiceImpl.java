@@ -1,6 +1,7 @@
 package com.harry.renthouse.service.house.impl;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.elastic.entity.BaiduMapLocation;
@@ -19,6 +20,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.sun.org.apache.bcel.internal.generic.NEW;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -203,7 +205,9 @@ public class AddressServiceImpl implements AddressService {
 //        body.add(new BasicNameValuePair("cover", cover));
         // 如果房源信息已存在执行更新， 否则执行新增
         HttpPost httpPost;
-        if(isLbsExist(houseId)){
+        String id = getLbsData(houseId).orElse(null);
+        if(StringUtils.isNotBlank(id)){
+            body.add(new BasicNameValuePair("id", id));
             httpPost = new HttpPost(baiduMapProperty.getPoiUpdateUrl());
         }else{
             httpPost = new HttpPost(baiduMapProperty.getPoiCreateUrl());
@@ -215,7 +219,9 @@ public class AddressServiceImpl implements AddressService {
                 log.error("新增/更新poi数据请求失败: {}", EntityUtils.toString(response.getEntity()));
                 return false;
             }
-            JsonObject jsonResult = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            HttpEntity entity = response.getEntity();
+            String result = EntityUtils.toString(entity);
+            JsonObject jsonResult = gson.fromJson(result, JsonObject.class);
             if(jsonResult.get("status").getAsInt() != 0){
                 log.error("新增/更新poi数据请求响应失败: {}", jsonResult.get("message"));
                 return false;
@@ -233,7 +239,7 @@ public class AddressServiceImpl implements AddressService {
 
         List<NameValuePair> body = getDefaultPoiBody();
         body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
-        body.add(new BasicNameValuePair("is_total_del", "0"));
+        body.add(new BasicNameValuePair("is_total_del", "1"));
 
         HttpPost httpPost = new HttpPost(baiduMapProperty.getPoiDeleteUrl());
         try {
@@ -243,11 +249,11 @@ public class AddressServiceImpl implements AddressService {
                 log.error("删除poi数据请求失败: {}", EntityUtils.toString(response.getEntity()));
                 return false;
             }
-            JsonObject jsonResult = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+           /* JsonObject jsonResult = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
             if(jsonResult.get("status").getAsInt() != 0){
                 log.error("删除新poi数据请求响应失败: {}", jsonResult.get("message"));
                 return false;
-            }
+            }*/
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -255,7 +261,7 @@ public class AddressServiceImpl implements AddressService {
         return false;
     }
 
-    private boolean isLbsExist(Long houseId){
+    private Optional<String> getLbsData(Long houseId){
         HttpClient httpClient = HttpClients.createDefault();
         List<NameValuePair> body = getDefaultPoiBody();
         body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
@@ -266,24 +272,26 @@ public class AddressServiceImpl implements AddressService {
             String result = EntityUtils.toString(response.getEntity());
             if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
                 log.error("查询poi是否存在请求失败:{}", result);
-                return false;
+                return Optional.empty();
             }
-            JsonObject json = gson.fromJson(EntityUtils.toString(response.getEntity(), "UTF-8"), JsonObject.class);
+            JsonObject json = gson.fromJson(result, JsonObject.class);
             if(json.get("status").getAsInt() != 0){
                 log.warn("查询poi是否存在响应状态失败:{}", json.get("message"));
-                return false;
+                return Optional.empty();
             }
-            int size = json.get("result").getAsJsonObject().get("size").getAsInt();
+            int size = json.get("size").getAsInt();
             // 如果查找到的数据大小为0, 则当前数据不存在
             if(size == 0){
-                return false;
+                return Optional.empty();
             }
-            return true;
+            JsonArray pois = json.get("pois").getAsJsonArray();
+            String id = pois.get(0).getAsJsonObject().get("id").getAsString();
+            return Optional.of(id);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return false;
+        return Optional.empty();
     }
 
     private List<NameValuePair> getDefaultPoiBody(){

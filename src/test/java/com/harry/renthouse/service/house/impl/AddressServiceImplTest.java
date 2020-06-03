@@ -42,7 +42,7 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
 
     @Test
     void lbsRemove() {
-        boolean result = addressService.lbsRemove(15L);
+        boolean result = addressService.lbsRemove(12345L);
         Assert.isTrue(result, "删除poi失败");
     }
 }
