@@ -3,22 +3,15 @@ package com.harry.renthouse.web.controller.user;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
-import com.harry.renthouse.base.UserRoleEnum;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.property.LimitsProperty;
-import com.harry.renthouse.service.auth.AuthenticationService;
-import com.harry.renthouse.service.auth.SmsCodeService;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.util.FileUploaderChecker;
-import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
-import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
 import com.harry.renthouse.web.dto.UserDTO;
-import com.harry.renthouse.web.form.SendSmsForm;
+import com.harry.renthouse.web.form.UpdatePasswordForm;
 import com.harry.renthouse.web.form.UserBasicInfoForm;
-import com.harry.renthouse.web.form.PhonePasswordLoginForm;
-import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -29,9 +22,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author Harry Xu
@@ -48,14 +38,8 @@ public class UserController {
     @Resource
     private QiniuService qiniuService;
 
-    @Resource
-    private AuthenticationService authenticationService;
-
     @Value("${qiniu.cdnPrefix}")
     private String cndPrefix;
-
-    @Resource
-    private SmsCodeService smsCodeService;
 
     @Resource
     private LimitsProperty limitsProperty;
@@ -64,7 +48,7 @@ public class UserController {
     @ApiOperation("获取当前用户信息")
     public ApiResponse<UserDTO> getUserInfo(){
         Long userId = AuthenticatedUserUtil.getUserId();
-        UserDTO userDTO = userService.findUserById(userId);
+        UserDTO userDTO = userService.findUserById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         return ApiResponse.ofSuccess(userDTO);
     }
 
@@ -113,35 +97,10 @@ public class UserController {
         return ApiResponse.ofSuccess(userService.updateUserInfo(userId, userForm));
     }
 
-    @PostMapping("registryByPhone")
-    @ApiOperation("通过手机号注册用户")
-    public ApiResponse<UserDTO> phoneRegistry(@Validated @RequestBody UserPhoneRegisterForm userPhoneRegisterForm){
-        smsCodeService.validate(userPhoneRegisterForm.getPhoneNumber(),
-                userPhoneRegisterForm.getVerifyCode(),
-                ValidateCodeTypeEnum.SIGN_UP.getValue());
-        return ApiResponse.ofSuccess(userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN)));
-    }
-
-    @PostMapping("login")
-    @ApiOperation("用户登录")
-    public ApiResponse<AuthenticationDTO> login(@Validated @RequestBody PhonePasswordLoginForm form){
-        AuthenticationDTO authenticationDTO = authenticationService.loginByPhone(form.getPhone(), form.getPassword());
-        return ApiResponse.ofSuccess(authenticationDTO);
-    }
-
-    @PostMapping("sendSmsToPhone")
-    @ApiOperation("发送短信")
-    public ApiResponse sendSmsToPhone(@Validated @RequestBody SendSmsForm sendSmsForm){
-        smsCodeService.sendSms(sendSmsForm);
-        return ApiResponse.ofSuccess();
-    }
-
-    @GetMapping("nickName")
-    @ApiOperation("校验用户名是否存在")
-    public ApiResponse checkNickNameExist(@ApiParam(value = "昵称") @RequestParam String nickName){
-        userService.findByNickName(nickName).ifPresent(user -> {
-            throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
-        });
+    @PutMapping("password")
+    @ApiOperation("修改用户密码")
+    public ApiResponse updatePassword(@Validated @RequestBody UpdatePasswordForm updatePasswordForm){
+        userService.updatePassword(updatePasswordForm.getOldPassword(), updatePasswordForm.getNewPassword());
         return ApiResponse.ofSuccess();
     }
 

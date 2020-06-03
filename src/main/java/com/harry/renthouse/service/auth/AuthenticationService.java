@@ -14,4 +14,6 @@ public interface AuthenticationService {
     AuthenticationDTO loginByUsername(String username, String password);
 
     AuthenticationDTO loginByPhone(String phone, String password);
+
+    AuthenticationDTO noPassLogin(String phone);
 }

@@ -1,5 +1,6 @@
 package com.harry.renthouse.service.auth.impl;
 
+import com.google.common.collect.Lists;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.AuthenticatedUserUtil;
 import com.harry.renthouse.base.UserRoleEnum;
@@ -47,15 +48,13 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
 
     @Override
-    public UserDTO findUserById(Long id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-        return modelMapper.map(user, UserDTO.class);
+    public Optional<UserDTO> findUserById(Long id) {
+        return userRepository.findById(id).map(item -> modelMapper.map(item, UserDTO.class));
     }
 
     @Override
-    public UserDTO findByPhoneNumber(String phoneNumber) {
-        userRepository.findByPhoneNumber(phoneNumber).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-        return modelMapper.map(phoneNumber, UserDTO.class);
+    public Optional<UserDTO> findByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber).map(item -> modelMapper.map(item, UserDTO.class));
     }
 
     @Override
@@ -110,6 +109,45 @@ public class UserServiceImpl implements UserService {
     @Override
     public Optional<UserDTO> findByNickName(String nickName) {
         return  userRepository.findByNickName(nickName).map(user -> modelMapper.map(user, UserDTO.class));
+    }
+
+    @Transactional
+    public UserDTO createByPhone(String phone){
+        // 判断手机号是否被注册
+        userRepository.findByPhoneNumber(phone).ifPresent(user -> {
+            throw new BusinessException(ApiResponseEnum.PHONE_ALREADY_REGISTERED);
+        });
+        // 执行注册用户逻辑
+        User user = new User();
+        user.setPhoneNumber(phone);
+        user.setName(DEFAULT_NICk_NAME_PREFIX + phone);
+        user.setNickName(DEFAULT_NICk_NAME_PREFIX + phone);
+        user = userRepository.save(user);
+        // 获取用户id设置角色
+        Long userId = user.getId();
+        Role role = new Role();
+        role.setUserId(userId);
+        role.setName(UserRoleEnum.ADMIN.getValue());
+        roleRepository.save(role);
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+        user.setAuthorities(authorities);
+        return modelMapper.map(user, UserDTO.class);
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(String oldPassword, String newPassword) {
+        User user = userRepository.findById(AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        if(StringUtils.isNotBlank(user.getPassword())){
+            if(StringUtils.isBlank(oldPassword)){
+                throw new BusinessException(ApiResponseEnum.ORIGINAL_PASSWORD_EMPTY_ERROR);
+            }
+            if(!passwordEncoder.matches(oldPassword, user.getPassword())){
+                throw new BusinessException(ApiResponseEnum.ORIGINAL_PASSWORD_ERROR);
+            }
+        }
+        userRepository.updatePassword(user.getId(), passwordEncoder.encode(newPassword));
     }
 
 }

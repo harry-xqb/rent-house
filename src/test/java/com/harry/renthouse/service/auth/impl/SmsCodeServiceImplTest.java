@@ -30,6 +30,6 @@ class SmsCodeServiceImplTest extends RentHouseApplicationTests {
         SendSmsForm sendSmsForm = new SendSmsForm();
         sendSmsForm.setOperationType(ValidateCodeTypeEnum.LOGIN.getValue());
         sendSmsForm.setPhoneNumber("17879502601");
-        smsCodeService.sendSms(sendSmsForm);
+        smsCodeService.sendSms("17879502601", ValidateCodeTypeEnum.LOGIN.getValue());
     }
 }

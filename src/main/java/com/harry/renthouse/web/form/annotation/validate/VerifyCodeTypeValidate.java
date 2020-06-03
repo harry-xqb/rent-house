@@ -2,6 +2,7 @@ package com.harry.renthouse.web.form.annotation.validate;
 
 import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
 import com.harry.renthouse.web.form.annotation.VerifyCodeTypeAnnotation;
+import org.springframework.stereotype.Component;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;

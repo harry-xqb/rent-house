@@ -19,14 +19,14 @@ public interface UserService {
      * @param id 用户id
      * @return
      */
-    UserDTO findUserById(Long id);
+    Optional<UserDTO> findUserById(Long id);
 
     /**
      * 通过手机号查询用户
      * @param phoneNumber
      * @return
      */
-    UserDTO findByPhoneNumber(String phoneNumber);
+    Optional<UserDTO> findByPhoneNumber(String phoneNumber);
 
     /**
      * 更新用户头像
@@ -53,4 +53,17 @@ public interface UserService {
      */
     Optional<UserDTO> findByNickName(String nickName);
 
+    /**
+     * 通过手机号创建用户
+     * @param phone 手机号
+     */
+    UserDTO createByPhone(String phone);
+
+
+    /**
+     * 更新用户密码
+     * @param oldPassword 旧密码
+     * @param newPassword 新密码
+     */
+    void updatePassword(String oldPassword, String newPassword);
 }

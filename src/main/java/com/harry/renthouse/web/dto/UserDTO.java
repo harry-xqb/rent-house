@@ -30,8 +30,8 @@ public class UserDTO {
     @ApiModelProperty(value = "手机号", example = "17879502601")
     private String phoneNumber;
 
-    /*@ApiModelProperty(value = "加密后的密码", example = "$2a$10$sDAWvp8bPqOkqqOpHhWDTe8iCzYr8Qqg3Irm.iI9Dz8Bzlf7xeb/e")
-    private String password;*/
+    @ApiModelProperty(value = "加密后的密码", example = "$2a$10$sDAWvp8bPqOkqqOpHhWDTe8iCzYr8Qqg3Irm.iI9Dz8Bzlf7xeb/e")
+    private String password;
 
     @ApiModelProperty(value = "用户状态, 1: 正常 0:禁用", example = "0")
     private Integer status;

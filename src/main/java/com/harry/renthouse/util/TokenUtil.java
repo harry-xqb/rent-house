@@ -16,7 +16,10 @@ public class TokenUtil {
     @Autowired
     private RedisUtil redisUtil;
 
-    public static final int DEFAULT_TOKEN_EXPIRE_TIME = 60 * 60 * 2; // 2个小时
+    private static final int DEFAULT_TOKEN_EXPIRE_TIME = 60 * 60 * 2; // 2个小时
+
+    private static final String  LOGIN_TOKEN_PREFIX = "LOGIN:TOKEN:";
+
 
     /**
      * 生成token
@@ -25,33 +28,28 @@ public class TokenUtil {
      */
     public String generate(String username){
         String token = UUID.randomUUID().toString().replace("-", "");
-        redisUtil.set(token, username, DEFAULT_TOKEN_EXPIRE_TIME);
+        redisUtil.set(LOGIN_TOKEN_PREFIX + token, username, DEFAULT_TOKEN_EXPIRE_TIME);
         return token;
     }
 
     /**
      * 刷新token
-     * @param token
-     * @return
      */
     public Boolean refresh(String token){
-        boolean isSuccess = redisUtil.expire(token, DEFAULT_TOKEN_EXPIRE_TIME);
-        return isSuccess;
+        return redisUtil.expire(LOGIN_TOKEN_PREFIX + token, DEFAULT_TOKEN_EXPIRE_TIME);
     }
 
     /**
      * 判断token是否存在
-     * @param token
      */
     public Boolean hasToken(String token){
-        return redisUtil.hasKey(token);
+        return redisUtil.hasKey(LOGIN_TOKEN_PREFIX + token);
     }
 
     /**
      * 通过token获取用户名
-     * @param token
      */
     public String getUsername(String token){
-        return (String) redisUtil.get(token);
+        return (String) redisUtil.get(LOGIN_TOKEN_PREFIX + token);
     }
 }

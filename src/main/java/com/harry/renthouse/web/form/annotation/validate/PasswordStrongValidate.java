@@ -2,6 +2,7 @@ package com.harry.renthouse.web.form.annotation.validate;
 
 import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.web.form.annotation.PasswordStrongAnnotation;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 import javax.validation.ConstraintValidator;

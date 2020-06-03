@@ -66,7 +66,7 @@ public class HouseController {
         HouseCompleteInfoDTO houseInfo = houseService.findCompleteHouse(id);
         HouseCompleteInfoDetailDTO result = modelMapper.map(houseInfo, HouseCompleteInfoDetailDTO.class);
         // 获取用户信息
-        UserDTO agent = userService.findUserById(houseInfo.getHouse().getAdminId());
+        UserDTO agent = userService.findUserById(houseInfo.getHouse().getAdminId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         // 获取小区出租房屋数
         int houseCountInDistrict = houseElasticSearchService
                 .aggregateDistrictHouse(houseInfo.getCity().getEnName(),

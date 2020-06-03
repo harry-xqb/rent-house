@@ -8,7 +8,24 @@ import com.harry.renthouse.web.form.SendSmsForm;
  */
 public interface SmsCodeService {
 
-    void sendSms(SendSmsForm sendSmsForm);
+    /**
+     * 发送短信
+     * @param phone 手机号
+     * @param operationType 业务类型
+     */
+    String sendSms(String phone, String operationType);
 
-    void validate(String phone, String code, String operationType);
+    /**
+     * 获得短信
+     * @param phone 手机号
+     * @param operationType 业务类型
+     */
+    String getSmsCode(String phone, String operationType);
+
+    /**
+     * 删除短信
+     * @param phone 手机号
+     * @param operationType 业务类型
+     */
+    void deleteSmsCode(String phone, String operationType);
 }

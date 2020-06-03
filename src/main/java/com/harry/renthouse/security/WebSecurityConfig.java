@@ -44,10 +44,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers("/druid/**").permitAll()
-                .antMatchers("/user/registryByPhone").permitAll()
-                .antMatchers("/user/sendSmsToPhone").permitAll()
-                .antMatchers("/user/nickName").permitAll()
-                .antMatchers("/user/login").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/user/**").hasAnyRole("ADMIN", "USER")
                 .antMatchers("/swagger-ui.html/**").authenticated()
@@ -58,7 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 加入自定义的安全认证
-        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
+//        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
         auth.userDetailsService(rentHouseUserDetailService).passwordEncoder(passwordEncoder);
     }
 }
