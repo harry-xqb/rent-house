@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface HouseSubscribeRepository extends JpaRepository<HouseSubscribe, Long> {
 
     Optional<HouseSubscribe> findByUserIdAndHouseId(Long userId, Long houseId);
+
 }

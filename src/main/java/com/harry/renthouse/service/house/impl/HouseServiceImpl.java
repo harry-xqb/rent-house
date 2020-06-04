@@ -358,6 +358,32 @@ public class HouseServiceImpl implements HouseService {
         return new ServiceMultiResult<>(houseIdResult.getTotal(), wrapperHouseResult(houseIdResult.getList()));
     }
 
+    @Override
+    public void addSubscribeOrder(SubscribeHouseForm subscribeHouseForm) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        // 判断当前用户是否已预约该房源
+        houseSubscribeRepository.findByUserIdAndHouseId(userId, subscribeHouseForm.getHouseId()).ifPresent(item -> {
+            if(item.getStatus() == HouseSubscribeStatusEnum.ORDERED.getValue()){
+                throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_ALREADY_ORDER);
+            }
+            if(item.getStatus() == HouseSubscribeStatusEnum.FINISH.getValue()){
+                throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_ALREADY_FINISH);
+            }
+        });
+        // 查找房屋的管理员
+        House house = houseRepository.findById(subscribeHouseForm.getHouseId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+
+        HouseSubscribe houseSubscribe = new HouseSubscribe();
+        houseSubscribe.setAdminId(house.getAdminId());
+        houseSubscribe.setOrderTime(subscribeHouseForm.getTime());
+        houseSubscribe.setDescription(subscribeHouseForm.getDescription());
+        houseSubscribe.setHouseId(house.getId());
+        houseSubscribe.setTelephone(subscribeHouseForm.getPhone());
+        houseSubscribe.setStatus(HouseSubscribeStatusEnum.ORDERED.getValue());
+        houseSubscribe.setUserId(userId);
+        houseSubscribeRepository.save(houseSubscribe);
+    }
+
     /**
      * 通过id集合获取房源信息
      * @param houseIdList id集合列表

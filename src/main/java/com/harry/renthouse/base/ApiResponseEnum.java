@@ -48,6 +48,9 @@ public enum ApiResponseEnum {
     HOUSE_STATUS_CHANGE_ERROR_DELETED(50218, "不允许修改已删除房源状态"),
     HOUSE_PRICE_RAGE_ERROR(50219, "价格区间有误"),
     HOUSE_AREA_RANGE_ERROR(50220, "面积区间有误"),
+
+    HOUSE_SUBSCRIBE_ALREADY_ORDER(500221, "已预约该房源"),
+    HOUSE_SUBSCRIBE_ALREADY_FINISH(500222, "已看过该房源"),
     // 短信相关
     PHONE_ALREADY_REGISTERED(50323, "手机号已被注册"),
     PHONE_SEND_SMS_ERROR(50324, "发送短信失败"),
@@ -63,6 +66,7 @@ public enum ApiResponseEnum {
     FILE_UPLOAD_ERROR(50501, "文件上传失败"),
     FILE_SIZE_EXCEED_ERROR(50502, "文件超过限制大小:{0}"),
     FILE_TYPE_UNSUPPORTED_ERROR(50502, "文件类型不支持"),
+
     ;
 
     private Integer code;

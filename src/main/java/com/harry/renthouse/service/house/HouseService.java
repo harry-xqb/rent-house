@@ -2,6 +2,7 @@ package com.harry.renthouse.service.house;
 
 import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.ServiceResult;
 import com.harry.renthouse.web.dto.HouseCompleteInfoDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
 import com.harry.renthouse.web.form.*;
@@ -90,4 +91,10 @@ public interface HouseService {
      * @param mapBoundSearchForm 视野查询表单
      */
     ServiceMultiResult<HouseDTO> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm);
+
+    /**
+     * 新增房屋预约订单
+     * @param subscribeHouseForm 房屋预约表单
+     */
+    void addSubscribeOrder(SubscribeHouseForm subscribeHouseForm);
 }

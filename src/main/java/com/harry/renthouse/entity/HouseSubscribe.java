@@ -1,6 +1,8 @@
 package com.harry.renthouse.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -16,6 +18,8 @@ import java.util.Date;
  */
 @Entity
 @Data
+@DynamicInsert
+@DynamicUpdate
 public class HouseSubscribe {
 
     @Id
