@@ -27,7 +27,7 @@ public class HouseSubscribe {
     private Long userId;
 
     /* 用户描述 */
-    private String desc;
+    private String description;
 
     /* 预约状态: 1: 加入待看清单  2: 已约看房时间  3: 看房完成*/
     private Integer status;

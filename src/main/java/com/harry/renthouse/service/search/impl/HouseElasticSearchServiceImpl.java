@@ -77,7 +77,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HouseElasticSearchServiceImpl implements HouseElasticSearchService {
 
-    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC_3";
+    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC";
 
     private static final String IK_SMART = "IK_SMART";
 

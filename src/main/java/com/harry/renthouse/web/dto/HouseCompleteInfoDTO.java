@@ -30,4 +30,7 @@ public class HouseCompleteInfoDTO {
     private SubwayStationDTO subwayStation;
 
 
+    @ApiModelProperty(value = "房屋预约状态")
+    private int houseSubscribeStatus;
+
 }

@@ -78,6 +78,9 @@ public class HouseServiceImpl implements HouseService {
     @Resource
     private HouseElasticSearchService houseElasticSearchService;
 
+    @Resource
+    private HouseSubscribeRepository houseSubscribeRepository;
+
 
     @Transactional
     @Override
@@ -223,6 +226,14 @@ public class HouseServiceImpl implements HouseService {
         houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
         houseCompleteInfoDTO.setSubway(subwayDTO);
         houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
+        // 如果当前用户已登录，则获取房源预约状态
+        try{
+            Long userId = AuthenticatedUserUtil.getUserId();
+            houseSubscribeRepository.findByUserIdAndHouseId(userId, houseId).ifPresent(item -> {
+                houseCompleteInfoDTO.setHouseSubscribeStatus(item.getStatus());
+            });
+        }catch (BusinessException ignored){
+        }
         return houseCompleteInfoDTO;
     }
 

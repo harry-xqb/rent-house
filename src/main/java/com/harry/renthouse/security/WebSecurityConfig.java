@@ -15,6 +15,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import sun.security.util.SecurityConstants;
 
+import javax.annotation.Resource;
+
 /**
  * @author Harry Xu
  * @date 2020/5/8 13:47
@@ -25,14 +27,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private TokenAuthenticationFilter tokenAuthenticationFilter;
 
-    @Autowired
+    @Resource
     private TokenAuthenticationProvider tokenAuthenticationProvider;
 
-    @Autowired
+    @Resource
     private UserDetailsService  rentHouseUserDetailService;
 
-    @Autowired
+    @Resource
     private PasswordEncoder passwordEncoder;
+
 
     /**
      * http权限控制
@@ -56,7 +59,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 加入自定义的安全认证
-//        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
+        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
         auth.userDetailsService(rentHouseUserDetailService).passwordEncoder(passwordEncoder);
     }
 

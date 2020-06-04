@@ -7,6 +7,7 @@ import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.util.TokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -37,6 +38,11 @@ public class TokenAuthenticationProvider implements AuthenticationProvider {
         }
         // 从 TokenAuthentication 中获取 token
         String token = authentication.getCredentials().toString();
+        if (!tokenUtil.hasToken(token)){
+            //res.setStatus(HttpStatus.UNAUTHORIZED.value());
+            throw new BusinessException(ApiResponseEnum.UNAUTHORIZED);
+        }
+        tokenUtil.refresh(token);
         String username = tokenUtil.getUsername(token);
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
         // 返回新的认证信息，带上 token 和反查出的用户信息

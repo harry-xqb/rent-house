@@ -18,10 +18,14 @@ public class AuthenticatedUserUtil {
      * @return
      */
     public static User getUserInfo(){
-        Optional<Object> principal = Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+       /* if(principal.)
         User user = principal.map(obj -> (User) obj)
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.NO_AUTHENTICATED_USER_ERROR));
-        return user;
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.NO_AUTHENTICATED_USER_ERROR));*/
+       if(principal instanceof User){
+           return (User) principal;
+       }
+       throw new BusinessException(ApiResponseEnum.NO_AUTHENTICATED_USER_ERROR);
     }
 
     /**
