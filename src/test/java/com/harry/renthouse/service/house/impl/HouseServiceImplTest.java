@@ -2,27 +2,38 @@ package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.RentHouseApplicationTests;
 import com.harry.renthouse.base.RentWayEnum;
+import com.harry.renthouse.entity.User;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.dto.HouseSubscribeInfoDTO;
+import com.harry.renthouse.web.form.ListHouseSubscribesForm;
 import com.harry.renthouse.web.form.MapBoundSearchForm;
 import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
-import java.util.Arrays;
 import java.util.Collections;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Harry Xu
  * @date 2020/5/14 14:57
  */
 @Slf4j
+@Transactional
 class HouseServiceImplTest extends RentHouseApplicationTests {
 
     @Autowired
@@ -89,5 +100,35 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
         boundSearchForm.setRightBottomLatitude(39.953321);
         ServiceMultiResult<HouseDTO> result = houseService.mapBoundSearch(boundSearchForm);
         Assert.isTrue(result.getTotal() > 0, "海淀区范围总数有误");
+    }
+
+    @Test
+    void listHouseSubscribes() {
+        authUser();
+        ListHouseSubscribesForm listHouseSubscribesForm = new ListHouseSubscribesForm();
+        listHouseSubscribesForm.setStatus(2);
+
+        ServiceMultiResult<HouseSubscribeInfoDTO> result = houseService.listUserHouseSubscribes(listHouseSubscribesForm);
+
+        Assert.isTrue(result.getTotal() == 1, "总数不匹配");
+
+        Assert.isTrue(result.getList().get(0).getHouseSubscribe().getId() == 11, "预约id不匹配");
+    }
+
+    void authUser(){
+        User user = new User();
+        user.setId(14L);
+        Set<GrantedAuthority> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        user.setAuthorities(authorities);
+        Authentication auth = new PreAuthenticatedAuthenticationToken(user, "", user.getAuthorities());
+        auth.setAuthenticated(true);
+        SecurityContextHolder.getContext().setAuthentication(auth);
+    }
+
+    @Test
+    @WithUserDetails(value = "admin")
+    void finishHouseSubscribe() {
+        houseService.finishHouseSubscribe(11L);
     }
 }

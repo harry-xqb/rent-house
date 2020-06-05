@@ -51,6 +51,8 @@ public enum ApiResponseEnum {
 
     HOUSE_SUBSCRIBE_ALREADY_ORDER(500221, "已预约该房源"),
     HOUSE_SUBSCRIBE_ALREADY_FINISH(500222, "已看过该房源"),
+    HOUSE_SUBSCRIBE_STATUS_ERROR(500223, "预约状态有误"),
+    HOUSE_SUBSCRIBE_NOT_FOUND(500223, "预约信息未找到"),
     // 短信相关
     PHONE_ALREADY_REGISTERED(50323, "手机号已被注册"),
     PHONE_SEND_SMS_ERROR(50324, "发送短信失败"),

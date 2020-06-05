@@ -1,5 +1,6 @@
-package com.harry.renthouse.base;
+package com.harry.renthouse.util;
 
+import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
 import org.springframework.security.core.context.SecurityContextHolder;

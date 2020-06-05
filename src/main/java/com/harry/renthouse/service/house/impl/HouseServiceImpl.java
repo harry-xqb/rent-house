@@ -9,19 +9,25 @@ import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
+import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
 import com.qiniu.http.Response;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
+import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.support.SortDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -31,7 +37,9 @@ import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * 房源service实现
@@ -226,14 +234,6 @@ public class HouseServiceImpl implements HouseService {
         houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
         houseCompleteInfoDTO.setSubway(subwayDTO);
         houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
-        // 如果当前用户已登录，则获取房源预约状态
-        try{
-            Long userId = AuthenticatedUserUtil.getUserId();
-            houseSubscribeRepository.findByUserIdAndHouseId(userId, houseId).ifPresent(item -> {
-                houseCompleteInfoDTO.setHouseSubscribeStatus(item.getStatus());
-            });
-        }catch (BusinessException ignored){
-        }
         return houseCompleteInfoDTO;
     }
 
@@ -382,6 +382,71 @@ public class HouseServiceImpl implements HouseService {
         houseSubscribe.setStatus(HouseSubscribeStatusEnum.ORDERED.getValue());
         houseSubscribe.setUserId(userId);
         houseSubscribeRepository.save(houseSubscribe);
+    }
+
+    @Override
+    public Integer getHouseSubscribeStatus(Long houseId) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        return houseSubscribeRepository.findByUserIdAndHouseId(userId, houseId).map(HouseSubscribe::getStatus).orElse(0);
+    }
+
+    @Override
+    public ServiceMultiResult<HouseSubscribeInfoDTO> listUserHouseSubscribes(ListHouseSubscribesForm subscribesForm) {
+        Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func = param ->
+                houseSubscribeRepository.findByUserIdAndStatus(param.getUserId(), param.getStatus(), param.getPageable());
+        return listHouseSubscribes(subscribesForm, func);
+    }
+
+    @Override
+    public ServiceMultiResult<HouseSubscribeInfoDTO> listAdminHouseSubscribes(ListHouseSubscribesForm subscribesForm) {
+        Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func = param ->
+                houseSubscribeRepository.findByAdminIdAndStatus(param.getUserId(), param.getStatus(), param.getPageable());
+        return listHouseSubscribes(subscribesForm, func);
+    }
+
+    @Override
+    public void finishHouseSubscribe(Long subscribeId) {
+        // 获取当前用户id（房东id）
+        Long userId = AuthenticatedUserUtil.getUserId();
+        // 通过用户id与约看id查找 约看信息
+        HouseSubscribe houseSubscribe = houseSubscribeRepository.findById(subscribeId).orElseThrow(()
+                -> new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_NOT_FOUND));
+        if(!houseSubscribe.getAdminId().equals(userId)){
+            throw new BusinessException(ApiResponseEnum.NO_PRIORITY_ERROR);
+        }
+        if(houseSubscribe.getStatus() != HouseSubscribeStatusEnum.ORDERED.getValue()){
+            throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_STATUS_ERROR);
+        }
+        houseSubscribe.setStatus(HouseSubscribeStatusEnum.FINISH.getValue());
+        houseSubscribeRepository.save(houseSubscribe);
+    }
+
+    private ServiceMultiResult<HouseSubscribeInfoDTO> listHouseSubscribes(ListHouseSubscribesForm subscribesForm,
+                                                     Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func) {
+        HouseSubscribeStatusEnum.of(subscribesForm.getStatus())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_STATUS_ERROR));
+        Long userId = AuthenticatedUserUtil.getUserId();
+        Sort sort = Sort.by(Sort.Direction.fromOptionalString(subscribesForm.getSortDirection()).orElse(Sort.Direction.DESC),
+                subscribesForm.getOrderBy());
+        Pageable pageable = PageRequest.of(subscribesForm.getPage() - 1, subscribesForm.getPageSize(),
+                sort);
+
+        // 所有预约信息
+        Page<HouseSubscribe> page = func.apply(new ListHouseSubscribeParams(userId, subscribesForm.getStatus(), pageable));
+
+        List<Long> houseIdList = page.getContent().stream().map(HouseSubscribe::getHouseId).collect(Collectors.toList());
+        Map<Long, HouseDTO> houseMap = wrapperHouseResult(houseIdList).stream().collect(Collectors.toMap(
+                HouseDTO::getId, house -> house
+        ));
+
+        List<HouseSubscribeInfoDTO> result = page.getContent().stream().map(item -> {
+            HouseSubscribeInfoDTO houseSubscribeInfoDTO = new HouseSubscribeInfoDTO();
+            houseSubscribeInfoDTO.setHouseSubscribe(item);
+            houseSubscribeInfoDTO.setHouseDTO(houseMap.get(item.getHouseId()));
+            return houseSubscribeInfoDTO;
+        }).collect(Collectors.toList());
+
+        return new ServiceMultiResult<>((int)page.getTotalElements(), result);
     }
 
     /**
@@ -579,5 +644,16 @@ public class HouseServiceImpl implements HouseService {
             houseTag.setHouseId(houseId);
             return houseTag;
         }).collect(Collectors.toList());
+    }
+
+    @AllArgsConstructor
+    @Data
+    class ListHouseSubscribeParams{
+
+        private Long userId;
+
+        private int status;
+
+        private Pageable pageable;
     }
 }

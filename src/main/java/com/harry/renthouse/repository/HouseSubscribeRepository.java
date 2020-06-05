@@ -1,6 +1,8 @@
 package com.harry.renthouse.repository;
 
 import com.harry.renthouse.entity.HouseSubscribe;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -12,5 +14,9 @@ import java.util.Optional;
 public interface HouseSubscribeRepository extends JpaRepository<HouseSubscribe, Long> {
 
     Optional<HouseSubscribe> findByUserIdAndHouseId(Long userId, Long houseId);
+
+    Page<HouseSubscribe> findByUserIdAndStatus(Long userId, Integer status, Pageable pageable);
+
+    Page<HouseSubscribe> findByAdminIdAndStatus(Long adminId, Integer status, Pageable pageable);
 
 }

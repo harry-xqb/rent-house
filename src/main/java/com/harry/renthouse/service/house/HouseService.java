@@ -5,6 +5,7 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.ServiceResult;
 import com.harry.renthouse.web.dto.HouseCompleteInfoDTO;
 import com.harry.renthouse.web.dto.HouseDTO;
+import com.harry.renthouse.web.dto.HouseSubscribeInfoDTO;
 import com.harry.renthouse.web.form.*;
 
 /**
@@ -97,4 +98,29 @@ public interface HouseService {
      * @param subscribeHouseForm 房屋预约表单
      */
     void addSubscribeOrder(SubscribeHouseForm subscribeHouseForm);
+
+    /**
+     * 获取房屋预约状态
+     * @param houseId 房屋id
+     * @return 房屋预约状态
+     */
+    Integer getHouseSubscribeStatus(Long houseId);
+
+    /**
+     * 获取房客预约房源列表
+     * @param subscribesForm 预约信息
+     */
+    ServiceMultiResult<HouseSubscribeInfoDTO> listUserHouseSubscribes(ListHouseSubscribesForm subscribesForm);
+
+    /**
+     * 获取房东预约房源列表
+     * @param subscribesForm 预约信息
+     */
+    ServiceMultiResult<HouseSubscribeInfoDTO> listAdminHouseSubscribes(ListHouseSubscribesForm subscribesForm);
+
+    /**
+     * 完成房屋月刊
+     * @param subscribeId 约看id
+     */
+    void finishHouseSubscribe(Long subscribeId);
 }

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 /**
  * 房屋预约状态枚举
@@ -23,8 +24,8 @@ public enum HouseSubscribeStatusEnum {
 
     private String message;
 
-    public static HouseSubscribeStatusEnum of(int code){
+    public static Optional<HouseSubscribeStatusEnum> of(int code){
         return Arrays.stream(HouseSubscribeStatusEnum.values())
-                .filter(item -> item.getValue() == code).findFirst().orElse(HouseSubscribeStatusEnum.WAIT);
+                .filter(item -> item.getValue() == code).findFirst();
     }
 }

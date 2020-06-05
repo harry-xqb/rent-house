@@ -406,7 +406,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         NativeSearchQuery query = queryBuilder.build();
         log.debug(query.getQuery().toString());
         Page<HouseElastic> result = houseElasticRepository.search(query);
-        return new ServiceMultiResult<>(result.getSize(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));
+        return new ServiceMultiResult<>((int)result.getTotalElements(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));
     }
 
 

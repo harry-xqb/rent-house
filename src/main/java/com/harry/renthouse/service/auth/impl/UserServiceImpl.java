@@ -1,8 +1,7 @@
 package com.harry.renthouse.service.auth.impl;
 
-import com.google.common.collect.Lists;
 import com.harry.renthouse.base.ApiResponseEnum;
-import com.harry.renthouse.base.AuthenticatedUserUtil;
+import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.base.UserRoleEnum;
 import com.harry.renthouse.entity.Role;
 import com.harry.renthouse.entity.User;
@@ -15,7 +14,6 @@ import com.harry.renthouse.web.form.UserBasicInfoForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
