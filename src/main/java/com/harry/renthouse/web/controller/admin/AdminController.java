@@ -126,7 +126,7 @@ public class AdminController {
 
 
     @GetMapping("house/subscribes")
-    @ApiModelProperty("获取房东预约的房源信息")
+    @ApiOperation("获取房东预约的房源信息")
     public ApiResponse<ServiceMultiResult<HouseSubscribeInfoDTO>> listHouseSubscribes(
             @Validated @RequestBody ListHouseSubscribesForm listHouseSubscribesForm){
         ServiceMultiResult<HouseSubscribeInfoDTO> result = houseService.listAdminHouseSubscribes(listHouseSubscribesForm);
@@ -134,7 +134,7 @@ public class AdminController {
     }
 
     @PostMapping("house/subscribe/{subscribeId}/finish")
-    @ApiModelProperty("房东完成预约看房")
+    @ApiOperation("房东完成预约看房")
     public ApiResponse finishHouseSubscribe(@ApiParam("预约id") @PathVariable Long subscribeId){
         houseService.finishHouseSubscribe(subscribeId);
         return ApiResponse.ofSuccess();

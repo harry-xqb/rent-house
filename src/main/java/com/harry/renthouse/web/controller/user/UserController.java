@@ -2,13 +2,13 @@ package com.harry.renthouse.web.controller.user;
 
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
-import com.harry.renthouse.service.ServiceMultiResult;
-import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.property.LimitsProperty;
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.util.FileUploaderChecker;
 import com.harry.renthouse.web.dto.HouseSubscribeInfoDTO;
 import com.harry.renthouse.web.dto.QiniuUploadResult;
@@ -18,7 +18,6 @@ import com.harry.renthouse.web.form.SubscribeHouseForm;
 import com.harry.renthouse.web.form.UpdatePasswordForm;
 import com.harry.renthouse.web.form.UserBasicInfoForm;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Value;
@@ -121,21 +120,21 @@ public class UserController {
     }
 
     @PutMapping("house/subscribe")
-    @ApiModelProperty("预约房源")
+    @ApiOperation("预约房源")
     public ApiResponse subscribeHouse(@Validated @RequestBody SubscribeHouseForm subscribeHouseForm){
         houseService.addSubscribeOrder(subscribeHouseForm);
         return ApiResponse.ofSuccess();
     }
 
     @GetMapping("house/{houseId}/subscribe/status")
-    @ApiModelProperty("获取当前用户对指定房源的预约状态")
+    @ApiOperation("获取当前用户对指定房源的预约状态")
     public ApiResponse<Integer> getHouseSubscribeInfo(@ApiParam("房屋id") @PathVariable Long houseId){
         Integer houseSubscribeStatus = houseService.getHouseSubscribeStatus(houseId);
         return ApiResponse.ofSuccess(houseSubscribeStatus);
     }
 
     @GetMapping("house/subscribes")
-    @ApiModelProperty("获取当前用户所有预约的房源")
+    @ApiOperation("获取当前用户所有预约的房源")
     public ApiResponse<ServiceMultiResult<HouseSubscribeInfoDTO>> listHouseSubscribes(
             @Validated @RequestBody ListHouseSubscribesForm listHouseSubscribesForm){
         ServiceMultiResult<HouseSubscribeInfoDTO> result = houseService.listUserHouseSubscribes(listHouseSubscribesForm);
