@@ -114,8 +114,8 @@ qiniu:
 # 阿里云配置
 aliyun:
   sms:
-    accessKey: LTAI4GJSvFeHdWRuRdGXE9jR
-    accessSecret: LFMKe43mxGdpQ8EjoVJ6KlQHZyzv8P
+    accessKey: aliyunkey
+    accessSecret: aliyunsecret
     templateCode: SMS_190792051
     signName: touchfish
     length: 4
@@ -123,7 +123,7 @@ aliyun:
     resendInterval: 60 # 1分钟重发
 baidu:
   map:
-    accessKey: SEr7pwTtgtPOHnj6dRplmm1fEKLH2zuo
+    accessKey: baiduKey
     geoTableId: 1000007599
 open:
   limits:
