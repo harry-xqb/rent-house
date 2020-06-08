@@ -92,6 +92,10 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       missing-topics-fatal: false
+  mail:
+    host: smtp.qq.com
+    username: 923243595@qq.com
+    password: ebuvrxzdcsxdbajh
 logging:
   level:
     org:
@@ -106,7 +110,7 @@ qiniu:
   accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo
   secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7
   bucket: hz-rent-house
-  cdnPrefix: http://qa22ygxo8.bkt.clouddn.com/
+  cdnPrefix: http://qiniu.touchfish.top/
 # 阿里云配置
 aliyun:
   sms:
@@ -127,3 +131,8 @@ open:
     phoneRegex: ^(1[3-9]\d{9}$)
     avatarSizeLimit: 5242880
     avatarTypeLimit: jpg,png,jpeg
+esmonitor:
+  mailForm: 923243595@qq.com
+  mailTo: 923243595@qq.com
+  mailTitle: 【警告】Elasticsearch监控
+  api: http://localhost:9200/_cluster/health

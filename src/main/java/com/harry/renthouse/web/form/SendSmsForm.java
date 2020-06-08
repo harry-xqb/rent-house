@@ -23,7 +23,7 @@ public class SendSmsForm {
     private String phoneNumber;
 
     @NotNull(message = "业务类型不能为空")
-    @ApiModelProperty(value = "业务类型, signUp: 注册", example = "signUp", allowableValues = "signUp", required = true)
+    @ApiModelProperty(value = "业务类型, signUp: 注册, login: 登录", example = "signUp,login", allowableValues = "signUp,login", required = true)
     @VerifyCodeTypeAnnotation()
     private String operationType;
 

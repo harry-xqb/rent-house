@@ -65,13 +65,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO updateUserInfo(Long userId, UserBasicInfoForm userBasicInfoForm) {
+        final User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         // 判断用户昵称是否存在
-        userRepository.findByPhoneNumber(userBasicInfoForm.getNickName()).ifPresent(user -> {
-            throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
+        userRepository.findByNickName(userBasicInfoForm.getNickName()).ifPresent(item -> {
+            if(!StringUtils.equals(user.getNickName(), item.getName())){
+                throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
+            }
         });
-        User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         modelMapper.map(userBasicInfoForm, user);
-        user = userRepository.save(user);
+        userRepository.save(user);
         return modelMapper.map(user, UserDTO.class);
     }
 
