@@ -66,7 +66,7 @@ public class ESMonitor {
             String message = "";
             switch (status){
                 case GREEN:
-                    log.info("Es状况健康");
+                    log.debug("ES状况健康");
                     break;
                 case YELLOW:
                     message = "ES状况为yellow, 请检查ES服务器";
