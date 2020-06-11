@@ -6,12 +6,14 @@ import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.entity.SupportAddress;
+import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.auth.AuthenticationService;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.util.FileUploaderChecker;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import com.qiniu.common.QiniuException;
@@ -45,6 +47,9 @@ public class AdminController {
 
     @Resource
     private AddressService addressService;
+
+    @Resource
+    private LimitsProperty limitsProperty;
 
     @ApiOperation(value = "新增房源接口")
     @PostMapping(value = "house/add")
@@ -138,5 +143,20 @@ public class AdminController {
     public ApiResponse finishHouseSubscribe(@ApiParam("预约id") @PathVariable Long subscribeId){
         houseService.finishHouseSubscribe(subscribeId);
         return ApiResponse.ofSuccess();
+    }
+
+    @PostMapping(value = "house/upload/photo")
+    @ApiOperation(value = "上传图片接口")
+    public ApiResponse<QiniuUploadResult> uploadHousePhoto(@ApiParam(value = "图片文件") MultipartFile file){
+        if(file == null){
+            return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
+        }
+        FileUploaderChecker.validTypeAndSize(limitsProperty.getHousePhotoTypeLimit(), file.getOriginalFilename(), limitsProperty.getHousePhotoSizeLimit(), file.getSize());
+        try {
+            return ApiResponse.ofSuccess(qiniuService.uploadFile(file.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ApiResponse.ofStatus(ApiResponseEnum.FILE_UPLOAD_ERROR);
+        }
     }
 }

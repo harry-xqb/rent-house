@@ -138,7 +138,7 @@ public class HouseForm {
 
     /* 房屋照片 */
     @ApiModelProperty(value = "房屋照片集合: 该集合对象为点击图片上传后，后端返回的对象",
-            example = "[{'path': 'Fn6szUiUydhr3XE5xF55XCDvlc2E', 'width': 50}, 'height': 50]",
+            example = "[{'path': 'Fn6szUiUydhr3XE5xF55XCDvlc2E', 'width': 50, 'height': 50}]",
             notes = "该集合对象为点击图片上传后，后端返回的对象")
     private List<PictureForm> pictures;
 

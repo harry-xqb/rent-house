@@ -23,4 +23,10 @@ public class LimitsDTO {
 
     @ApiModelProperty(value = "头像类型限制")
     public String[] avatarTypeLimit;
+
+    @ApiModelProperty(value = "头像类型限制")
+    public String[] housePhotoTypeLimit;
+
+    @ApiModelProperty(value = "房源图片大小限制")
+    public long housePhotoSizeLimit;
 }
