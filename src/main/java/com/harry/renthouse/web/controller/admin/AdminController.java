@@ -65,7 +65,7 @@ public class AdminController {
 
     @PostMapping(value = "houses")
     @ApiOperation(value = "分页查找房源")
-    public ApiResponse<ServiceMultiResult> listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
+    public ApiResponse<ServiceMultiResult<HouseDTO>> listHouses(@RequestBody @Validated AdminHouseSearchForm adminHouseSearchForm){
         ServiceMultiResult<HouseDTO> houseDTOServiceMultiResult = houseService.adminSearch(adminHouseSearchForm);
         return ApiResponse.ofSuccess(houseDTOServiceMultiResult);
     }
