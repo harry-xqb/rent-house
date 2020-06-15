@@ -3,9 +3,8 @@ package com.harry.renthouse.web.form;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+
+import javax.validation.constraints.*;
 import javax.validation.groups.Default;
 import java.util.List;
 
@@ -61,6 +60,7 @@ public class HouseForm {
     private String regionEnName;
 
     @ApiModelProperty(value = "房源封面:点击图片上传后返回的图片key/hash", example = "Fn6szUiUydhr3XE5xF55XCDvlc2E", notes = "点击图片上传后返回的图片key/hash")
+    @NotNull(message = "房屋封面不能为空")
     private String cover;
 
     @NotNull(message = "房屋朝向不能为空")
@@ -140,6 +140,8 @@ public class HouseForm {
     @ApiModelProperty(value = "房屋照片集合: 该集合对象为点击图片上传后，后端返回的对象",
             example = "[{'path': 'Fn6szUiUydhr3XE5xF55XCDvlc2E', 'width': 50, 'height': 50}]",
             notes = "该集合对象为点击图片上传后，后端返回的对象")
+    @NotNull(message = "房屋图片不能为空")
+    @Size(min = 1, message = "最少上传1张图片")
     private List<PictureForm> pictures;
 
 }

@@ -47,6 +47,9 @@ public class QiniuServiceImpl implements QiniuService, InitializingBean {
 
     private StringMap uploadPolicy;
 
+    @Value("${qiniu.cdnPrefix}")
+    private String cndPrefix;
+
 
     @Override
     public Response uploadFile(File file) throws QiniuException {
@@ -68,7 +71,9 @@ public class QiniuServiceImpl implements QiniuService, InitializingBean {
             response = uploadManager.put(inputStream, null, token, null, null);
         }
         try {
-            return gson.fromJson(response.bodyString(), QiniuUploadResult.class);
+            QiniuUploadResult qiniuUploadResult = gson.fromJson(response.bodyString(), QiniuUploadResult.class);
+            qiniuUploadResult.setCdnPrefix(cndPrefix);
+            return qiniuUploadResult;
         }catch (QiniuException e){
             response = e.response;
             try {

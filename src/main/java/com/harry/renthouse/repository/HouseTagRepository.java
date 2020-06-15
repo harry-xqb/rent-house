@@ -20,4 +20,6 @@ public interface HouseTagRepository  extends JpaRepository<HouseTag, Long> {
     List<HouseTag> findAllByHouseIdIn(List<Long> houseIdList);
 
     List<HouseTag> findAllByNameIn(List<String> nameList);
+
+    void deleteAllByHouseId(Long houseId);
 }

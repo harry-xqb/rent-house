@@ -2,6 +2,7 @@ package com.harry.renthouse.web.dto;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 import lombok.ToString;
 
@@ -30,4 +31,6 @@ public class QiniuUploadResult {
     @ApiModelProperty(value = "高度", example = "50")
     private Integer height;
 
+    @ApiModelProperty(value = "CDN地址")
+    private String cdnPrefix;
 }

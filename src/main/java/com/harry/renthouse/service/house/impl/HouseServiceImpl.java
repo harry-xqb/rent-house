@@ -135,19 +135,25 @@ public class HouseServiceImpl implements HouseService {
         updateHouseDetail.setHouseId(houseId);
         updateHouseDetail = houseDetailRepository.save(updateHouseDetail);
         HouseDetailDTO houseDetailDTO = modelMapper.map(updateHouseDetail, HouseDetailDTO.class);
+        // 移除所有照片
+        housePictureRepository.deleteAllByHouseId(houseId);
+        housePictureRepository.flush();
         // 获取照片信息
         List<HousePicture> housePictures = housePictureRepository.saveAll(generateHousePicture(houseForm, houseId));
         List<HousePictureDTO> housePicturesDTO = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
-        // 获取标签信息
-        List<HouseTag> houseTagList = houseTagRepository.findAllByHouseId(houseId);
-        List<String> tagNameList = houseTagList.stream().map(HouseTag::getName).collect(Collectors.toList());
+        // 移除所有标签
+        houseTagRepository.deleteAllByHouseId(houseId);
+        houseTagRepository.flush();
+        // 保存所有标签
+        // 新增房屋标签信息
+        List<HouseTag> houseTagList = generateHouseTag(houseForm, house.getId());
+         houseTagRepository.saveAll(houseTagList);
         // 填充房屋信息
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePicturesDTO);
-        houseDTO.setTags(tagNameList);
+        houseDTO.setTags(houseForm.getTags());
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
-
-        // 简历索引
+        // 建立elastic索引
         if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
             houseElasticSearchService.save(houseId);
         }

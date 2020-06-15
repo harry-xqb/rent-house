@@ -13,4 +13,6 @@ import java.util.List;
 public interface HousePictureRepository extends JpaRepository<HousePicture, Long> {
 
     List<HousePicture> findAllByHouseId(Long houseId);
+
+    void deleteAllByHouseId(Long houseId);
 }
