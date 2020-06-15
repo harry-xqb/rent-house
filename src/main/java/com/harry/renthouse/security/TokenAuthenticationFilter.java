@@ -42,31 +42,22 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     private final String  TOKEN_PREFIX = "Bearer ";
 
-    @Autowired
-    private TokenUtil tokenUtil;
-
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain fc)
             throws ServletException, IOException {
-
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context.getAuthentication() != null && context.getAuthentication().isAuthenticated()) {
-            // do nothing
-        } else {
-            String token = "";
-            String header = req.getHeader(TOKEN_HEADER);
-            if(StringUtils.isNotEmpty(header)){
-                //解析Token时将“Bearer ”前缀去掉
-                token = StringUtils.trim(header).replace(TOKEN_PREFIX, "");
-            }
-            else if(StringUtils.isBlank(header)){
-                token = req.getParameter("token");
-            }
-            // 如果请求头中有token,则生成Authentication凭证
-            if (StringUtils.isNotBlank(token)) {
-                Authentication auth = new TokenAuthentication(token);
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
+        String token = "";
+        String header = req.getHeader(TOKEN_HEADER);
+        if(StringUtils.isNotEmpty(header)){
+            //解析Token时将“Bearer ”前缀去掉
+            token = StringUtils.trim(header).replace(TOKEN_PREFIX, "");
+        }
+        else if(StringUtils.isBlank(header)){
+            token = req.getParameter("token");
+        }
+        // 如果请求头中有token,则生成Authentication凭证
+        if (StringUtils.isNotBlank(token)) {
+            Authentication auth = new TokenAuthentication(token);
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
         fc.doFilter(req, res);
     }

@@ -39,8 +39,8 @@ public class AdminHouseSearchForm {
     @ApiModelProperty(value = "创建时间范围(结束)", example = "2020-06-01")
     private LocalDate createTimeMax;
 
-    @ApiModelProperty(value = "城市名称", example = "北京")
-    private String city;
+    @ApiModelProperty(value = "城市英文简称", example = "bj")
+    private String cityEnName;
 
     @ApiModelProperty(value = "房源标题", example = "阮家桥")
     private String title;

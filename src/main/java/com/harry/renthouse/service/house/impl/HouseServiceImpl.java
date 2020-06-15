@@ -165,8 +165,8 @@ public class HouseServiceImpl implements HouseService {
             // 搜索的房源状态必须为未删除
             predicates.add(criteriaBuilder.notEqual(root.get("status"), HouseStatusEnum.DELETED.getValue()));
             // 如果城市不为空则将城市加入模糊查询
-            if(StringUtils.isNotBlank(searchForm.getCity())){
-                predicates.add(criteriaBuilder.like(root.get("city"), "%" + searchForm.getCity() + "%"));
+            if(StringUtils.isNotBlank(searchForm.getCityEnName())){
+                predicates.add(criteriaBuilder.equal(root.get("cityEnName"), searchForm.getCityEnName()));
             }
             // 如果创建时间起始不为空加入搜索条件
             if(searchForm.getCreateTimeMin() != null){
@@ -185,7 +185,7 @@ public class HouseServiceImpl implements HouseService {
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
         // 分页条件
-        Sort sort = Sort.by(Sort.Direction.valueOf(searchForm.getDirection()), searchForm.getOrderBy());
+        Sort sort = Sort.by(Sort.Direction.fromOptionalString(searchForm.getDirection()).orElse(Sort.Direction.ASC), searchForm.getOrderBy());
         int page = searchForm.getPage() - 1;
         Pageable pageable = PageRequest.of(page, searchForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(querySpec, pageable);
@@ -264,7 +264,8 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     public void deletePicture(Long pictureId) {
         HousePicture housePicture = housePictureRepository.findById(pictureId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
-        try {
+        housePictureRepository.delete(housePicture);
+        /*try {
             // TODO 七牛云中相同图片只存一份，如果删除的话会导致其他引用改图片的房屋照片也被删除
             Response response = qiniuService.deleteFile(housePicture.getPath());
             if(response.isOK()){
@@ -276,7 +277,7 @@ public class HouseServiceImpl implements HouseService {
         } catch (QiniuException e) {
             e.printStackTrace();
             throw new BusinessException(ApiResponseEnum.PICTURE_DELETE_FAIL);
-        }
+        }*/
     }
 
     @Override
