@@ -170,6 +170,12 @@ public class HouseServiceImpl implements HouseService {
             predicates.add(criteriaBuilder.equal(root.get("adminId"), AuthenticatedUserUtil.getUserId()));
             // 搜索的房源状态必须为未删除
             predicates.add(criteriaBuilder.notEqual(root.get("status"), HouseStatusEnum.DELETED.getValue()));
+            // 如果房源状态不为空则加入条件搜索
+            if(searchForm.getStatus() != null){
+                HouseStatusEnum status = HouseStatusEnum.ofOptionNumber(searchForm.getStatus())
+                        .orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_STATUS_NOT_FOUND));
+                predicates.add(criteriaBuilder.equal(root.get("status"), status.getValue()));
+            }
             // 如果城市不为空则将城市加入模糊查询
             if(StringUtils.isNotBlank(searchForm.getCityEnName())){
                 predicates.add(criteriaBuilder.equal(root.get("cityEnName"), searchForm.getCityEnName()));

@@ -3,6 +3,9 @@ package com.harry.renthouse.base;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * @author Harry Xu
  * @date 2020/5/12 10:50
@@ -18,4 +21,8 @@ public enum HouseStatusEnum {
     private int value;
 
     private String msg;
+
+    public static Optional<HouseStatusEnum> ofOptionNumber(int num){
+        return Arrays.stream(HouseStatusEnum.values()).filter(item -> item.getValue() == num).findFirst();
+    }
 }

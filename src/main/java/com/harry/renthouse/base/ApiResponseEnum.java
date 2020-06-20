@@ -48,6 +48,7 @@ public enum ApiResponseEnum {
     HOUSE_STATUS_CHANGE_ERROR_DELETED(50218, "不允许修改已删除房源状态"),
     HOUSE_PRICE_RAGE_ERROR(50219, "价格区间有误"),
     HOUSE_AREA_RANGE_ERROR(50220, "面积区间有误"),
+    HOUSE_STATUS_NOT_FOUND(50224, "房源状态未找到"),
 
     HOUSE_SUBSCRIBE_ALREADY_ORDER(500221, "已预约该房源"),
     HOUSE_SUBSCRIBE_ALREADY_FINISH(500222, "已看过该房源"),
