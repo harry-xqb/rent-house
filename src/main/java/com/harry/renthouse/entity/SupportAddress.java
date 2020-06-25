@@ -32,6 +32,8 @@ public class SupportAddress {
 
     private String level;
 
+    private String code;
+
     /* 百度地图经度 */
     private Long baiduMapLng;
 

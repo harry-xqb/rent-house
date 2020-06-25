@@ -82,7 +82,7 @@ spring:
   kafka:
     consumer:
       bootstrap-servers: 127.0.0.1:9092
-      group-id: rent-house-3
+      group-id: rent-house
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -123,7 +123,7 @@ aliyun:
     resendInterval: 60 # 1分钟重发
 baidu:
   map:
-    accessKey: baiduKey
+    accessKey: SEr7pwTtgtPOHnj6dRplmm1fEKLH2zuo
     geoTableId: 1000007599
 open:
   limits:

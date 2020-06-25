@@ -77,13 +77,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class HouseElasticSearchServiceImpl implements HouseElasticSearchService {
 
-    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC_HARRY";
+    private static final String HOUSE_INDEX_TOPIC = "HOUSE_INDEX_TOPIC";
 
-    public static final int DEFAULT_SUGGEST_SIZE = 5;
+    private static final int DEFAULT_SUGGEST_SIZE = 5;
 
     @Value("${qiniu.cdnPrefix}")
     private String cdnPrefix;
-
 
     @Resource
     private HouseElasticRepository houseElasticRepository;
@@ -115,7 +114,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     @Resource
     private AddressService addressService;
 
-    @KafkaListener(topics = HOUSE_INDEX_TOPIC)
+    @KafkaListener(topics = {HOUSE_INDEX_TOPIC})
     public void handleMessage(String message){
         try{
             HouseKafkaMessage houseKafkaMessage = gson.fromJson(message, HouseKafkaMessage.class);

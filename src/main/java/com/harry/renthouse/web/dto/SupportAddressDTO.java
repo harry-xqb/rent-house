@@ -25,9 +25,14 @@ public class SupportAddressDTO {
     @ApiModelProperty(value = "地区等级: city:城市 region: 区县", example = "city", allowableValues = "city,region")
     private String level;
 
+    @ApiModelProperty(value = "地区行政代码", example = "bg")
+    private String code;
+
     @ApiModelProperty(value = "百度地图经度")
     private Long baiduMapLng;
 
     @ApiModelProperty(value = "百度地图纬度")
     private Long baiduMapLat;
+
+
 }

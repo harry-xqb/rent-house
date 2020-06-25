@@ -201,7 +201,7 @@ public class HouseServiceImpl implements HouseService {
         int page = searchForm.getPage() - 1;
         Pageable pageable = PageRequest.of(page, searchForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(querySpec, pageable);
-        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);
+        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
         return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
@@ -469,8 +469,7 @@ public class HouseServiceImpl implements HouseService {
      */
     private List<HouseDTO> wrapperHouseResult(List<Long> houseIdList){
         List<House> houseList = houseRepository.findAllById(houseIdList);
-        List<HouseDTO> houseDTOList = houseList.stream().map(item -> modelMapper.map(item, HouseDTO.class))
-                .collect(Collectors.toList());
+        List<HouseDTO> houseDTOList = convertToHouseDTOList(houseList);
         Map<Long, HouseDTO> houseDTOMap = houseDTOList.stream().collect(Collectors.toMap(HouseDTO::getId, house -> house));
         wrapHouseDTOList(houseDTOList);
         List<HouseDTO> result = new ArrayList<>();
@@ -555,7 +554,7 @@ public class HouseServiceImpl implements HouseService {
         Sort sort = Sort.by(sortDirection, HouseSortOrderByEnum.from(searchHouseForm.getOrderBy()).orElse(HouseSortOrderByEnum.DEFAULT).getValue());
         Pageable pageable = PageRequest.of(searchHouseForm.getPage() - 1, searchHouseForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(specification, pageable);
-        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses);
+        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
         wrapHouseDTOList(houseDTOList);
         return new ServiceMultiResult<>((int) houses.getTotalElements(), houseDTOList);
     }
@@ -589,9 +588,9 @@ public class HouseServiceImpl implements HouseService {
      * 转换为houseDto列表
      * @param houses 分页查询结果
      */
-    private List<HouseDTO> convertToHouseDTOList(Page<House> houses){
+    private List<HouseDTO> convertToHouseDTOList(List<House> houses){
         // 查询出房屋列表
-        return houses.getContent().stream().map(house -> {
+        return houses.stream().map(house -> {
             HouseDTO houseDTO = modelMapper.map(house, HouseDTO.class);
             houseDTO.setCover(cdnPrefix + houseDTO.getCover());
             return houseDTO;
