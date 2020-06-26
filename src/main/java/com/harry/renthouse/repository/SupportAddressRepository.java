@@ -43,4 +43,11 @@ public interface SupportAddressRepository  extends JpaRepository<SupportAddress,
      */
     Optional<SupportAddress> findByEnNameAndLevel(String enName, String level);
 
+    /**
+     * 通过所属简称和自身简称查找
+     * @param belongTo 所属上级单位
+     * @param enName 自身简称
+     */
+    Optional<SupportAddress> findByBelongToAndEnNameAndLevel(String belongTo, String enName, String level);
+
 }

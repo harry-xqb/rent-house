@@ -123,7 +123,7 @@ public class AddressServiceImpl implements AddressService {
     public Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName) {
         SupportAddress city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(regionEnName, SupportAddress.AddressLevel.REGION.getValue())
+        SupportAddress region = supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.REGION.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
         Map<SupportAddress.AddressLevel, SupportAddressDTO> map = new HashMap();
         map.put(SupportAddress.AddressLevel.CITY, modelMapper.map(city, SupportAddressDTO.class));

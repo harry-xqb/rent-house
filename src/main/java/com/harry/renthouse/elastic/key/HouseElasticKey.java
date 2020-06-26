@@ -34,7 +34,11 @@ public class HouseElasticKey {
 
     public static String SUBWAY_LINE_NAME = "subwayLineName";
 
+    public static String SUBWAY_LINE_ID = "subwayLineId";
+
     public static String SUBWAY_STATION_NAME = "subwayStationName";
+
+    public static String SUBWAY_STATION_ID = "subwayStationId";
 
     public static String TAGS = "tags";
 

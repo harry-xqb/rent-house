@@ -19,4 +19,11 @@ public interface SubwayStationRepository  extends JpaRepository<SubwayStation, L
      * @return 地铁站列表
      */
     List<SubwayStation> getAllBySubwayId(Long subwayId);
+
+    /**
+     * 查询所有在id列表中的地铁
+     * @param idList id列表
+     */
+    List<SubwayStation> getAllByIdIn(List<Long> idList);
+
 }

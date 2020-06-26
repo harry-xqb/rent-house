@@ -41,8 +41,14 @@
       "subwayLineName": {
         "type": "keyword"
       },
+      "subwayLineId": {
+        "type": "long"
+      },
       "subwayStationName": {
         "type": "keyword"
+      },
+      "subwayStationId": {
+        "type": "long"
       },
       "tags": {
         "type": "text",

@@ -54,8 +54,14 @@ public class HouseElastic {
     @Field(type = FieldType.Keyword)
     private String subwayLineName;
 
+    @Field(type = FieldType.Long)
+    private Long subwayLineId;
+
     @Field(type = FieldType.Keyword)
     private String subwayStationName;
+
+    @Field(type = FieldType.Long)
+    private Long subwayStationId;
 
     @Field(type = FieldType.Text)
     private String address;

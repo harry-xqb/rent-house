@@ -31,7 +31,7 @@ public class SearchHouseForm {
     private Long subwayLineId;
 
     @ApiModelProperty(value = "地铁站id")
-    private Long subwayStationId;
+    private List<Long> subwayStationIdList;
 
     @ApiModelProperty(value = "出租方式(0: 合租 1:整租)", allowableValues = "0, 1", example = "0")
     private Integer rentWay = -1;

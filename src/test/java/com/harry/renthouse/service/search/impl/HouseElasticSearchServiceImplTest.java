@@ -28,7 +28,8 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
 
     @Test
     void save() {
-        List<Long> list = new ArrayList<>(Arrays.asList(15L, 16L, 17L, 18L, 19L, 20L, 21L, 24L, 25L, 29L));
+        List<Long> list = new ArrayList<>(Arrays.asList(15L, 16L, 17L, 18L, 19L, 20L, 21L,
+                24L, 25L, 29L, 39L, 44L, 45L, 47L, 48L, 49L, 50L, 51L, 52L));
 //        List<Long> list = new ArrayList<>(Arrays.asList(15L));
         for (Long aLong : list) {
             houseElasticSearchService.save(aLong);

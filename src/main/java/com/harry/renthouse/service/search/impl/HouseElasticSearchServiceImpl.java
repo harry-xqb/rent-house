@@ -223,10 +223,6 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, searchHouseForm.getCityEnName()));
-        // 查询区域
-        if(StringUtils.isNotBlank(searchHouseForm.getRegionEnName())){
-            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.REGION_EN_NAME, searchHouseForm.getRegionEnName()));
-        }
         // 查询关键字
         if(StringUtils.isNotBlank(searchHouseForm.getKeyword())){
             boolQueryBuilder.must(QueryBuilders.multiMatchQuery(searchHouseForm.getKeyword(),
@@ -237,6 +233,22 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
                     HouseElasticKey.SUBWAY_LINE_NAME,
                     HouseElasticKey.SUBWAY_STATION_NAME
             ));
+        }
+        // 查询区域
+        if(StringUtils.isNotBlank(searchHouseForm.getRegionEnName())){
+            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.REGION_EN_NAME, searchHouseForm.getRegionEnName()));
+        }
+        // 查询地铁
+        if(searchHouseForm.getSubwayLineId() != null){
+            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.SUBWAY_LINE_ID, searchHouseForm.getSubwayLineId()));
+        }
+        // 查询地铁站
+        if(!CollectionUtils.isEmpty(searchHouseForm.getSubwayStationIdList())){
+            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.SUBWAY_STATION_ID, searchHouseForm.getSubwayStationIdList()));
+        }
+        // 出租方式
+        if(searchHouseForm.getRentWay() != null && searchHouseForm.getRentWay() >= 0){
+            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.RENT_WAY, searchHouseForm.getRentWay()));
         }
         // 查询面积区间
         if(searchHouseForm.getAreaMin() != null || searchHouseForm.getAreaMax() != null){
@@ -262,10 +274,6 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         // 房屋朝向
         if(searchHouseForm.getDirection() != null && searchHouseForm.getDirection() > 0){
             boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.DIRECTION, searchHouseForm.getDirection()));
-        }
-        // 出租方式
-        if(searchHouseForm.getRentWay() != null && searchHouseForm.getRentWay() >= 0){
-            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.RENT_WAY, searchHouseForm.getRentWay()));
         }
         queryBuilder.withQuery(boolQueryBuilder);
         queryBuilder.withSort(SortBuilders.fieldSort(HouseSortOrderByEnum
