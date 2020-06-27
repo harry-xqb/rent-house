@@ -150,7 +150,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         // 设置经纬度
         SupportAddress city = supportAddressRepository.findByEnNameAndLevel(houseElastic.getCityEnName(), SupportAddress.AddressLevel.CITY.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-        SupportAddress region = supportAddressRepository.findByEnNameAndLevel(houseElastic.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
+        SupportAddress region = supportAddressRepository.findByBelongToAndEnNameAndLevel(houseElastic.getCityEnName(), houseElastic.getRegionEnName(), SupportAddress.AddressLevel.REGION.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
         String address = city.getCnName() + region.getCnName() + houseElastic.getAddress();
         BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
@@ -244,7 +244,11 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         }
         // 查询地铁站
         if(!CollectionUtils.isEmpty(searchHouseForm.getSubwayStationIdList())){
-            boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.SUBWAY_STATION_ID, searchHouseForm.getSubwayStationIdList()));
+            BoolQueryBuilder inBuilder = QueryBuilders.boolQuery();
+            searchHouseForm.getSubwayStationIdList().forEach((id) -> {
+                inBuilder.should(QueryBuilders.termQuery(HouseElasticKey.SUBWAY_STATION_ID, id));
+            });
+            boolQueryBuilder.must(inBuilder);
         }
         // 出租方式
         if(searchHouseForm.getRentWay() != null && searchHouseForm.getRentWay() >= 0){
@@ -271,10 +275,19 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
             }
             boolQueryBuilder.filter(rangeQueryBuilder);
         }
+        // 查询房屋标签
+        if(!CollectionUtils.isEmpty(searchHouseForm.getTags())){
+            BoolQueryBuilder inBuilder = QueryBuilders.boolQuery();
+            searchHouseForm.getTags().forEach(tag -> {
+                inBuilder.must(QueryBuilders.termQuery(HouseElasticKey.TAGS, tag));
+            });
+            boolQueryBuilder.must(inBuilder);
+        }
         // 房屋朝向
         if(searchHouseForm.getDirection() != null && searchHouseForm.getDirection() > 0){
             boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.DIRECTION, searchHouseForm.getDirection()));
         }
+
         queryBuilder.withQuery(boolQueryBuilder);
         queryBuilder.withSort(SortBuilders.fieldSort(HouseSortOrderByEnum
                 .from(searchHouseForm.getOrderBy())

@@ -51,9 +51,7 @@
         "type": "long"
       },
       "tags": {
-        "type": "text",
-        "analyzer": "ik_smart",
-        "search_analyzer": "ik_smart"
+        "type": "keyword"
       },
       "street": {
         "type": "keyword"

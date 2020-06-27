@@ -120,8 +120,6 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePictureDTOList);
         houseDTO.setTags(houseForm.getTags());
-        // 默认创建索引
-        houseElasticSearchService.save(house.getId());
         return houseDTO;
     }
 
@@ -506,12 +504,11 @@ public class HouseServiceImpl implements HouseService {
                 predicates.add(criteriaBuilder.equal(root.get("regionEnName"), searchHouseForm.getRegionEnName()));
             }
             // 如果地铁线路不为空，搜索地铁线路
-        /*    if(searchHouseForm.getSubwayLineId() != null){
+            if(searchHouseForm.getSubwayLineId() != null){
                 // 连接详细信息表
-
                 Subway subway = subwayRepository.findById(searchHouseForm.getSubwayLineId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_LINE_ERROR));
-                predicates.add(criteriaBuilder.equal(root.get("subwayId"), searchHouseForm.getSubwayLineId()));
-                // 如果地铁站不为空，搜索地铁站
+
+                // 如果地铁站不为空，搜索地铁站, 否则只搜索地铁线
                 if(!CollectionUtils.isEmpty(searchHouseForm.getSubwayStationIdList())){
                     List<SubwayStation> list = subwayStationRepository.getAllByIdIn(searchHouseForm.getSubwayStationIdList());
                     if(list.size() != searchHouseForm.getSubwayStationIdList().size()){
@@ -520,9 +517,13 @@ public class HouseServiceImpl implements HouseService {
                     if(list.stream().anyMatch(item -> item.getSubwayId().longValue() != subway.getId().longValue())){
                         throw new BusinessException(ApiResponseEnum.SUBWAY_AND_STATION_MATCH_ERROR);
                     }
-                    predicates.add(root.get("subwayStationId").in(searchHouseForm.getSubwayStationIdList()));
+                    List<Long> houseIdList = houseDetailRepository.findAllHouseIdBySubwayLineIdAndSubwayStationIdIn(searchHouseForm.getSubwayLineId(), searchHouseForm.getSubwayStationIdList());
+                    predicates.add(root.get("id").in(houseIdList));
+                }else{
+                    List<Long> houseIdList = houseDetailRepository.findAllHouseIdBySubwayLineId(searchHouseForm.getSubwayLineId());
+                    predicates.add(root.get("id").in(houseIdList));
                 }
-            }*/
+            }
             // 出租方式
             if(searchHouseForm.getRentWay() != null){
                 RentWayEnum.fromValue(searchHouseForm.getRentWay()).ifPresent(item -> {
@@ -540,9 +541,7 @@ public class HouseServiceImpl implements HouseService {
             }
             // 房源标签
             if(searchHouseForm.getTags() != null && !searchHouseForm.getTags().isEmpty()){
-                List<Long> houseIdList = houseTagRepository.findAllByNameIn(searchHouseForm.getTags()).stream().map(HouseTag::getHouseId).collect(Collectors.toList());
-             /*   Join<House, HouseTag> joinTag = root.join("houseId", JoinType.RIGHT);
-                predicates.add(joinTag.get("name").in(searchHouseForm.getTags()));*/
+                List<Long> houseIdList = houseTagRepository.findALLHouseIdMatchTags(searchHouseForm.getTags(), searchHouseForm.getTags().size());
                 predicates.add(root.get("id").in(houseIdList));
             }
             // 房屋朝向
@@ -568,36 +567,8 @@ public class HouseServiceImpl implements HouseService {
         Page<House> houses = houseRepository.findAll(specification, pageable);
         List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
         wrapHouseDTOList(houseDTOList);
-
-        int sizeBeforeFilter = houseDTOList.size();
-        // 过滤地铁线与地铁站
-        if(searchHouseForm.getSubwayLineId() != null){
-            houseDTOList = houseDTOList.stream()
-                    .filter(item -> {
-                        Long subwayLineId = item.getHouseDetail().getSubwayLineId();
-                        Long subwayStationId = item.getHouseDetail().getSubwayStationId();
-                        boolean subwayLineIdFlag = true;
-                        boolean subwayStationFlag = true;
-                        if(subwayLineId != null){
-                            subwayLineIdFlag = subwayLineId.longValue() ==
-                                    searchHouseForm.getSubwayLineId().longValue();
-                            if(!CollectionUtils.isEmpty(searchHouseForm.getSubwayStationIdList())){
-                                if(subwayStationId != null){
-                                    subwayStationFlag =  searchHouseForm.getSubwayStationIdList().stream().anyMatch(stationId -> stationId.longValue() == subwayStationId.longValue());
-                                }else{
-                                    subwayStationFlag = false;
-                                }
-                            }
-                        }else{
-                            subwayLineIdFlag = false;
-                        }
-                        return subwayLineIdFlag && subwayStationFlag;
-                    })
-                    .collect(Collectors.toList());
-        }
-        int reduceSize = sizeBeforeFilter -  houseDTOList.size();
         // 过滤地铁站
-        return new ServiceMultiResult<>((int) houses.getTotalElements() - reduceSize, houseDTOList);
+        return new ServiceMultiResult<>((int) houses.getTotalElements(), houseDTOList);
     }
 
     /**
