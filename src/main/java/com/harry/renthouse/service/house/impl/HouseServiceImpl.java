@@ -346,8 +346,8 @@ public class HouseServiceImpl implements HouseService {
                 throw new BusinessException(ApiResponseEnum.HOUSE_AREA_RANGE_ERROR);
             }
         }
-        // 如果是按关键字搜索
-        if(StringUtils.isNotBlank(searchHouseForm.getKeyword())){
+        // 如果是按关键字搜索 或者按距离搜索， 则采用elasticsearch
+        if(StringUtils.isNotBlank(searchHouseForm.getKeyword()) || searchHouseForm.getDistanceSearch() != null){
             ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.search(searchHouseForm);
             if(houseIdResult.getTotal() == 0){
                 return new ServiceMultiResult<>(0, Collections.emptyList());

@@ -1,7 +1,7 @@
 spring:
   datasource:
-    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url:  jdbc:log4jdbc:mysql://localhost:3306/rent_house?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url:  jdbc:mysql://localhost:3306/rent_house?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
     username: harry
     password: 123456
     hikari:

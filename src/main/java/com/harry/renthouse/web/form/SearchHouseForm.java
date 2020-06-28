@@ -64,9 +64,14 @@ public class SearchHouseForm {
     @ApiModelProperty(value = "升序还是降序", allowableValues = "ASC,DESC", example = "ASC")
     private String sortDirection = "ASC";
 
+    @ApiModelProperty(value = "面积最小值")
     @Min(value = 0, message = "面积值不能小于0")
     private Integer areaMin;
 
+    @ApiModelProperty(value = "面积最大值")
     @Min(value = 0, message = "面积值不能小于0")
     private Integer areaMax;
+
+    @ApiModelProperty(value = "距离查找参数")
+    private DistanceSearchForm distanceSearch;
 }

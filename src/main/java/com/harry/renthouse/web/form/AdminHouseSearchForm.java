@@ -46,7 +46,7 @@ public class AdminHouseSearchForm {
     private String title;
 
     @ApiModelProperty(value = "升序还是降序,默认升序", allowableValues = "ASC,DESC" ,example = "DESC")
-    private String direction = "ASC";
+    private String direction = "DESC";
 
     @ApiModelProperty(value = "排序字段,默认按创建时间排序",
             allowableValues = "createTime,title,price,area,room,floor," +

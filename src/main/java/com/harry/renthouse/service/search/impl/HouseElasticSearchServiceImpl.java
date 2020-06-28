@@ -35,6 +35,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.geo.GeoPoint;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -249,6 +250,13 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
                 inBuilder.should(QueryBuilders.termQuery(HouseElasticKey.SUBWAY_STATION_ID, id));
             });
             boolQueryBuilder.must(inBuilder);
+        }
+        // 查询距离
+        if(searchHouseForm.getDistanceSearch() != null){
+            boolQueryBuilder.filter(QueryBuilders.geoDistanceQuery(HouseElasticKey.LOCATION)
+                    .distance(searchHouseForm.getDistanceSearch().getDistance(), DistanceUnit.KILOMETERS)
+                    .point(searchHouseForm.getDistanceSearch().getLat(), searchHouseForm.getDistanceSearch().getLon())
+                    .boost(2));
         }
         // 出租方式
         if(searchHouseForm.getRentWay() != null && searchHouseForm.getRentWay() >= 0){

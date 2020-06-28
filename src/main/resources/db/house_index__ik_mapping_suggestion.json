@@ -83,6 +83,9 @@
       },
       "suggests": {
         "type": "completion"
+      },
+      "location": {
+        "type": "geo_point"
       }
     }
   }
