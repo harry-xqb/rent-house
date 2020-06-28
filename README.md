@@ -1,22 +1,41 @@
-# Rent-House(开源租房网站后端模板)
+## 扫码加微信(微信号: 17879502601) 备注: rent-house 一起讨论技术
+![用户首页](images/qrcode.jpg)
 
-## 本项目现处于开发阶段，后期预计实现如下功能:
+# **项目介绍**
+Rent-house是一个前后端分离的高仿自如租房系统， 项目采用SrpingBoot+React开发， 项目中使用了常见的企业级应用所设计的技术的，例如: elasticsearch, redis, kafka等等
+## 主要实现如下功能:
 1. 管理端: 房源CRUD
-2. 用户端: 地铁找房，地图找房， 区间价格找房，在线看房，VR看房等。
+2. 用户端: 地铁/区域/距离找房，地图找房， 区间价格找房，在线看房，VR看房等。
 3. 管理员与用户实时聊天
 4. 预约看房
 
-### 所用框架: 
-1. spring boot
-2. spring security （权限控制）
-3. spring data jpa 
-4. spring data elasticsearch （全文搜索）
-5. kafka (消息队列->进行异步索引)
-6. hadoop + spark (大数据框架，实现推荐房源)
-### 环境
-数据库: mysql  
-缓存: redis  
-全文搜索引擎: elasticsearch
-elasticsearch可视化工具: kibana
-jdk: 1.8  
-### [前端源码点这里](https://github.com/night-233/rent-house-admin)
+### 后端技术栈: 
+1. Spring Boot
+2. Spring Security 
+3. Spring Data Jpa 
+4. Spring Data Elasticsearch 
+5. Kafka 
+6. Hadoop + Spark 
+7. Redis
+8. Elasticsearch
+9. Kibana
+10. Mysql
+### 前端技术栈
+1. React (HOOK)
+2. React-Router
+3. Redux
+4. Antd4.x
+5. Axios
+6. Typescript
+7. ....
+# 已实现功能预览
+### 用户首页
+![用户首页](images/client-filter.jpg)
+### 管理员界面
+![管理员界面](images/admin-list.jpg)
+### 新增房源界面
+![管理员界面](images/add-house-form.jpg)
+### 个人信息界面
+![管理员界面](images/profile-edit.jpg)
+
+### [前端源码点这里（代码在dev分支下）](https://github.com/night-233/rent-house-admin)
