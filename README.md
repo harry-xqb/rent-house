@@ -1,5 +1,8 @@
 ## 扫码加微信(微信号: 17879502601) 备注: rent-house 一起讨论技术
-![用户首页](images/qrcode.jpg)
+
+<img src="images/qrcode.jpg" width="200" height="200">
+
+
 
 # **项目介绍**
 Rent-house是一个前后端分离的高仿自如租房系统， 项目采用SrpingBoot+React开发， 项目中使用了常见的企业级应用所设计的技术的，例如: elasticsearch, redis, kafka等等
