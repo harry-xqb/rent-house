@@ -32,9 +32,25 @@ Rent-house是一个前后端分离的高仿自如租房系统， 项目采用Srp
 6. Typescript
 7. ....
 # 已实现功能预览
+
+## [在线体验地址](http://house.touchfish.top/client/home)
+
 ### 用户首页
 ![用户首页](images/client-filter.jpg)
+## 房源详细
+
+![image-20200707162953900](images/image-20200707162953900.png)
+
+![image-20200707163051367](images/image-20200707163051367.png)
+
+## 登录注册
+
+![image-20200707163359418](images/image-20200707163359418.png)
+
+
+
 ### 管理员界面
+
 ![管理员界面](images/admin-list.jpg)
 ### 新增房源界面
 ![管理员界面](images/add-house-form.jpg)
