@@ -11,12 +11,14 @@ import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.validate.code.ValidateCodeTypeEnum;
 import com.harry.renthouse.web.dto.AuthenticationDTO;
 import com.harry.renthouse.web.dto.LimitsDTO;
+import com.harry.renthouse.web.dto.OpenApiUerCheckDTO;
 import com.harry.renthouse.web.dto.UserDTO;
 import com.harry.renthouse.web.form.NoPassLoginForm;
 import com.harry.renthouse.web.form.PhonePasswordLoginForm;
 import com.harry.renthouse.web.form.SendSmsForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.commons.lang3.StringUtils;
@@ -58,10 +60,13 @@ public class OpenController {
     }
     @PostMapping("registryByPhone")
     @ApiOperation("通过手机号注册用户")
-    public ApiResponse<UserDTO> phoneRegistry(@Validated @RequestBody UserPhoneRegisterForm userPhoneRegisterForm){
+    public ApiResponse<AuthenticationDTO> phoneRegistry(@Validated @RequestBody UserPhoneRegisterForm userPhoneRegisterForm){
         String smsCode = smsCodeService.getSmsCode(userPhoneRegisterForm.getPhoneNumber(), ValidateCodeTypeEnum.SIGN_UP.getValue());
         if(StringUtils.equals(smsCode, userPhoneRegisterForm.getVerifyCode())){
-            return ApiResponse.ofSuccess(userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN)));
+            UserDTO userDTO = userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN));
+            AuthenticationDTO authenticationDTO = authenticationService.noPassLogin(userPhoneRegisterForm.getPhoneNumber());
+            // return ApiResponse.ofSuccess());
+            return ApiResponse.ofSuccess(authenticationDTO);
         }
         return ApiResponse.ofStatus(ApiResponseEnum.PHONE_SMS_CODE_ERROR);
     }
@@ -93,11 +98,20 @@ public class OpenController {
 
     @GetMapping("nickName")
     @ApiOperation("校验用户名是否存在")
-    public ApiResponse checkNickNameExist(@ApiParam(value = "昵称") @RequestParam String nickName){
-        userService.findByNickName(nickName).ifPresent(user -> {
-            throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
-        });
-        return ApiResponse.ofSuccess();
+    public ApiResponse<OpenApiUerCheckDTO> checkNickNameExist(@ApiParam(value = "昵称") @RequestParam String nickName){
+        if(userService.findByNickName(nickName).isPresent()){
+            return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(true, ApiResponseEnum.USER_ALREADY_EXIST.getMessage()));
+        }
+        return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(false, ApiResponseEnum.USER_NOT_FOUND.getMessage()));
+    }
+
+    @GetMapping("phone")
+    @ApiModelProperty("校验手机号是否存在")
+    public ApiResponse checkPhoneExist(@ApiParam(value = "手机号") @RequestParam String phone){
+        if(userService.findByPhoneNumber(phone).isPresent()){
+            return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(true, ApiResponseEnum.USER_ALREADY_EXIST.getMessage()));
+        }
+        return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(false, ApiResponseEnum.USER_NOT_FOUND.getMessage()));
     }
 
 }

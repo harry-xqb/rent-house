@@ -159,9 +159,9 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setTags(houseForm.getTags());
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
         // 建立elastic索引
-        if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
-            houseElasticSearchService.save(houseId);
-        }
+        /*if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
+        }*/
+        houseElasticSearchService.save(houseId);
         return houseDTO;
     }
 

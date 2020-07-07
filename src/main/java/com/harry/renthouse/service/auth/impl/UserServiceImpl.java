@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
         // 判断用户昵称是否存在
         userRepository.findByNickName(userBasicInfoForm.getNickName()).ifPresent(item -> {
             if(!StringUtils.equals(user.getNickName(), item.getName())){
-                throw new BusinessException(ApiResponseEnum.USER_NICK_NAME_ALREADY_EXIST);
+                throw new BusinessException(ApiResponseEnum.USER_ALREADY_EXIST);
             }
         });
         modelMapper.map(userBasicInfoForm, user);

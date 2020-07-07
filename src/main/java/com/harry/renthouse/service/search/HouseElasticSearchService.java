@@ -9,6 +9,7 @@ import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
 
 import javax.xml.ws.Service;
+import java.util.Optional;
 
 /**
  * @author Harry Xu
@@ -59,6 +60,13 @@ public interface HouseElasticSearchService {
      * @return 房源数量
      */
     int aggregateDistrictHouse(String cityEnName, String regionEnName, String district);
+
+    /**
+     * 通过房源id获取房屋信息
+     * @param houseId 房源id
+     * @return 房屋信息
+     */
+    Optional<HouseElastic> getByHouseId(Long houseId);
 
     /**
      * 聚合城市区县数据

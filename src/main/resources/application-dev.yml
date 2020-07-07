@@ -104,7 +104,7 @@ logging:
     io.swagger.models.parameters.AbstractSerializableParameter: error
     com:
       harry:
-        renthouse: info
+        renthouse: debug
 # 七牛云配置
 qiniu:
   accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo

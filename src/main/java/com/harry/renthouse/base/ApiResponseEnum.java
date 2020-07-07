@@ -24,7 +24,7 @@ public enum ApiResponseEnum {
     NO_AUTHENTICATED_USER_ERROR(40007, "获取认证用户失败"),
     NOT_VALID_CREDENTIAL(40008, "无效的凭据"),
     USER_NOT_FOUND(40009, "用户不存在"),
-    USER_NICK_NAME_ALREADY_EXIST(40010, "用户名已存在"),
+    USER_ALREADY_EXIST(40010, "用户已存在"),
     ORIGINAL_PASSWORD_ERROR(40011, "原密码错误"),
     ORIGINAL_PASSWORD_EMPTY_ERROR(40012, "原密码不能为空"),
     // 地址相关

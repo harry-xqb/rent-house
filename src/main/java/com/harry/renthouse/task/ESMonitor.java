@@ -35,7 +35,7 @@ public class ESMonitor {
     private static final String YELLOW = "yellow";
     private static final String GREEN = "green";
     private static final String MAIL_REDIS_PREFIX = "MAIL:INTERVAL:";
-    public static final int MAIL_REDIS_INTERVAL = 60 * 60 * 24;
+    private static final int MAIL_REDIS_INTERVAL = 60 * 60 * 24;
 
     @Resource
     private JavaMailSender javaMailSender;
@@ -49,7 +49,7 @@ public class ESMonitor {
     @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    @Scheduled(fixedDelay = 5000)
+    @Scheduled(fixedDelay = 1000 * 60 * 60 * 24)
     public void healthCheck(){
         HttpClient httpClient = HttpClients.createDefault();
 

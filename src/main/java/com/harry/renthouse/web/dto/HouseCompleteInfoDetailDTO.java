@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
