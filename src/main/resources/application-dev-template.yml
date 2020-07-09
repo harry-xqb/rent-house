@@ -1,0 +1,140 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url:  jdbc:mysql://localhost:3306/rent_house?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
+    username: harry
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: HikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+    druid:
+      #初始化大小
+      initialSize: 5
+      #最小值
+      minIdle: 5
+      #最大值
+      maxActive: 20
+      #最大等待时间，配置获取连接等待超时，时间单位都是毫秒ms
+      maxWait: 60000
+      #配置间隔多久才进行一次检测，检测需要关闭的空闲连接
+      timeBetweenEvictionRunsMillis: 60000
+      #配置一个连接在池中最小生存的时间
+      minEvictableIdleTimeMillis: 300000
+      validationQuery: SELECT 1 FROM DUAL
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+      poolPreparedStatements: true
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，
+      #'wall'用于防火墙，SpringBoot中没有log4j，我改成了log4j2
+      filters: stat,wall,log4j2
+      #最大PSCache连接
+      maxPoolPreparedStatementPerConnectionSize: 20
+      useGlobalDataSourceStat: true
+      # 通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+      # 配置StatFilter
+      web-stat-filter:
+        #默认为false，设置为true启动
+        enabled: true
+        url-pattern: "/*"
+        exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+      #配置StatViewServlet
+      stat-view-servlet:
+        url-pattern: "/druid/*"
+        #允许那些ip
+        allow: 127.0.0.1
+        login-username: admin
+        login-password: 123456
+        #禁止那些ip
+        deny: 192.168.1.102
+        #是否可以重置
+        reset-enable: true
+        #启用
+        enabled: true
+  jpa:
+    #show-sql: true
+    properties:
+      dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+      format_sql: true
+    hibernate:
+      ddl-auto: update
+  servlet:
+    multipart:
+      max-request-size: 50MB
+      max-file-size: 50MB
+  data:
+    redis:
+      repositories:
+        enabled: false
+  redis:
+    host: 127.0.0.1
+    port: 6379
+  elasticsearch:
+    rest:
+      uris: http://127.0.0.1:9200
+  kafka:
+    consumer:
+      bootstrap-servers: 127.0.0.1:9092
+      group-id: rent-house
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      missing-topics-fatal: false
+  mail:
+    host: smtp.qq.com
+    username: 923243595@qq.com
+    password: ebuvrxzdcsxdbajh
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: debug
+    io.swagger.models.parameters.AbstractSerializableParameter: error
+    com:
+      harry:
+        renthouse: debug
+# 七牛云配置
+qiniu:
+  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo  # 你的七牛云accesskey
+  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7  # 你的七牛云accessSecret
+  bucket: hz-rent-house        # 你的七牛云OSS名称
+  cdnPrefix: http://qiniu.touchfish.top/  # 你的七牛云cnd前缀名称
+# 阿里云配置
+aliyun:
+  sms:
+    accessKey: aabbcc  # 你的阿里短信accesskey
+    accessSecret: aabbcc  # 你的阿里短信accessSecret
+    templateCode: SMS_190792051  # 你的阿里短信模板代码
+    signName: touchfish   # 你的阿里短信模板签名
+    length: 4
+    expireIn: 300 # 5分钟过期
+    resendInterval: 60 # 1分钟重发
+baidu:
+  map:
+    accessKey: xxxaaasdasdasdasdads  # 你的百度云accessKey
+    geoTableId: 1000007599   # 你的geo表id
+open:
+  limits:
+    userPasswordRegex: ^(?=.*\d)((?=.*[a-z])|(?=.*[A-Z])).{8,16}$
+    phoneRegex: ^(1[3-9]\d{9}$)
+    avatarSizeLimit: 5242880
+    avatarTypeLimit: jpg,png,jpeg
+    housePhotoSizeLimit: 10485760
+    housePhotoTypeLimit: jpg,png,jpeg
+esmonitor:
+  mailForm: 923243595@qq.com   # es健康检查异常通知邮箱
+  mailTo: 923243595@qq.com
+  mailTitle: 【警告】Elasticsearch监控
+  api: http://localhost:9200/_cluster/health
