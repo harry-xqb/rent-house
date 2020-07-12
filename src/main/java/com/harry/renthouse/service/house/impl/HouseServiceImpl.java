@@ -7,42 +7,32 @@ import com.harry.renthouse.repository.*;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
-import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
-import com.qiniu.common.QiniuException;
-import com.qiniu.http.Response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.omg.CORBA.PRIVATE_MEMBER;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.support.SortDefinition;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.JoinType;
 import javax.persistence.criteria.Predicate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * 房源service实现
@@ -75,9 +65,6 @@ public class HouseServiceImpl implements HouseService {
     private HouseDetailRepository houseDetailRepository;
 
     @Resource
-    private QiniuService qiniuService;
-
-    @Resource
     private SupportAddressRepository supportAddressRepository;
 
     @Resource
@@ -95,7 +82,7 @@ public class HouseServiceImpl implements HouseService {
 
     @Transactional
     @Override
-    public HouseDTO addHouse(HouseForm houseForm) {
+    public HouseDTO addHouse(HouseForm houseForm){
         // 房屋详情数据填充与校验
         HouseDetail houseDetail = generateHouseDetail(houseForm);
         // 新增房屋信息
@@ -122,10 +109,8 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setTags(houseForm.getTags());
         return houseDTO;
     }
-
-    @Override
     @Transactional
-    public HouseDTO editHouse(HouseForm houseForm) {
+    public HouseDTO editHouse(HouseForm houseForm){
         Long houseId = houseForm.getId();
         // 查看房源id是否存在
         House house = houseRepository.findByIdAndAdminId(houseId, AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
@@ -152,7 +137,7 @@ public class HouseServiceImpl implements HouseService {
         // 保存所有标签
         // 新增房屋标签信息
         List<HouseTag> houseTagList = generateHouseTag(houseForm, house.getId());
-         houseTagRepository.saveAll(houseTagList);
+        houseTagRepository.saveAll(houseTagList);
         // 填充房屋信息
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePicturesDTO);
@@ -161,10 +146,8 @@ public class HouseServiceImpl implements HouseService {
         // 建立elastic索引
         /*if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
         }*/
-        houseElasticSearchService.save(houseId);
         return houseDTO;
     }
-
 
     @Override
     public ServiceMultiResult<HouseDTO> adminSearch(AdminHouseSearchForm searchForm) {
@@ -361,11 +344,16 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm) {
         SearchHouseForm searchHouseForm = new SearchHouseForm();
-        searchHouseForm.setPage(mapSearchForm.getPage());
+  /*      searchHouseForm.setPage(mapSearchForm.getPage());
         searchHouseForm.setPageSize(mapSearchForm.getPageSize());
         searchHouseForm.setCityEnName(mapSearchForm.getCityEnName());
         searchHouseForm.setOrderBy(mapSearchForm.getOrderBy());
         searchHouseForm.setSortDirection(mapSearchForm.getOrderDirection());
+        searchHouseForm.setRentWay(mapSearchForm.getRentWay());
+        searchHouseForm.setPriceMin(mapSearchForm.getPriceMin());
+        searchHouseForm.setPriceMax(mapSearchForm.getPriceMax());
+        searchHouseForm.setDirection(mapSearchForm.getDirection());*/
+        modelMapper.map(mapSearchForm, searchHouseForm);
         ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
         return new ServiceMultiResult<>(result.getTotal(), wrapperHouseResult(result.getList()));
     }

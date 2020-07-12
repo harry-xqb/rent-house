@@ -93,7 +93,7 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
     @Test
     void mapBoundSearch() {
         MapBoundSearchForm boundSearchForm = new MapBoundSearchForm();
-        boundSearchForm.setCityEnName("bj");
+        //boundSearchForm.setCityEnName("bj");
         boundSearchForm.setLeftTopLongitude(116.264619);
         boundSearchForm.setLeftTopLatitude(39.99269);
         boundSearchForm.setRightBottomLongitude(116.32671);

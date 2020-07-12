@@ -148,6 +148,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         BaiduMapLocation location = addressService.getBaiduMapLocation(city.getCnName(), address).orElse(null);
         houseElastic.setLocation(location);
         // 存储至elastic中
+        log.debug(houseElastic.toString());
         houseElasticRepository.save(houseElastic);
         // 上传poi数据
         String lbsTitle = house.getStreet() + house.getDistrict();
@@ -184,8 +185,12 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         List<HouseSuggestion> suggestionList = new ArrayList<>();
         suggestionList.add(new HouseSuggestion(houseElastic.getTitle(), 30));
         suggestionList.add(new HouseSuggestion(houseElastic.getDistrict(), 20));
-        suggestionList.add(new HouseSuggestion(houseElastic.getSubwayLineName(), 15));
-        suggestionList.add(new HouseSuggestion(houseElastic.getSubwayStationName(), 15));
+        if(StringUtils.isNotBlank(houseElastic.getSubwayLineName())){
+            suggestionList.add(new HouseSuggestion(houseElastic.getSubwayLineName(), 15));
+        }
+        if(StringUtils.isNotBlank(houseElastic.getSubwayStationName())){
+            suggestionList.add(new HouseSuggestion(houseElastic.getSubwayStationName(), 15));
+        }
         houseElastic.setSuggests(suggestionList);
     }
 
@@ -408,7 +413,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     @Override
     public ServiceMultiResult<Long> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm) {
         // 过滤城市
-        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+   /*     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, mapBoundSearchForm.getCityEnName()));
         // 过滤视野范围
         boolQueryBuilder.filter(QueryBuilders.geoBoundingBoxQuery(HouseElasticKey.LOCATION)
@@ -426,8 +431,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         NativeSearchQuery query = queryBuilder.build();
         log.debug(query.getQuery().toString());
         Page<HouseElastic> result = houseElasticRepository.search(query);
-        return new ServiceMultiResult<>((int)result.getTotalElements(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));
+        return new ServiceMultiResult<>((int)result.getTotalElements(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));*/
+        return new ServiceMultiResult<>();
     }
-
-
 }

@@ -29,10 +29,10 @@ public class SupportAddressDTO {
     private String code;
 
     @ApiModelProperty(value = "百度地图经度")
-    private Long baiduMapLng;
+    private double baiduMapLng;
 
     @ApiModelProperty(value = "百度地图纬度")
-    private Long baiduMapLat;
+    private double baiduMapLat;
 
 
 }

@@ -1,0 +1,120 @@
+{
+  "settings": {
+    "number_of_replicas": 0,
+    "analysis": {
+      "analyzer": {
+        "ik_smart_pinyin": {
+          "type": "custom",
+          "tokenizer": "ik_smart",
+          "filter": ["my_pinyin", "word_delimiter"]
+        },
+        "ik_max_word_pinyin": {
+          "type": "custom",
+          "tokenizer": "ik_max_word",
+          "filter": ["my_pinyin", "word_delimiter"]
+        }
+      },
+      "filter": {
+        "my_pinyin": {
+          "type" : "pinyin",
+          "keep_separate_first_letter" : true,
+          "keep_full_pinyin" : true,
+          "keep_original" : true,
+          "limit_first_letter_length" : 16,
+          "lowercase" : true,
+          "remove_duplicated_term" : true
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "houseId": {
+        "type": "long"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_smart_pinyin",
+        "search_analyzer": "ik_smart_pinyin"
+      },
+      "price": {
+        "type": "integer"
+      },
+      "area": {
+        "type": "integer"
+      },
+      "createTime": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "lastUpdateTime": {
+        "type": "date",
+        "format": "strict_date_optional_time||epoch_millis"
+      },
+      "cityEnName": {
+        "type": "keyword"
+      },
+      "regionEnName": {
+        "type": "keyword"
+      },
+      "direction": {
+        "type": "integer"
+      },
+      "distanceToSubway": {
+        "type": "integer",
+        "null_value": -1
+      },
+      "subwayLineName": {
+        "type": "keyword"
+      },
+      "subwayLineId": {
+        "type": "long",
+        "null_value": -1
+      },
+      "subwayStationName": {
+        "type": "keyword"
+      },
+      "subwayStationId": {
+        "type": "long",
+        "null_value": -1
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "street": {
+        "type": "keyword"
+      },
+      "district": {
+        "type": "keyword"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "ik_smart_pinyin",
+        "search_analyzer": "ik_smart_pinyin"
+      },
+      "layoutDesc": {
+        "type": "text",
+        "index": true
+      },
+      "traffic": {
+        "type": "text",
+        "analyzer": "ik_smart_pinyin",
+        "search_analyzer": "ik_smart_pinyin"
+      },
+      "roundService": {
+        "type": "text",
+        "analyzer": "ik_smart_pinyin",
+        "search_analyzer": "ik_smart_pinyin"
+      },
+      "rentWay": {
+        "type": "integer"
+      },
+      "suggests": {
+        "type": "completion"
+      },
+      "location": {
+        "type": "geo_point"
+      }
+    }
+  }
+}

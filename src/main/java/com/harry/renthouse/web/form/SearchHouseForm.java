@@ -62,7 +62,7 @@ public class SearchHouseForm {
     private String orderBy = "lastUpdateTime";
 
     @ApiModelProperty(value = "升序还是降序", allowableValues = "ASC,DESC", example = "ASC")
-    private String sortDirection = "ASC";
+    private String sortDirection = "DESC";
 
     @ApiModelProperty(value = "面积最小值")
     @Min(value = 0, message = "面积值不能小于0")
@@ -74,4 +74,7 @@ public class SearchHouseForm {
 
     @ApiModelProperty(value = "距离查找参数")
     private DistanceSearchForm distanceSearch;
+
+    @ApiModelProperty(value = "视野范围, 地图找房中使用")
+    private MapBoundSearchForm bounds;
 }

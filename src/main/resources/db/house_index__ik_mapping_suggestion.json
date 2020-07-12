@@ -42,13 +42,15 @@
         "type": "keyword"
       },
       "subwayLineId": {
-        "type": "long"
+        "type": "long",
+        "null_value": -1
       },
       "subwayStationName": {
         "type": "keyword"
       },
       "subwayStationId": {
-        "type": "long"
+        "type": "long",
+        "null_value": -1
       },
       "tags": {
         "type": "keyword"

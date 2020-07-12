@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -24,8 +27,7 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicInsert
-@DynamicUpdate
+@EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails, Serializable {
 
     @Id
@@ -42,10 +44,12 @@ public class User implements UserDetails, Serializable {
 
     private Integer status;
 
+    @CreatedDate
     private Date createTime;
 
     private Date lastLoginTime;
 
+    @LastModifiedDate
     private Date lastUpdateTime;
 
     private String avatar;

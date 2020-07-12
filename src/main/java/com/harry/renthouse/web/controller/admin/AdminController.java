@@ -1,33 +1,25 @@
 package com.harry.renthouse.web.controller.admin;
 
-import com.fasterxml.jackson.annotation.JsonView;
-import com.google.gson.Gson;
 import com.harry.renthouse.base.ApiResponse;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.entity.SupportAddress;
 import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.service.ServiceMultiResult;
-import com.harry.renthouse.service.auth.AuthenticationService;
-import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
+import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.util.FileUploaderChecker;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
-import com.qiniu.common.QiniuException;
-import com.qiniu.http.Response;
 import io.swagger.annotations.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -51,6 +43,10 @@ public class AdminController {
     @Resource
     private LimitsProperty limitsProperty;
 
+    @Resource
+    private HouseElasticSearchService houseElasticSearchService;
+
+
     @ApiOperation(value = "新增房源接口")
     @PostMapping(value = "house/add")
     public ApiResponse<HouseDTO> addHouse(@Validated @RequestBody HouseForm houseForm){
@@ -59,6 +55,7 @@ public class AdminController {
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
         }
         HouseDTO houseDto = houseService.addHouse(houseForm);
+        houseElasticSearchService.save(houseDto.getId());
         return ApiResponse.ofSuccess(houseDto);
     }
 
@@ -78,6 +75,7 @@ public class AdminController {
             return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
         }
         HouseDTO houseDto = houseService.editHouse(houseForm);
+        houseElasticSearchService.save(houseDto.getId());
         return ApiResponse.ofSuccess(houseDto);
     }
 

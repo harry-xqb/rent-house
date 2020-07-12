@@ -35,10 +35,10 @@ public class SupportAddress {
     private String code;
 
     /* 百度地图经度 */
-    private Long baiduMapLng;
+    private double baiduMapLng;
 
     /* 百度地图纬度 */
-    private Long baiduMapLat;
+    private double baiduMapLat;
 
     @AllArgsConstructor
     @Getter

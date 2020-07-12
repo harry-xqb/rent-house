@@ -76,7 +76,7 @@ public class AddressServiceImpl implements AddressService {
      * @return
      */
     @Override
-    public ServiceMultiResult findAllCities() {
+    public ServiceMultiResult<SupportAddressDTO> findAllCities() {
         Optional<List<SupportAddress>> addressList = Optional.ofNullable(supportAddressRepository.findAllByLevel(SupportAddress.AddressLevel.CITY.getValue()));
         List<SupportAddressDTO> list = addressList.orElse(Collections.emptyList()).stream()
                 .map(address -> modelMapper.map(address, SupportAddressDTO.class))
