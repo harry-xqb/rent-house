@@ -36,3 +36,34 @@ public class AuthenticatedUserUtil {
         return getUserInfo().getId();
     }
 }
+
+class Shop {
+
+    void printSomething(Printer printer){
+        printer.print();
+    }
+}
+
+class Consumer{
+    public static void main(String[] args) {
+        Shop shop = new Shop();
+        // 我想打印彩印
+        Printer colorPrinter = new ColorPrinter();
+        shop.printSomething(colorPrinter);
+
+        // 我想打印黑白照
+        Printer blackPrinter = new BlackPrinter();
+        shop.printSomething(blackPrinter);
+    }
+}
+
+
+class Printer{
+
+    void print(){
+
+    };
+}
+
+class ColorPrinter extends Printer{};
+class BlackPrinter extends Printer{};

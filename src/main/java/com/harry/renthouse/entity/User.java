@@ -27,7 +27,8 @@ import java.util.Set;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
+@DynamicUpdate
+@DynamicInsert
 public class User implements UserDetails, Serializable {
 
     @Id
@@ -44,12 +45,10 @@ public class User implements UserDetails, Serializable {
 
     private Integer status;
 
-    @CreatedDate
     private Date createTime;
 
     private Date lastLoginTime;
 
-    @LastModifiedDate
     private Date lastUpdateTime;
 
     private String avatar;

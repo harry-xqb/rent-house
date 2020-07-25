@@ -292,6 +292,15 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
             boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.DIRECTION, searchHouseForm.getDirection()));
         }
 
+        // 视野范围
+        if(searchHouseForm.getBounds() != null){
+            MapBoundSearchForm bounds = searchHouseForm.getBounds();
+            boolQueryBuilder.filter(QueryBuilders.geoBoundingBoxQuery(HouseElasticKey.LOCATION)
+                    .setCorners(new GeoPoint(bounds.getLeftTopLatitude(), bounds.getLeftTopLongitude()),
+                            new GeoPoint(bounds.getRightBottomLatitude(), bounds.getRightBottomLongitude()))
+            );
+        }
+
         queryBuilder.withQuery(boolQueryBuilder);
         queryBuilder.withSort(SortBuilders.fieldSort(HouseSortOrderByEnum
                 .from(searchHouseForm.getOrderBy())
