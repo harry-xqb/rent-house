@@ -10,13 +10,8 @@ import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.util.FileUploaderChecker;
-import com.harry.renthouse.web.dto.HouseSubscribeInfoDTO;
-import com.harry.renthouse.web.dto.QiniuUploadResult;
-import com.harry.renthouse.web.dto.UserDTO;
-import com.harry.renthouse.web.form.ListHouseSubscribesForm;
-import com.harry.renthouse.web.form.SubscribeHouseForm;
-import com.harry.renthouse.web.form.UpdatePasswordForm;
-import com.harry.renthouse.web.form.UserBasicInfoForm;
+import com.harry.renthouse.web.dto.*;
+import com.harry.renthouse.web.form.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -27,6 +22,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Harry Xu
@@ -119,7 +116,7 @@ public class UserController {
         return ApiResponse.ofSuccess();
     }
 
-    @PutMapping("house/subscribe")
+    @PostMapping("house/subscribe")
     @ApiOperation("预约房源")
     public ApiResponse subscribeHouse(@Validated @RequestBody SubscribeHouseForm subscribeHouseForm){
         houseService.addSubscribeOrder(subscribeHouseForm);
@@ -133,11 +130,39 @@ public class UserController {
         return ApiResponse.ofSuccess(houseSubscribeStatus);
     }
 
-    @GetMapping("house/subscribes")
+    @PostMapping("house/subscribes")
     @ApiOperation("获取当前用户所有预约的房源")
     public ApiResponse<ServiceMultiResult<HouseSubscribeInfoDTO>> listHouseSubscribes(
             @Validated @RequestBody ListHouseSubscribesForm listHouseSubscribesForm){
         ServiceMultiResult<HouseSubscribeInfoDTO> result = houseService.listUserHouseSubscribes(listHouseSubscribesForm);
         return ApiResponse.ofSuccess(result);
+    }
+
+    @PostMapping("house/{houseId}/star")
+    @ApiOperation("收藏房源")
+    public ApiResponse starHouse(@PathVariable Long houseId){
+        houseService.starHouse(houseId);
+        return ApiResponse.ofSuccess();
+    }
+
+    @GetMapping("house/{houseId}/operate")
+    @ApiOperation("获取当前用户对房源的操作（收藏，预约）")
+    public ApiResponse<UserHouseOperateDTO> getHouseOperate(@PathVariable Long houseId){
+        UserHouseOperateDTO houseOperate = houseService.getHouseOperate(houseId);
+        return ApiResponse.ofSuccess(houseOperate);
+    }
+
+    @PostMapping("house/star/list")
+    @ApiOperation("用户收藏房源列表")
+    public ApiResponse<ServiceMultiResult<HouseStarDTO>> getUserStarList(@Validated @RequestBody ListHouseStarForm starForm){
+        ServiceMultiResult<HouseStarDTO> result = houseService.userStarHouseList(starForm);
+        return ApiResponse.ofSuccess(result);
+    }
+
+    @DeleteMapping("house/{houseId}/star")
+    @ApiOperation("取消收藏房源")
+    public ApiResponse cancelStarHouse(@PathVariable Long houseId){
+        houseService.deleteStarInfo(houseId);
+        return ApiResponse.ofSuccess();
     }
 }

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
  */
 @Data
 @AllArgsConstructor
-@ApiModel("按区县聚合返回结果")
+@ApiModel("聚合区县返回结果")
 public class HouseBucketDTO {
 
-    @ApiModelProperty(value = "区县名称")
+    @ApiModelProperty(value = "聚合区县名称")
     private String region;
 
     @ApiModelProperty(value = "房源数量")

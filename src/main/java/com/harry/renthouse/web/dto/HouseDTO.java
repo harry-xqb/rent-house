@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -102,5 +103,11 @@ public class HouseDTO {
     /* 房屋信息 */
     @ApiModelProperty("房屋详细信息")
     private HouseDetailDTO houseDetail;
+
+    @ApiModelProperty("地理位置坐标")
+    private BaiduMapLocation location;
+
+    @ApiModelProperty("该房屋被收藏次数")
+    private int starNumber;
 
 }

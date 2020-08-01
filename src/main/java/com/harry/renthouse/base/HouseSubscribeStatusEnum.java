@@ -15,9 +15,10 @@ import java.util.Optional;
 @Getter
 public enum HouseSubscribeStatusEnum {
 
-    WAIT(1, "待看"),
-    ORDERED(2, "已预约"),
-    FINISH(3, "已完成");
+    WAIT(1, "待确认"),
+    ORDERED(2, "待看房"),
+    FINISH(3, "已完成"),
+    CANCELD(4, "已取消"),
         ;
 
     private int value;

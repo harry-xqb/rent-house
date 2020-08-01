@@ -16,6 +16,7 @@ public enum ApiResponseEnum {
     UNAUTHORIZED(401, "未认证"),
     NOT_FOUND(404, "请求地址不存在"),
     INTERNAL_SERVER_ERROR(500, "服务器内部错误"),
+    UNSUPPORTED_REQUEST_TYPE(505, "请求类型不支持"),
     NOT_LOGIN(40001, "用户未登录"),
     USERNAME_PASSWORD_ERROR(40002, "用户名密码错误"),
     NO_PRIORITY_ERROR(40003, "无权访问"),
@@ -54,6 +55,8 @@ public enum ApiResponseEnum {
     HOUSE_SUBSCRIBE_ALREADY_FINISH(500222, "已看过该房源"),
     HOUSE_SUBSCRIBE_STATUS_ERROR(500223, "预约状态有误"),
     HOUSE_SUBSCRIBE_NOT_FOUND(500223, "预约信息未找到"),
+
+    HOUSE_UN_STAR_NOT_FOUND_ERROR(500225, "取消收藏失败,未收藏该房源"),
     // 短信相关
     PHONE_ALREADY_REGISTERED(50323, "手机号已被注册"),
     PHONE_SEND_SMS_ERROR(50324, "发送短信失败"),

@@ -150,12 +150,12 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         // 存储至elastic中
         log.debug(houseElastic.toString());
         houseElasticRepository.save(houseElastic);
-        // 上传poi数据
-        String lbsTitle = house.getStreet() + house.getDistrict();
+        // 上传poi数据, (百度地图对poi麻点支持)
+        /*String lbsTitle = house.getStreet() + house.getDistrict();
         String lbsAddress = city.getCnName() + region.getCnName() + house.getStreet() + house.getDistrict();
         String cover = cdnPrefix + house.getCover();
         addressService.lbsUpload(houseElastic.getLocation(),
-                lbsTitle, lbsAddress, houseId, houseElastic.getPrice(), houseElastic.getArea(), cover);
+                lbsTitle, lbsAddress, houseId, houseElastic.getPrice(), houseElastic.getArea(), cover);*/
     }
 
     private void updateSuggests(HouseElastic houseElastic){
@@ -216,7 +216,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
     }
 
     @Override
-    public ServiceMultiResult<Long> search(SearchHouseForm searchHouseForm) {
+    public ServiceMultiResult<HouseElastic> search(SearchHouseForm searchHouseForm) {
         NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
         BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
         boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, searchHouseForm.getCityEnName()));
@@ -310,8 +310,7 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
         queryBuilder.withPageable(pageable);
         Page<HouseElastic> page = houseElasticRepository.search(queryBuilder.build());
         int total = (int) page.getTotalElements();
-        List<Long> result = page.getContent().stream().map(HouseElastic::getHouseId).collect(Collectors.toList());
-        return new ServiceMultiResult<>(total, result);
+        return new ServiceMultiResult<>(total, page.getContent());
     }
 
     @Override
@@ -417,30 +416,5 @@ public class HouseElasticSearchServiceImpl implements HouseElasticSearchService 
                 .collect(Collectors.toList());
 
         return new ServiceMultiResult<>(aggResult.getSize(), houseBucketDTOS);
-    }
-
-    @Override
-    public ServiceMultiResult<Long> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm) {
-        // 过滤城市
-   /*     BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
-        boolQueryBuilder.filter(QueryBuilders.termQuery(HouseElasticKey.CITY_EN_NAME, mapBoundSearchForm.getCityEnName()));
-        // 过滤视野范围
-        boolQueryBuilder.filter(QueryBuilders.geoBoundingBoxQuery(HouseElasticKey.LOCATION)
-            .setCorners(new GeoPoint(mapBoundSearchForm.getLeftTopLatitude(), mapBoundSearchForm.getLeftTopLongitude()),
-                    new GeoPoint(mapBoundSearchForm.getRightBottomLatitude(), mapBoundSearchForm.getRightBottomLongitude()))
-        );
-        NativeSearchQueryBuilder queryBuilder = new NativeSearchQueryBuilder();
-        queryBuilder.withQuery(boolQueryBuilder);
-        queryBuilder.withSort(SortBuilders.fieldSort(HouseSortOrderByEnum
-                .from(mapBoundSearchForm.getOrderBy())
-                .orElse(HouseSortOrderByEnum.DEFAULT).getValue())
-                .order(SortOrder.fromString(mapBoundSearchForm.getOrderDirection())));
-        Pageable pageable = PageRequest.of(mapBoundSearchForm.getPage() - 1, mapBoundSearchForm.getPageSize());
-        queryBuilder.withPageable(pageable);
-        NativeSearchQuery query = queryBuilder.build();
-        log.debug(query.getQuery().toString());
-        Page<HouseElastic> result = houseElasticRepository.search(query);
-        return new ServiceMultiResult<>((int)result.getTotalElements(), result.getContent().stream().map(HouseElastic:: getHouseId).collect(Collectors.toList()));*/
-        return new ServiceMultiResult<>();
     }
 }

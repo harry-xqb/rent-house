@@ -59,8 +59,8 @@ class HouseElasticSearchServiceImplTest extends RentHouseApplicationTests {
         searchHouseForm.setCityEnName("bj");
         searchHouseForm.setPageSize(10);
         searchHouseForm.setPage(1);
-        ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
-        Assert.isTrue(result.getTotal() == 10, "获取的房源数量不匹配");
+        int total = houseElasticSearchService.search(searchHouseForm).getTotal();
+        Assert.isTrue(total == 10, "获取的房源数量不匹配");
     }
 
     @Test

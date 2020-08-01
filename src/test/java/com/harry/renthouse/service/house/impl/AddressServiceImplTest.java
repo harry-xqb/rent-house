@@ -34,8 +34,8 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
 
     @Test
     void lbsUpload() {
-        BaiduMapLocation baiduMapLocation = new BaiduMapLocation(117, 40);
-        boolean result = addressService.lbsUpload(baiduMapLocation, "海淀区房子", "北京市海淀区亲亲家园5栋1502",
+        BaiduMapLocation baiduMapLocation = new BaiduMapLocation(120.252698, 30.247764);
+        boolean result = addressService.lbsUpload(baiduMapLocation, "丽晶国际", "浙江省杭州市丽晶国际",
                 12345L, 25, 66, "http://qa22ygxo8.bkt.clouddn.com/Fka2aHz-0iCj8g47xZVXWj5dF440");
         Assert.isTrue(result, "上传poi失败");
     }

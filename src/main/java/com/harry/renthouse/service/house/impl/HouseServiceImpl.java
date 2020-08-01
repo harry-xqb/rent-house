@@ -1,6 +1,8 @@
 package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.base.*;
+import com.harry.renthouse.elastic.entity.BaiduMapLocation;
+import com.harry.renthouse.elastic.entity.HouseElastic;
 import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
@@ -78,6 +80,9 @@ public class HouseServiceImpl implements HouseService {
 
     @Resource
     private HouseSubscribeRepository houseSubscribeRepository;
+
+    @Resource
+    private HouseStarRepository houseStarRepository;
 
 
     @Transactional
@@ -234,6 +239,10 @@ public class HouseServiceImpl implements HouseService {
         houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
         houseCompleteInfoDTO.setSubway(subwayDTO);
         houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
+
+        // 计算房源被收藏次数
+        int number = houseStarRepository.countByHouseId(houseDTO.getId());
+        houseDTO.setStarNumber(number);
         return houseCompleteInfoDTO;
     }
 
@@ -331,11 +340,12 @@ public class HouseServiceImpl implements HouseService {
         }
         // 如果是按关键字搜索 或者按距离搜索， 则采用elasticsearch
         if(StringUtils.isNotBlank(searchHouseForm.getKeyword()) || searchHouseForm.getDistanceSearch() != null){
-            ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.search(searchHouseForm);
-            if(houseIdResult.getTotal() == 0){
+            ServiceMultiResult<HouseElastic> houseResult = houseElasticSearchService.search(searchHouseForm);
+            List<Long> houseIdList = houseResult.getList().stream().map(HouseElastic::getHouseId).collect(Collectors.toList());
+            if(houseResult.getTotal() == 0){
                 return new ServiceMultiResult<>(0, Collections.emptyList());
             }
-            return new ServiceMultiResult<>(houseIdResult.getTotal(), wrapperHouseResult(houseIdResult.getList()));
+            return new ServiceMultiResult<>(houseResult.getTotal(), wrapperHouseResult(houseIdList));
         }
 
         return simpleSearch(searchHouseForm);
@@ -343,25 +353,23 @@ public class HouseServiceImpl implements HouseService {
 
     @Override
     public ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm) {
+        // 检查城市是否正确
+        if(mapSearchForm.getCityEnName() == null){
+            throw new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND);
+        }
         SearchHouseForm searchHouseForm = new SearchHouseForm();
-  /*      searchHouseForm.setPage(mapSearchForm.getPage());
-        searchHouseForm.setPageSize(mapSearchForm.getPageSize());
-        searchHouseForm.setCityEnName(mapSearchForm.getCityEnName());
-        searchHouseForm.setOrderBy(mapSearchForm.getOrderBy());
-        searchHouseForm.setSortDirection(mapSearchForm.getOrderDirection());
-        searchHouseForm.setRentWay(mapSearchForm.getRentWay());
-        searchHouseForm.setPriceMin(mapSearchForm.getPriceMin());
-        searchHouseForm.setPriceMax(mapSearchForm.getPriceMax());
-        searchHouseForm.setDirection(mapSearchForm.getDirection());*/
         modelMapper.map(mapSearchForm, searchHouseForm);
-        ServiceMultiResult<Long> result = houseElasticSearchService.search(searchHouseForm);
-        return new ServiceMultiResult<>(result.getTotal(), wrapperHouseResult(result.getList()));
-    }
-
-    @Override
-    public ServiceMultiResult<HouseDTO> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm) {
-        ServiceMultiResult<Long> houseIdResult = houseElasticSearchService.mapBoundSearch(mapBoundSearchForm);
-        return new ServiceMultiResult<>(houseIdResult.getTotal(), wrapperHouseResult(houseIdResult.getList()));
+        ServiceMultiResult<HouseElastic> houseElasticServiceMultiResult = houseElasticSearchService.search(searchHouseForm);
+        // id与位置坐标映射
+        Map<Long, BaiduMapLocation> idLocationMap = houseElasticServiceMultiResult.getList().stream().
+                collect(Collectors.toMap(HouseElastic::getHouseId, HouseElastic::getLocation));
+        List<Long> houseIdList = houseElasticServiceMultiResult.getList().stream().map(HouseElastic::getHouseId).collect(Collectors.toList());
+        List<HouseDTO> houseDTOList = wrapperHouseResult(houseIdList);
+        // 设置地理坐标
+        houseDTOList.forEach(house -> {
+            house.setLocation(idLocationMap.get(house.getId()));
+        });
+        return new ServiceMultiResult<>(houseElasticServiceMultiResult.getTotal(), houseDTOList);
     }
 
     @Override
@@ -426,6 +434,63 @@ public class HouseServiceImpl implements HouseService {
         houseSubscribe.setStatus(HouseSubscribeStatusEnum.FINISH.getValue());
         houseSubscribeRepository.save(houseSubscribe);
     }
+
+    @Override
+    public void starHouse(Long houseId) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        HouseStar houseStar = new HouseStar();
+        houseStar.setHouseId(houseId);
+        houseStar.setUserId(userId);
+        houseStarRepository.save(houseStar);
+    }
+
+    @Override
+    public ServiceMultiResult<HouseStarDTO> userStarHouseList(ListHouseStarForm houseStarForm) {
+        // 获取当前用户id（房东id）
+        Long userId = AuthenticatedUserUtil.getUserId();
+        // 所有预约信息
+        Sort sort = Sort.by(Sort.Direction.fromOptionalString(houseStarForm.getSortDirection()).orElse(Sort.Direction.DESC),
+                houseStarForm.getOrderBy());
+        Pageable pageable = PageRequest.of(houseStarForm.getPage() - 1, houseStarForm.getPageSize(), sort);
+        Page<HouseStar> houseStarPage = houseStarRepository.findAllByUserId(userId, pageable);
+        List<HouseStar> houseStarList = houseStarPage.getContent();
+        List<Long> houseList = houseStarList.stream().map(HouseStar::getHouseId).collect(Collectors.toList());
+        List<HouseDTO> houseDTOList = wrapperHouseResult(houseList);
+        Map<Long, HouseDTO> houseIdDTOMap = houseDTOList.stream().collect(Collectors.toMap(HouseDTO::getId, houseDTO -> houseDTO));
+        List<HouseStarDTO> result = houseStarList.stream().map(item -> {
+            HouseStarDTO houseStarDTO = new HouseStarDTO();
+            houseStarDTO.setId(item.getId());
+            houseStarDTO.setHouse(houseIdDTOMap.get(item.getHouseId()));
+            houseStarDTO.setCreateTime(item.getCreateTime());
+            return houseStarDTO;
+        }).collect(Collectors.toList());
+
+        return new ServiceMultiResult<>((int)houseStarPage.getTotalElements(), result);
+    }
+
+    @Override
+    @Transactional
+    public void deleteStarInfo(Long houseId) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        boolean isStar = houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+        if(isStar){
+            houseStarRepository.deleteByHouseIdAndUserId(houseId, userId);
+        }else{
+            throw new BusinessException(ApiResponseEnum.HOUSE_UN_STAR_NOT_FOUND_ERROR);
+        }
+    }
+
+    @Override
+    public UserHouseOperateDTO getHouseOperate(Long houseId) {
+        Long userId = AuthenticatedUserUtil.getUserId();
+        UserHouseOperateDTO userHouseOperateDTO = new UserHouseOperateDTO();
+        boolean star = houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+        boolean reserve = houseSubscribeRepository.existsByHouseIdAndUserId(houseId, userId);
+        userHouseOperateDTO.setStar(star);
+        userHouseOperateDTO.setReserve(reserve);
+        return userHouseOperateDTO;
+    }
+
 
     private ServiceMultiResult<HouseSubscribeInfoDTO> listHouseSubscribes(ListHouseSubscribesForm subscribesForm,
                                                      Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func) {
@@ -581,6 +646,12 @@ public class HouseServiceImpl implements HouseService {
         houseDetailList.forEach(houseDetail -> {
             HouseDetailDTO detailDTO = modelMapper.map(houseDetail, HouseDetailDTO.class);
             houseDTOMap.get(detailDTO.getHouseId()).setHouseDetail(detailDTO);
+        });
+
+        // 设置房屋被收藏次数
+        houseDTOList.forEach(houseDTO -> {
+            int number = houseStarRepository.countByHouseId(houseDTO.getId());
+            houseDTO.setStarNumber(number);
         });
     }
 

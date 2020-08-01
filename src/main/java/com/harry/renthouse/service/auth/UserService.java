@@ -66,4 +66,5 @@ public interface UserService {
      * @param newPassword 新密码
      */
     void updatePassword(String oldPassword, String newPassword);
+
 }

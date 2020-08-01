@@ -23,15 +23,15 @@ public class BaiduMapProperty {
     private String geoLocationUrl = "http://api.map.baidu.com/geocoding/v3/?output=json&";
 
     /** poi创建数据 **/
-    private String poiCreateUrl = "http://api.map.baidu.com/geodata/v4/poi/create";
+    private String poiCreateUrl = "http://api.map.baidu.com/geodata/v3/poi/create";
 
     /** poi更新数据 **/
-    private String poiUpdateUrl = "http://api.map.baidu.com/geodata/v4/poi/update";
+    private String poiUpdateUrl = "http://api.map.baidu.com/geodata/v3/poi/update";
 
     /** poi按条件查询数据 **/
-    private String poiQueryUrl = "http://api.map.baidu.com/geodata/v4/poi/list";
+    private String poiQueryUrl = "http://api.map.baidu.com/geodata/v3/poi/list";
 
     /** poi删除数据 **/
-    private String poiDeleteUrl = "http://api.map.baidu.com/geodata/v4/poi/delete";
+    private String poiDeleteUrl = "http://api.map.baidu.com/geodata/v3/poi/delete";
 
 }

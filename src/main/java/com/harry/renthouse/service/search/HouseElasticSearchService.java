@@ -34,7 +34,7 @@ public interface HouseElasticSearchService {
      * @param searchHouseForm 搜索表单
      * @return 房源id
      */
-    ServiceMultiResult<Long> search(SearchHouseForm searchHouseForm);
+    ServiceMultiResult<HouseElastic> search(SearchHouseForm searchHouseForm);
 
     /**
      * 搜索建议：自动补全
@@ -71,14 +71,8 @@ public interface HouseElasticSearchService {
     /**
      * 聚合城市区县数据
      * @param cityEnName 城市英文简称
-     * @return 每个区县的房源数量
+     * @return 每个聚合区县的房源数量
      */
     ServiceMultiResult<HouseBucketDTO> mapAggregateRegionsHouse(String cityEnName);
-
-    /**
-     * 根据视野查询房源id集
-     * @param mapBoundSearchForm 视野查询表单
-     */
-    ServiceMultiResult<Long> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm);
 
 }

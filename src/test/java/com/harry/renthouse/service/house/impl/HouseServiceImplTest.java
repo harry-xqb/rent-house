@@ -91,18 +91,6 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
     }
 
     @Test
-    void mapBoundSearch() {
-        MapBoundSearchForm boundSearchForm = new MapBoundSearchForm();
-        //boundSearchForm.setCityEnName("bj");
-        boundSearchForm.setLeftTopLongitude(116.264619);
-        boundSearchForm.setLeftTopLatitude(39.99269);
-        boundSearchForm.setRightBottomLongitude(116.32671);
-        boundSearchForm.setRightBottomLatitude(39.953321);
-        ServiceMultiResult<HouseDTO> result = houseService.mapBoundSearch(boundSearchForm);
-        Assert.isTrue(result.getTotal() > 0, "海淀区范围总数有误");
-    }
-
-    @Test
     void listHouseSubscribes() {
         authUser();
         ListHouseSubscribesForm listHouseSubscribesForm = new ListHouseSubscribesForm();

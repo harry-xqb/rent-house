@@ -2,10 +2,7 @@ package com.harry.renthouse.service.house;
 
 import com.harry.renthouse.base.HouseOperationEnum;
 import com.harry.renthouse.service.ServiceMultiResult;
-import com.harry.renthouse.service.ServiceResult;
-import com.harry.renthouse.web.dto.HouseCompleteInfoDTO;
-import com.harry.renthouse.web.dto.HouseDTO;
-import com.harry.renthouse.web.dto.HouseSubscribeInfoDTO;
+import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 
 /**
@@ -87,11 +84,6 @@ public interface HouseService {
      */
     ServiceMultiResult<HouseDTO> mapHouseSearch(MapSearchForm mapSearchForm);
 
-    /**
-     * 根据视野查询房源
-     * @param mapBoundSearchForm 视野查询表单
-     */
-    ServiceMultiResult<HouseDTO> mapBoundSearch(MapBoundSearchForm mapBoundSearchForm);
 
     /**
      * 新增房屋预约订单
@@ -123,4 +115,29 @@ public interface HouseService {
      * @param subscribeId 约看id
      */
     void finishHouseSubscribe(Long subscribeId);
+
+
+    /**
+     * 关注房源
+     * @param houseId 房屋id
+     */
+    void starHouse(Long houseId);
+
+    /**
+     * 用户收藏房源列表
+     * @param houseStarForm 房屋收藏搜索表单
+     */
+    ServiceMultiResult<HouseStarDTO> userStarHouseList(ListHouseStarForm houseStarForm);
+
+    /**
+     * 用户收藏房源列表
+     * @param houseId 房源id
+     */
+    void deleteStarInfo(Long houseId);
+
+    /**
+     *  用户是否收藏指定房屋
+     * @param houseId 房屋id
+     */
+    UserHouseOperateDTO getHouseOperate(Long houseId);
 }

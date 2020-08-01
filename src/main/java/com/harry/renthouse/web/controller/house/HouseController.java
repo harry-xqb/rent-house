@@ -90,7 +90,7 @@ public class HouseController {
     }
 
     @GetMapping("map/{cityEnName}/regions")
-    @ApiOperation("地图-》根据城市名称，按照区域聚合房源")
+    @ApiOperation("地图-》聚合区县房源")
     public ApiResponse<HouseMapRegionsAggDTO> mapAggRegions(@ApiParam("城市英文简称") @PathVariable String cityEnName){
         // 判断城市是否存在
         addressService.findCity(cityEnName).orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
@@ -106,15 +106,12 @@ public class HouseController {
         return ApiResponse.ofSuccess(houseMapRegionsAggDTO);
     }
 
+
+
     @PostMapping("map/city/houses")
-    @ApiOperation("地图->获取当前城市的房源信息")
+    @ApiOperation("地图->按条件搜索当前城市房源信息")
     public ApiResponse<ServiceMultiResult<HouseDTO>> mapCityHouses(@Validated @RequestBody MapSearchForm mapSearchForm){
         return ApiResponse.ofSuccess(houseService.mapHouseSearch(mapSearchForm));
     }
 
-    @PostMapping("map/bound/houses")
-    @ApiOperation("地图->根据视野查询房源信息")
-    public ApiResponse<ServiceMultiResult<HouseDTO>> mapBoundHouse(@Validated @RequestBody MapBoundSearchForm mapBoundSearchForm){
-        return ApiResponse.ofSuccess(houseService.mapBoundSearch(mapBoundSearchForm));
-    }
 }

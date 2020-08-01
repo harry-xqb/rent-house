@@ -71,6 +71,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Resource
     private Gson gson;
+
+    // 坐标类型
+    private static final String COORD_TYPE = "3";
     /**
      * 获取所有城市
      * @return
@@ -263,12 +266,15 @@ public class AddressServiceImpl implements AddressService {
 
     private Optional<String> getLbsData(Long houseId){
         HttpClient httpClient = HttpClients.createDefault();
-        List<NameValuePair> body = getDefaultPoiBody();
-        body.add(new BasicNameValuePair("houseId", String.valueOf(houseId)));
-        HttpPost httpPost = new HttpPost(baiduMapProperty.getPoiQueryUrl());
+        String requestUrl = baiduMapProperty.getPoiQueryUrl() +
+                "?geotable_id=" + baiduMapProperty.getGeoTableId() +
+                "&ak=" + baiduMapProperty.getAccessKey() +
+                "&coord_type=" + COORD_TYPE +
+                "&houseId=" + houseId;
+        HttpGet httpGet = new HttpGet(requestUrl);
         try {
-            httpPost.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
-            HttpResponse response = httpClient.execute(httpPost);
+            //httpGet.setEntity(new UrlEncodedFormEntity(body, "UTF-8"));
+            HttpResponse response = httpClient.execute(httpGet);
             String result = EntityUtils.toString(response.getEntity());
             if(response.getStatusLine().getStatusCode() != HttpStatus.SC_OK){
                 log.error("查询poi是否存在请求失败:{}", result);
@@ -298,7 +304,7 @@ public class AddressServiceImpl implements AddressService {
         List<NameValuePair> body = new ArrayList<>();
         body.add(new BasicNameValuePair("ak", baiduMapProperty.getAccessKey()));
         body.add(new BasicNameValuePair("geotable_id", baiduMapProperty.getGeoTableId()));
-        body.add(new BasicNameValuePair("coord_type", "3"));
+        body.add(new BasicNameValuePair("coord_type", COORD_TYPE));
         return body;
     }
 }

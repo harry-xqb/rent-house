@@ -15,6 +15,8 @@ public interface HouseSubscribeRepository extends JpaRepository<HouseSubscribe, 
 
     Optional<HouseSubscribe> findByUserIdAndHouseId(Long userId, Long houseId);
 
+    boolean existsByHouseIdAndUserId(Long houseId, Long userId);
+
     Page<HouseSubscribe> findByUserIdAndStatus(Long userId, Integer status, Pageable pageable);
 
     Page<HouseSubscribe> findByAdminIdAndStatus(Long adminId, Integer status, Pageable pageable);

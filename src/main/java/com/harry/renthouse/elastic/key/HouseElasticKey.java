@@ -12,53 +12,53 @@ import java.util.List;
  */
 public class HouseElasticKey {
 
-    public static String HOUSE_ID = "houseId";
+    public static final String HOUSE_ID = "houseId";
 
-    public static String TITLE = "title";
+    public static final String TITLE = "title";
 
-    public static String PRICE = "price";
+    public static final String PRICE = "price";
 
-    public static String AREA = "area";
+    public static final String AREA = "area";
 
-    public static String CREATE_TIME = "createTime";
+    public static final String CREATE_TIME = "createTime";
 
-    public static String LAST_UPDATE_TIME = "lastUpdateTime";
+    public static final String LAST_UPDATE_TIME = "lastUpdateTime";
 
-    public static String CITY_EN_NAME = "cityEnName";
+    public static final String CITY_EN_NAME = "cityEnName";
 
-    public static String REGION_EN_NAME = "regionEnName";
+    public static final String REGION_EN_NAME = "regionEnName";
 
-    public static String DIRECTION = "direction";
+    public static  final String DIRECTION = "direction";
 
-    public static String DISTANCE_TO_SUBWAY = "distanceToSubway";
+    public static final String DISTANCE_TO_SUBWAY = "distanceToSubway";
 
-    public static String SUBWAY_LINE_NAME = "subwayLineName";
+    public static final String SUBWAY_LINE_NAME = "subwayLineName";
 
-    public static String SUBWAY_LINE_ID = "subwayLineId";
+    public static final String SUBWAY_LINE_ID = "subwayLineId";
 
-    public static String SUBWAY_STATION_NAME = "subwayStationName";
+    public static final String SUBWAY_STATION_NAME = "subwayStationName";
 
-    public static String SUBWAY_STATION_ID = "subwayStationId";
+    public static final String SUBWAY_STATION_ID = "subwayStationId";
 
-    public static String TAGS = "tags";
+    public static final String TAGS = "tags";
 
-    public static String STREET = "street";
+    public static final String STREET = "street";
 
-    public static String DISTRICT = "district";
+    public static final String DISTRICT = "district";
 
-    public static String DESCRIPTION = "description";
+    public static final String DESCRIPTION = "description";
 
-    public static String LAYOUT_DESC = "layoutDesc";
+    public static final String LAYOUT_DESC = "layoutDesc";
 
-    public static String TRAFFIC = "traffic";
+    public static final String TRAFFIC = "traffic";
 
-    public static String ROUND_SERVICE = "roundService";
+    public static final String ROUND_SERVICE = "roundService";
 
-    public static String RENT_WAY = "rentWay";
+    public static final String RENT_WAY = "rentWay";
 
-    public static String SUGGESTS = "suggests";
+    public static final String SUGGESTS = "suggests";
 
-    public static String AGG_DISTRICT_HOUSE = "aggDistrict";
+    public static final String AGG_DISTRICT_HOUSE = "aggDistrict";
 
     public static final String AGG_REGION_HOUSE = "aggRegionHouse";
 
