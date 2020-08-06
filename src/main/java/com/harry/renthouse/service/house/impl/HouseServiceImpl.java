@@ -84,6 +84,8 @@ public class HouseServiceImpl implements HouseService {
     @Resource
     private HouseStarRepository houseStarRepository;
 
+    @Resource
+    private UserRepository userRepository;
 
     @Transactional
     @Override
@@ -308,9 +310,9 @@ public class HouseServiceImpl implements HouseService {
         if(status == HouseStatusEnum.DELETED.getValue()){
             throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_DELETED);
         }
-        if(status == HouseStatusEnum.RENTED.getValue()){
+     /*   if(status == HouseStatusEnum.RENTED.getValue()){
             throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_RENTED);
-        }
+        }*/
         houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
         // 如果房源更新为审核通过则建立
         if(houseOperationEnum.getCode() == HouseOperationEnum.PASS.getCode()){
@@ -393,7 +395,7 @@ public class HouseServiceImpl implements HouseService {
         houseSubscribe.setDescription(subscribeHouseForm.getDescription());
         houseSubscribe.setHouseId(house.getId());
         houseSubscribe.setTelephone(subscribeHouseForm.getPhone());
-        houseSubscribe.setStatus(HouseSubscribeStatusEnum.ORDERED.getValue());
+        houseSubscribe.setStatus(HouseSubscribeStatusEnum.WAIT.getValue());
         houseSubscribe.setUserId(userId);
         houseSubscribeRepository.save(houseSubscribe);
     }
@@ -412,6 +414,21 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
+    @Transactional
+    public void cancelHouseSubscribe(Long subscribeId) {
+        long userId = AuthenticatedUserUtil.getUserId();
+        HouseSubscribe houseSubscribe = houseSubscribeRepository.findById(subscribeId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_NOT_FOUND));
+        if(houseSubscribe.getUserId() != userId && houseSubscribe.getAdminId() != userId){
+            throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_NOT_FOUND);
+        }
+        if(houseSubscribe.getStatus() == HouseSubscribeStatusEnum.FINISH.getValue()){
+            throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_CANCEL_FINISH_ERROR);
+        }
+        houseSubscribeRepository.deleteById(subscribeId);
+        //TODO 发送短信通知管理员或者用户，当前预约已取消
+    }
+
+    @Override
     public ServiceMultiResult<HouseSubscribeInfoDTO> listAdminHouseSubscribes(ListHouseSubscribesForm subscribesForm) {
         Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func = param ->
                 houseSubscribeRepository.findByAdminIdAndStatus(param.getUserId(), param.getStatus(), param.getPageable());
@@ -419,7 +436,7 @@ public class HouseServiceImpl implements HouseService {
     }
 
     @Override
-    public void finishHouseSubscribe(Long subscribeId) {
+    public void adminUpdateHouseSubscribeStatus(Long subscribeId, int status) {
         // 获取当前用户id（房东id）
         Long userId = AuthenticatedUserUtil.getUserId();
         // 通过用户id与约看id查找 约看信息
@@ -428,11 +445,20 @@ public class HouseServiceImpl implements HouseService {
         if(!houseSubscribe.getAdminId().equals(userId)){
             throw new BusinessException(ApiResponseEnum.NO_PRIORITY_ERROR);
         }
-        if(houseSubscribe.getStatus() != HouseSubscribeStatusEnum.ORDERED.getValue()){
-            throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_STATUS_ERROR);
+        // 如果目标状态待看房并且当前状态为待确认
+        if(houseSubscribe.getStatus() == HouseSubscribeStatusEnum.WAIT.getValue() && status == HouseSubscribeStatusEnum.ORDERED.getValue()){
+            houseSubscribe.setStatus(HouseSubscribeStatusEnum.ORDERED.getValue());
+            houseSubscribeRepository.save(houseSubscribe);
+            return;
         }
-        houseSubscribe.setStatus(HouseSubscribeStatusEnum.FINISH.getValue());
-        houseSubscribeRepository.save(houseSubscribe);
+        // 如果目标状态为已完成并且当前状态为待看房
+        if(houseSubscribe.getStatus() == HouseSubscribeStatusEnum.ORDERED.getValue() && status == HouseSubscribeStatusEnum.FINISH.getValue()){
+            houseSubscribe.setStatus(HouseSubscribeStatusEnum.FINISH.getValue());
+            houseSubscribeRepository.save(houseSubscribe);
+            return;
+        }
+        // 状态不匹配抛出异常
+        throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_STATUS_ERROR);
     }
 
     @Override
@@ -491,7 +517,6 @@ public class HouseServiceImpl implements HouseService {
         return userHouseOperateDTO;
     }
 
-
     private ServiceMultiResult<HouseSubscribeInfoDTO> listHouseSubscribes(ListHouseSubscribesForm subscribesForm,
                                                      Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func) {
         HouseSubscribeStatusEnum.of(subscribesForm.getStatus())
@@ -505,15 +530,30 @@ public class HouseServiceImpl implements HouseService {
         // 所有预约信息
         Page<HouseSubscribe> page = func.apply(new ListHouseSubscribeParams(userId, subscribesForm.getStatus(), pageable));
 
-        List<Long> houseIdList = page.getContent().stream().map(HouseSubscribe::getHouseId).collect(Collectors.toList());
-        Map<Long, HouseDTO> houseMap = wrapperHouseResult(houseIdList).stream().collect(Collectors.toMap(
-                HouseDTO::getId, house -> house
+        // 获取房屋信息
+        Set<Long> houseIdSet = page.getContent().stream().map(HouseSubscribe::getHouseId).collect(Collectors.toSet());
+        Map<Long, HouseDTO> houseMap = wrapperHouseResult(new ArrayList<>(houseIdSet)).stream().collect(Collectors.toMap(
+                HouseDTO::getId, house -> house,
+                (key1, key2) -> key1
         ));
+
+        // 获取用户信息
+        Set<Long> adminSet = page.getContent().stream().map(HouseSubscribe::getAdminId).collect(Collectors.toSet());
+        Set<Long> userSet = page.getContent().stream().map(HouseSubscribe::getUserId).collect(Collectors.toSet());
+        userSet.addAll(adminSet);
+        Map<Long, UserDTO> userMap = userRepository.findAllById(userSet).stream().map(user -> modelMapper.map(user, UserDTO.class)).collect(
+                Collectors.toMap(
+                        UserDTO::getId,
+                        userDto -> userDto,
+                        (key1, key2) -> key1
+                ));
 
         List<HouseSubscribeInfoDTO> result = page.getContent().stream().map(item -> {
             HouseSubscribeInfoDTO houseSubscribeInfoDTO = new HouseSubscribeInfoDTO();
             houseSubscribeInfoDTO.setHouseSubscribe(item);
             houseSubscribeInfoDTO.setHouseDTO(houseMap.get(item.getHouseId()));
+            houseSubscribeInfoDTO.setUser(userMap.get(item.getUserId()));
+            houseSubscribeInfoDTO.setAgent(userMap.get(item.getAdminId()));
             return houseSubscribeInfoDTO;
         }).collect(Collectors.toList());
 

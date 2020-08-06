@@ -105,6 +105,12 @@ public interface HouseService {
     ServiceMultiResult<HouseSubscribeInfoDTO> listUserHouseSubscribes(ListHouseSubscribesForm subscribesForm);
 
     /**
+     * 取消房源预约
+     * @param subscribeId 预约id
+     */
+    void cancelHouseSubscribe(Long subscribeId);
+
+    /**
      * 获取房东预约房源列表
      * @param subscribesForm 预约信息
      */
@@ -114,7 +120,7 @@ public interface HouseService {
      * 完成房屋月刊
      * @param subscribeId 约看id
      */
-    void finishHouseSubscribe(Long subscribeId);
+    void adminUpdateHouseSubscribeStatus(Long subscribeId, int status);
 
 
     /**
@@ -140,4 +146,5 @@ public interface HouseService {
      * @param houseId 房屋id
      */
     UserHouseOperateDTO getHouseOperate(Long houseId);
+
 }

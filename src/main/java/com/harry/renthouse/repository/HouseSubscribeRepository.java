@@ -4,6 +4,8 @@ import com.harry.renthouse.entity.HouseSubscribe;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
@@ -21,4 +23,7 @@ public interface HouseSubscribeRepository extends JpaRepository<HouseSubscribe, 
 
     Page<HouseSubscribe> findByAdminIdAndStatus(Long adminId, Integer status, Pageable pageable);
 
+    @Modifying
+    @Query("update HouseSubscribe as houseSubscribe set houseSubscribe.status = :status where houseSubscribe.id = :id")
+    void updateSubscribeStatus(Long id, int status);
 }

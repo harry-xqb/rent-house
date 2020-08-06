@@ -18,7 +18,6 @@ public enum HouseSubscribeStatusEnum {
     WAIT(1, "待确认"),
     ORDERED(2, "待看房"),
     FINISH(3, "已完成"),
-    CANCELD(4, "已取消"),
         ;
 
     private int value;

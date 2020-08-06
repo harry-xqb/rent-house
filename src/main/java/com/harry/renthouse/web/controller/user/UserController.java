@@ -130,6 +130,13 @@ public class UserController {
         return ApiResponse.ofSuccess(houseSubscribeStatus);
     }
 
+    @DeleteMapping("house/{subscribeId}/subscribe")
+    @ApiOperation("取消预约")
+    public ApiResponse cancelSubscribe(@ApiParam("预约id") @PathVariable Long subscribeId){
+        houseService.cancelHouseSubscribe(subscribeId);
+        return ApiResponse.ofSuccess();
+    }
+
     @PostMapping("house/subscribes")
     @ApiOperation("获取当前用户所有预约的房源")
     public ApiResponse<ServiceMultiResult<HouseSubscribeInfoDTO>> listHouseSubscribes(

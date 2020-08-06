@@ -117,6 +117,6 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
     @Test
     @WithUserDetails(value = "admin")
     void finishHouseSubscribe() {
-        houseService.finishHouseSubscribe(11L);
+//        houseService.finishHouseSubscribe(11L);
     }
 }

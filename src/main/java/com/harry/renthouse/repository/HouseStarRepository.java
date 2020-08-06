@@ -6,6 +6,8 @@ import com.harry.renthouse.entity.HouseSubscribe;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
@@ -22,4 +24,5 @@ public interface HouseStarRepository  extends JpaRepository<HouseStar, Long> {
     void deleteByHouseIdAndUserId(Long houseId, Long userId);
 
     boolean existsByHouseIdAndUserId(Long houseId, Long userId);
+
 }

@@ -128,7 +128,7 @@ public class AdminController {
     }
 
 
-    @GetMapping("house/subscribes")
+    @PostMapping("house/subscribes")
     @ApiOperation("获取房东预约的房源信息")
     public ApiResponse<ServiceMultiResult<HouseSubscribeInfoDTO>> listHouseSubscribes(
             @Validated @RequestBody ListHouseSubscribesForm listHouseSubscribesForm){
@@ -136,10 +136,25 @@ public class AdminController {
         return ApiResponse.ofSuccess(result);
     }
 
-    @PostMapping("house/subscribe/{subscribeId}/finish")
-    @ApiOperation("房东完成预约看房")
-    public ApiResponse finishHouseSubscribe(@ApiParam("预约id") @PathVariable Long subscribeId){
-        houseService.finishHouseSubscribe(subscribeId);
+    @PutMapping("house/subscribe/{subscribeId}/{operation}")
+    @ApiOperation("房东修改预约状态看房")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "id", value = "预约id", required = true),
+            @ApiImplicitParam(name = "operation", value = "操作类型(2: 已联系客户, 3: 已完成看房)", required = true,
+                    example = "2", allowableValues = "2, 3"),
+    })
+    public ApiResponse finishHouseSubscribe(
+             @PathVariable Long subscribeId,
+             @PathVariable int operation
+    ){
+        houseService.adminUpdateHouseSubscribeStatus(subscribeId, operation);
+        return ApiResponse.ofSuccess();
+    }
+
+    @DeleteMapping("house/subscribe/{subscribeId}")
+    @ApiOperation("房东取消预约看房")
+    public ApiResponse deleteHouseSubscribe(@ApiParam("预约id") @PathVariable Long subscribeId){
+        houseService.cancelHouseSubscribe(subscribeId);
         return ApiResponse.ofSuccess();
     }
 

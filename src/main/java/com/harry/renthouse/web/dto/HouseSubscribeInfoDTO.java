@@ -23,4 +23,10 @@ public class HouseSubscribeInfoDTO {
 
    @ApiModelProperty("房源信息")
    private HouseDTO houseDTO;
+
+   @ApiModelProperty("用户")
+   private UserDTO user;
+
+   @ApiModelProperty("房东信息")
+   private UserDTO agent;
 }
