@@ -68,6 +68,9 @@ public class UserController {
     @PutMapping("avatar/img")
     @ApiOperation("更新头像通过文件")
     public ApiResponse updateAvatar(@ApiParam(value = "头像图片") MultipartFile file){
+        if(file == null){
+            return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
+        }
         try {
             FileUploaderChecker.validTypeAndSize(limitsProperty.getAvatarTypeLimit(), file.getOriginalFilename(), limitsProperty.getAvatarSizeLimit(), file.getSize());
             QiniuUploadResult qiniuUploadResult = qiniuService.uploadFile(file.getInputStream());
@@ -87,6 +90,7 @@ public class UserController {
         if(file == null){
             return ApiResponse.ofStatus(ApiResponseEnum.NOT_VALID_PARAM);
         }
+        FileUploaderChecker.validTypeAndSize(limitsProperty.getAvatarTypeLimit(), file.getOriginalFilename(), limitsProperty.getAvatarSizeLimit(), file.getSize());
         try {
            return ApiResponse.ofSuccess(qiniuService.uploadFile(file.getInputStream()));
         } catch (IOException e) {

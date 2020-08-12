@@ -49,6 +49,7 @@ public class AppErrorController implements ErrorController {
             status = ApiResponseEnum.UNAUTHORIZED.getCode();
             res.setStatus(status);
         }
+        res.setStatus(HttpStatus.OK.value());
         return ApiResponse.ofMessage(status, message);
     }
 }

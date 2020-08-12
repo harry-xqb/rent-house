@@ -9,6 +9,7 @@ import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.RoleRepository;
 import com.harry.renthouse.repository.UserRepository;
 import com.harry.renthouse.service.auth.UserService;
+import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.web.dto.UserDTO;
 import com.harry.renthouse.web.form.UserBasicInfoForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
@@ -31,7 +32,12 @@ import java.util.stream.Collectors;
 @Service
 public class UserServiceImpl implements UserService {
 
-    public static final String DEFAULT_NICk_NAME_PREFIX = "zfyh";
+    private static final String DEFAULT_NICk_NAME_PREFIX = "zfyh";
+
+    // 重置密码令牌前缀
+    private static final String RESET_PASS_WORD_TOKEN_PREFIX = "RESET:PASSWORD:TOKEN:";
+
+    private static final int RESET_PASS_WORD_TOKEN_EXPIRE = 60 * 15;
 
     @Resource
     private UserRepository userRepository;
@@ -44,6 +50,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private RoleRepository roleRepository;
+
+    @Resource
+    private RedisUtil redisUtil;
 
     @Override
     public Optional<UserDTO> findUserById(Long id) {
@@ -66,13 +75,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO updateUserInfo(Long userId, UserBasicInfoForm userBasicInfoForm) {
         final User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-        // 判断用户昵称是否存在
-        userRepository.findByNickName(userBasicInfoForm.getNickName()).ifPresent(item -> {
-            if(!StringUtils.equals(user.getNickName(), item.getName())){
-                throw new BusinessException(ApiResponseEnum.USER_ALREADY_EXIST);
-            }
-        });
-        modelMapper.map(userBasicInfoForm, user);
+        user.setNickName(userBasicInfoForm.getNickName());
+        user.setAvatar(userBasicInfoForm.getAvatar());
+        user.setIntroduction(userBasicInfoForm.getIntroduction());
         userRepository.save(user);
         return modelMapper.map(user, UserDTO.class);
     }
@@ -150,4 +155,25 @@ public class UserServiceImpl implements UserService {
         userRepository.updatePassword(user.getId(), passwordEncoder.encode(newPassword));
     }
 
+    @Override
+    public String generateResetPasswordToken(String phone) {
+        userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        String token = UUID.randomUUID().toString();
+        redisUtil.set(RESET_PASS_WORD_TOKEN_PREFIX + token, phone, RESET_PASS_WORD_TOKEN_EXPIRE);
+        return token;
+    }
+
+    @Override
+    @Transactional
+    public void resetPasswordByToken(String password, String token) {
+        Object phoneObj = redisUtil.get(RESET_PASS_WORD_TOKEN_PREFIX + token);
+        redisUtil.del(RESET_PASS_WORD_TOKEN_PREFIX + token);
+        if(phoneObj == null){
+            throw new BusinessException(ApiResponseEnum.RESET_PASSWORD_INVALID_TOKEN);
+        }
+        String phone = (String)phoneObj;
+        User user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        userRepository.updatePassword(user.getId(), passwordEncoder.encode(password));
+
+    }
 }

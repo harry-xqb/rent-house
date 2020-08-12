@@ -204,6 +204,18 @@ public class HouseServiceImpl implements HouseService {
     public HouseCompleteInfoDTO findCompleteHouse(Long houseId) {
         // 查找房屋信息
         House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        return wrapHouseCompleteDTO(house);
+    }
+
+    @Override
+    public HouseCompleteInfoDTO findAgentEditCompleteHouse(Long houseId) {
+        Long agentId = AuthenticatedUserUtil.getUserId();
+        House house = houseRepository.findByIdAndAdminId(houseId, agentId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        return wrapHouseCompleteDTO(house);
+    }
+
+    private HouseCompleteInfoDTO wrapHouseCompleteDTO(House house){
+        Long houseId = house.getId();
         // 查找房屋详情
         HouseDetail houseDetail = houseDetailRepository.findByHouseId(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_DETAIL_NOT_FOUND_ERROR));
         // 查找房屋标签

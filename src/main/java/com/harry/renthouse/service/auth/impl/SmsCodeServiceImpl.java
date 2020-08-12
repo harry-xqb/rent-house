@@ -57,7 +57,7 @@ public class SmsCodeServiceImpl implements SmsCodeService {
         }
         String contentKey = SMS_CODE_CONTENT_PREFIX + generateSmsKey(phone, operationType);
         String code = RandomStringUtils.randomNumeric(aLiYunSmsProperties.getLength());
-        aliSendSms(phone, code);
+        //aliSendSms(phone, code);
         log.debug("验证码:{}", code);
         stringRedisTemplate.opsForValue().set(contentKey, code, REDIS_SMS_CONTENT_KEY_EXPIRE, TimeUnit.SECONDS);
         stringRedisTemplate.opsForValue().set(intervalKey, code, REDIS_SMS_INTERVAL_KEY_EXPIRE, TimeUnit.SECONDS);
@@ -75,7 +75,7 @@ public class SmsCodeServiceImpl implements SmsCodeService {
 
     private String generateSmsKey(String phone, String type){
         ValidateCodeTypeEnum validateCodeTypeEnum = ValidateCodeTypeEnum.fromValue(type).orElseThrow(() -> new BusinessException(ApiResponseEnum.PHONE_SMS_NOT_VALID_TYPE));
-        return validateCodeTypeEnum.getValue() + "::" + phone;
+        return validateCodeTypeEnum.getValue() + ":" + phone;
     }
 
     public void aliSendSms(String phone, String code){

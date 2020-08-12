@@ -17,6 +17,7 @@ import java.util.Optional;
 public enum ValidateCodeTypeEnum {
     SIGN_UP("signUp", "注册"),
     LOGIN("login", "登录"),
+    RESET_PASSWORD("resetPassword", "重置密码"),
     ;
     private String value;
 

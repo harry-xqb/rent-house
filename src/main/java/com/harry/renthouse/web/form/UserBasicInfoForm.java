@@ -18,14 +18,14 @@ import java.util.Date;
 @ApiModel("修改基本信息表单")
 public class UserBasicInfoForm {
 
-/*    @ApiModelProperty(value = "用户id")
-    private Long id;*/
-
     @ApiModelProperty(value = "用户名称", required = true)
     @NotNull(message = "用户名称不能为空")
     private String nickName;
 
     @ApiModelProperty(value = "个人介绍")
     private String introduction;
+
+    @ApiModelProperty(value = "用户头像")
+    private String avatar;
 
 }

@@ -74,6 +74,15 @@ public enum ApiResponseEnum {
     FILE_SIZE_EXCEED_ERROR(50502, "文件超过限制大小:{0}"),
     FILE_TYPE_UNSUPPORTED_ERROR(50502, "文件类型不支持"),
 
+    // 图形验证码
+    IMAGE_CODE_EXPIRE(50601, "图形验证码已过期"),
+    IMAGE_CODE_ERROR(50602, "图形验证码验证失败"),
+    IMAGE_CODE_CREATE_ERROR(50603, "图形验证码生成失败"),
+    IMAGE_VERIFY_CODE_NOT_FOUND(50604, "人机验证码不存在"),
+    IMAGE_VERIFY_CODE_ERROR(50604, "人机验证失败"),
+
+    // 重置密码
+    RESET_PASSWORD_INVALID_TOKEN(50701, "无效的令牌"),
     ;
 
     private Integer code;

@@ -42,6 +42,12 @@ public interface HouseService {
     HouseCompleteInfoDTO findCompleteHouse(Long houseId);
 
     /**
+     * 房东编辑房源查找房源完整信息
+     * @param houseId 房源id
+     */
+    HouseCompleteInfoDTO findAgentEditCompleteHouse(Long houseId);
+
+    /**
      * 为房屋添加标签
      * @param tagForm 标签表单
      */

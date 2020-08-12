@@ -23,8 +23,12 @@ public class SendSmsForm {
     private String phoneNumber;
 
     @NotNull(message = "业务类型不能为空")
-    @ApiModelProperty(value = "业务类型, signUp: 注册, login: 登录", example = "signUp,login", allowableValues = "signUp,login", required = true)
+    @ApiModelProperty(value = "业务类型, signUp: 注册, login: 登录, resetPassword: 重置密码", example = "signUp,login, resetPassword", allowableValues = "signUp,login, resetPassword", required = true)
     @VerifyCodeTypeAnnotation()
     private String operationType;
+
+    @NotNull(message = "图片验证码不能为空")
+    @ApiModelProperty(value = "图片验证码")
+    private String verifyCode;
 
 }

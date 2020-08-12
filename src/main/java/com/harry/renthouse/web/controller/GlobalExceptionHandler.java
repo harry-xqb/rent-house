@@ -38,7 +38,7 @@ public class GlobalExceptionHandler {
         return ApiResponse.ofMessage(ApiResponseEnum.BAD_REQUEST.getCode(), message);
     }
 
-    @ExceptionHandler(value = BusinessException.class)
+    @ExceptionHandler(BusinessException.class)
     public ApiResponse businessExceptionHandler(BusinessException businessException){
         return ApiResponse.ofMessage(businessException.getCode(), businessException.getMessage());
     }

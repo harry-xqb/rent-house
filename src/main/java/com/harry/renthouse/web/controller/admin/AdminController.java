@@ -79,11 +79,11 @@ public class AdminController {
         return ApiResponse.ofSuccess(houseDto);
     }
 
-    @GetMapping("house/{id}")
-    @ApiOperation(value = "通过房屋id获取房屋信息")
+    @GetMapping("house/edit/{id}")
+    @ApiOperation(value = "通过获得编辑房屋信息")
     public ApiResponse<HouseCompleteInfoDTO> findHouse(@PathVariable @ApiParam(value = "房屋id", required = true) Long id){
         // 获取房源信息
-        return ApiResponse.ofSuccess(houseService.findCompleteHouse(id));
+        return ApiResponse.ofSuccess(houseService.findAgentEditCompleteHouse(id));
     }
 
     @PostMapping("house/tag")

@@ -3,6 +3,7 @@ package com.harry.renthouse.entity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
@@ -29,6 +30,7 @@ import java.util.Set;
 @NoArgsConstructor
 @DynamicUpdate
 @DynamicInsert
+@ToString
 public class User implements UserDetails, Serializable {
 
     @Id

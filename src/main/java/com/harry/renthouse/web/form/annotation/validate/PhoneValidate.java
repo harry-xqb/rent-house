@@ -20,6 +20,6 @@ public class PhoneValidate implements ConstraintValidator<PhoneAnnotation, Strin
     public boolean isValid(String value, ConstraintValidatorContext context) {
         // 手机号正则校验
         String regex = limitsProperty.getPhoneRegex();
-        return value.matches(regex);
+        return value != null && value.matches(regex);
     }
 }

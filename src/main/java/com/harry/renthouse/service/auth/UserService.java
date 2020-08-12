@@ -67,4 +67,18 @@ public interface UserService {
      */
     void updatePassword(String oldPassword, String newPassword);
 
+    /**
+     * 生成重置密码令牌
+     * @param phone 手机号
+     * @return 令牌
+     */
+    String generateResetPasswordToken(String phone);
+
+
+    /**
+     * 通过token重置密码
+     * @param password 新密码
+     * @param token 重置令牌
+     */
+    void resetPasswordByToken(String password, String token);
 }
