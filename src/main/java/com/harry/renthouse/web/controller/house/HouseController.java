@@ -16,6 +16,7 @@ import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
 import com.harry.renthouse.web.dto.*;
+import com.harry.renthouse.web.form.HouseIdListForm;
 import com.harry.renthouse.web.form.MapBoundSearchForm;
 import com.harry.renthouse.web.form.MapSearchForm;
 import com.harry.renthouse.web.form.SearchHouseForm;
@@ -31,6 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Harry Xu
@@ -76,9 +79,17 @@ public class HouseController {
                         houseInfo.getRegion().getEnName(),
                         houseInfo.getHouse().getDistrict()
                     );
+        // TODO 目前采用elastic搜索标题，后面采用hadoop + spark计算获取推荐房源
+        SearchHouseForm searchHouseForm = new SearchHouseForm();
+        searchHouseForm.setPageSize(4);
+        searchHouseForm.setCityEnName(houseInfo.getCity().getEnName());
+        searchHouseForm.setKeyword(houseInfo.getHouse().getTitle());
+        ServiceMultiResult<HouseDTO> suggestResult = houseService.search(searchHouseForm);
+        List<HouseDTO> suggest = suggestResult.getList().stream().filter(item -> item.getId().longValue() != id).collect(Collectors.toList());
         // 返回结果
         result.setAgent(agent);
         result.setHouseCountInDistrict(houseCountInDistrict);
+        result.setSuggestHouses(suggest);
         return ApiResponse.ofSuccess(result);
     }
 
@@ -112,6 +123,13 @@ public class HouseController {
     @ApiOperation("地图->按条件搜索当前城市房源信息")
     public ApiResponse<ServiceMultiResult<HouseDTO>> mapCityHouses(@Validated @RequestBody MapSearchForm mapSearchForm){
         return ApiResponse.ofSuccess(houseService.mapHouseSearch(mapSearchForm));
+    }
+
+    @PostMapping("houses/ids")
+    @ApiOperation(value = "获取id集合中的房源")
+    public ApiResponse<ServiceMultiResult<HouseDTO>> findAllByIds(@RequestBody @Validated HouseIdListForm form){
+        List<HouseDTO> result = houseService.findAllByIds(form.getHouseIdList());
+        return ApiResponse.ofSuccess(new ServiceMultiResult<>(result.size(), result));
     }
 
 }

@@ -197,6 +197,11 @@ public class HouseServiceImpl implements HouseService {
         Pageable pageable = PageRequest.of(page, searchForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(querySpec, pageable);
         List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
+        // 设置房屋被收藏次数
+        houseDTOList.forEach(houseDTO -> {
+            int number = houseStarRepository.countByHouseId(houseDTO.getId());
+            houseDTO.setStarNumber(number);
+        });
         return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
@@ -529,6 +534,12 @@ public class HouseServiceImpl implements HouseService {
         return userHouseOperateDTO;
     }
 
+    @Override
+    public List<HouseDTO> findAllByIds(List<Long> houseIdList) {
+        List<HouseDTO> houseDTOList = wrapperHouseResult(houseIdList);
+        return houseDTOList;
+    }
+
     private ServiceMultiResult<HouseSubscribeInfoDTO> listHouseSubscribes(ListHouseSubscribesForm subscribesForm,
                                                      Function<ListHouseSubscribeParams, Page<HouseSubscribe>> func) {
         HouseSubscribeStatusEnum.of(subscribesForm.getStatus())
@@ -700,11 +711,6 @@ public class HouseServiceImpl implements HouseService {
             houseDTOMap.get(detailDTO.getHouseId()).setHouseDetail(detailDTO);
         });
 
-        // 设置房屋被收藏次数
-        houseDTOList.forEach(houseDTO -> {
-            int number = houseStarRepository.countByHouseId(houseDTO.getId());
-            houseDTO.setStarNumber(number);
-        });
     }
 
     /**

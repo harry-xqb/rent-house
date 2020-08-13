@@ -5,6 +5,8 @@ import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 
+import java.util.List;
+
 /**
  * 房屋service
  * @author Harry Xu
@@ -152,5 +154,11 @@ public interface HouseService {
      * @param houseId 房屋id
      */
     UserHouseOperateDTO getHouseOperate(Long houseId);
+
+    /**
+     * 通过房源id获取房源列表
+     * @param houseIdList 房源id集合
+     */
+    List<HouseDTO> findAllByIds(List<Long> houseIdList);
 
 }
