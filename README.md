@@ -96,7 +96,7 @@ kibana:  方便管理与查看elasticsearch（可以不安装）
 
 #### 技术问答
 
-## <img src="images/qrcode.jpg" alt="qrcode" style="zoom: 25%;" />
+## <img src="images/qrcode.jpg" alt="qrcode"  width="200" height="200"/>
 
 
 
