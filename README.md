@@ -96,7 +96,7 @@ kibana:  方便管理与查看elasticsearch（可以不安装）
 
 #### 技术问答
 
-## <img src="F:\idea\rent-house\images\qrcode.jpg" alt="qrcode" style="zoom: 25%;" />
+## <img src="images/qrcode.jpg" alt="qrcode" style="zoom: 25%;" />
 
 
 
@@ -120,9 +120,8 @@ kibana:  方便管理与查看elasticsearch（可以不安装）
 
 ![user-center](images/user-center.jpg)
 
-!(F:\idea\rent-house\images\forget-password.jpg) ![login-page](F:\idea\rent-house\images\login-page.png)
+ ![login-page](images/login-page.png)
 
 
-
-![forget-password](F:\idea\rent-house\images\forget-password.jpg)
+![forget-password](images/forget-password.jpg)
 
