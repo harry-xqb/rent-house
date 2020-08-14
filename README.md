@@ -9,9 +9,9 @@ rent-house 项目是一套模仿自如的租房系统，基于SpringBoot+Elastic
 
 ## 在线演示
 
-租房网地址:  [http://house.touchfish.top](http://house.touchfish.top)  账号: 17811111111 密码: 111
+租房网地址:  [http://house.touchfish.top](http://house.touchfish.top)  账号: 17811111111 密码: 123
 
-后端swiger接口地址:  [http://rent-house.touchfish.top](http://rent-house.touchfish.top)  账号: admin 密码: 111
+后端swiger接口地址:  [http://rent-house.touchfish.top](http://rent-house.touchfish.top)  账号: admin 密码: 123
 
 ## 技术选型
 
