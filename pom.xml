@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.harry</groupId>
     <artifactId>rent-house</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
     <name>rent-house</name>
     <description>rent house project</description>
 
@@ -163,6 +163,7 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- 默认不打包配置文件 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>

@@ -79,7 +79,7 @@
         "null_value": -1
       },
       "tags": {
-        "type": "keyword"
+        "type": "text"
       },
       "street": {
         "type": "keyword"

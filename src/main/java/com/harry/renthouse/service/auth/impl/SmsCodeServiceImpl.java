@@ -57,7 +57,7 @@ public class SmsCodeServiceImpl implements SmsCodeService {
         }
         String contentKey = SMS_CODE_CONTENT_PREFIX + generateSmsKey(phone, operationType);
         String code = RandomStringUtils.randomNumeric(aLiYunSmsProperties.getLength());
-        //aliSendSms(phone, code);
+        aliSendSms(phone, code);
         log.debug("验证码:{}", code);
         stringRedisTemplate.opsForValue().set(contentKey, code, REDIS_SMS_CONTENT_KEY_EXPIRE, TimeUnit.SECONDS);
         stringRedisTemplate.opsForValue().set(intervalKey, code, REDIS_SMS_INTERVAL_KEY_EXPIRE, TimeUnit.SECONDS);

@@ -93,9 +93,9 @@ spring:
     listener:
       missing-topics-fatal: false
   mail:
-    host: smtp.qq.com
-    username: 923243595@qq.com
-    password: ebuvrxzdcsxdbajh
+    host: smtp.qq.com     #***** 你修改的邮件服务地址 *****
+    username: 923243595@qq.com   #***** 修改为你的邮箱 *****
+    password: xxxxx    #***** 修改为你的邮箱密码 *****
 logging:
   level:
     org:
@@ -107,8 +107,8 @@ logging:
         renthouse: debug
 # 七牛云配置
 qiniu:
-  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo  # 你的七牛云accesskey
-  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7  # 你的七牛云accessSecret
+  accessKey: xxxxxx  # 你的七牛云accesskey
+  secretKey: xxxxxx  # 你的七牛云accessSecret
   bucket: hz-rent-house        # 你的七牛云OSS名称
   cdnPrefix: http://qiniu.touchfish.top/  # 你的七牛云cnd前缀名称
 # 阿里云配置

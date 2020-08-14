@@ -91,8 +91,8 @@ public class VerifyImageUtil {
             // 这里的图片可以准备几张随机获取
             int imageIndex = new Random().nextInt(7) + 1;
             Resource resourceOri = new ClassPathResource("static/verify-image-" + imageIndex +".jpg");
-            File fileOri = resourceOri.getFile();
-            BufferedImage oriImage = ImageIO.read(fileOri);
+            InputStream fileStream = resourceOri.getInputStream();
+            BufferedImage oriImage = ImageIO.read(fileStream);
 
             int x = new Random().nextInt(oriImage.getWidth() - 2 * CUT_WIDTH) + CUT_WIDTH;
             int y = new Random().nextInt(oriImage.getHeight() - CUT_HEIGHT);

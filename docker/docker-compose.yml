@@ -1,0 +1,90 @@
+version: "3"
+services:
+  #租房网后端docker
+  rent-house-backend:
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-backend:1.0.0
+    container_name: rent-house-backend
+    restart: always
+    depends_on:
+      - redis
+      - elasticsearch
+      - kafka
+      - mysql
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 8080:8080
+    volumes:
+      - ./application.yml:/application.yml
+  #  租房网前端docker
+  rent-house-frontend:
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-frontend:1.0.0
+    container_name: rent-house-frontend
+    restart: always
+    depends_on:
+      - rent-house-backend
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 8888:80
+    volumes:
+      - ./proxy.conf:/etc/nginx/conf.d/default.conf
+  kafka:
+    image: wurstmeister/kafka
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: 192.168.1.141 #****** 这里需要改成你当前的主机ip地址 ******
+      KAFKA_CREATE_TOPICS: "test:1:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  elasticsearch:
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/elasticsearch-house:1.0.0
+    container_name: elasticsearch-house
+    restart: always
+    environment:
+      - TZ="Asia/Shanghai"
+      - cluster.name=docker-cluster
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - node.name=node0
+      - node.master=true
+      - node.data=true
+      - bootstrap.memory_lock=true
+      - search.max_buckets=100000000
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+    ports:
+      - 9200:9200
+  mysql:
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/mysql-house:1.0.0
+    container_name: mysql-house
+    restart: always
+    environment:
+      - TZ="Asia/Shanghai"
+    ports:
+      - 10086:3306
+  kibana:
+    image: kibana:7.5.1
+    container_name: kibana
+    restart: always
+    environment:
+      - TZ="Asia/Shanghai"
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+  redis:
+    image: redis
+    container_name: redis
+    restart: always
+    environment:
+      - TZ=Asia/Shanghai
+    ports:
+      - 6379:6379
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
