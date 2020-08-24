@@ -1,0 +1,4 @@
+*.json linguist-language=java
+*.java linguist-language=java
+*.md linguist-language=java
+*.yml linguist-language=java
