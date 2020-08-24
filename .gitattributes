@@ -5,4 +5,6 @@
 *.js linguist-language=java
 *.css linguist-language=java
 *.html linguist-language=java
+*.xml linguist-language=java
+*.conf linguist-language=java
 *.sql linguist-language=java
