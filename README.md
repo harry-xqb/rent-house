@@ -96,7 +96,7 @@ kibana:  方便管理与查看elasticsearch（可以不安装）
 
 #### 技术问答
 
-## <img src="images/qrcode.jpg" alt="qrcode"  width="200" height="200"/>
+## <img src="http://qiniu.touchfish.top/qrcode.jpg" alt="qrcode"  width="200" height="200"/>
 
 
 
@@ -106,22 +106,22 @@ kibana:  方便管理与查看elasticsearch（可以不安装）
 
 ## 项目界面展示
 
-## ![用户首页](images/client-filter.jpg)
+## ![用户首页](http://qiniu.touchfish.top/client-filter.jpg)
 
 
 
-![image-20200707162953900](images/image-20200707162953900.png)
+![image-20200707162953900](http://qiniu.touchfish.top/image-20200707162953900.png)
 
-![image-20200707163051367](images/image-20200707163051367.png)
-
-
-
-![image-20200707163359418](images/image-20200707163359418.png)
-
-![user-center](images/user-center.jpg)
-
- ![login-page](images/login-page.png)
+![image-20200707163051367](http://qiniu.touchfish.top/image-20200707163051367.png)
 
 
-![forget-password](images/forget-password.jpg)
+
+![image-20200707163359418](http://qiniu.touchfish.top/image-20200707163359418.png)
+
+![user-center](http://qiniu.touchfish.top/user-center.jpg)
+
+ ![login-page](http://qiniu.touchfish.top/login-page.png)
+
+
+![forget-password](http://qiniu.touchfish.top/forget-password.jpg)
 
