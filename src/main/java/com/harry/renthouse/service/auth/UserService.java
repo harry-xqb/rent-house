@@ -1,18 +1,25 @@
 package com.harry.renthouse.service.auth;
 
+import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
 import com.harry.renthouse.base.UserRoleEnum;
+import com.harry.renthouse.entity.User;
 import com.harry.renthouse.web.dto.UserDTO;
 import com.harry.renthouse.web.form.UserBasicInfoForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author Harry Xu
  * @date 2020/5/18 18:39
  */
 public interface UserService {
+
+    String REDIS_USER_ID_PREFIX = "user:id:";
+    String REDIS_USER_NAME_PREFIX = "user:name:";
+    String REDIS_USER_PHONE_PREFIX = "user:phone:";
 
     /**
      * 通过用户id查找用户
@@ -81,4 +88,22 @@ public interface UserService {
      * @param token 重置令牌
      */
     void resetPasswordByToken(String password, String token);
+
+    /**
+     * 缓存用户信息
+     * @param user 用户
+     */
+    void cache(User user);
+
+    /**
+     * 读取用户缓存
+     * @param key
+     */
+    User readCache(String key);
+
+    /**
+     * 获取用户角色
+     * @param userId 用户id
+     */
+    Set<SimpleGrantedAuthorityExtend> findUserRoles(long userId);
 }

@@ -3,6 +3,7 @@ package com.harry.renthouse.service.house.impl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.elastic.entity.BaiduMapLocation;
 import com.harry.renthouse.entity.Subway;
@@ -37,13 +38,18 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -74,11 +80,21 @@ public class AddressServiceImpl implements AddressService {
 
     // 坐标类型
     private static final String COORD_TYPE = "3";
+
+    @Resource
+    private RedisTemplate redisTemplate;
+
+    private static final String REDIS_SUPPORT_CITY_PREFIX = "city:";
+
+    private static final int REDIS_SUPPORT_CITY_EXPIRE = 60 * 60 * 24 * 7;
+
+
     /**
      * 获取所有城市
      * @return
      */
     @Override
+    @Cacheable(value = "cities", key = "'all'")
     public ServiceMultiResult<SupportAddressDTO> findAllCities() {
         Optional<List<SupportAddress>> addressList = Optional.ofNullable(supportAddressRepository.findAllByLevel(SupportAddress.AddressLevel.CITY.getValue()));
         List<SupportAddressDTO> list = addressList.orElse(Collections.emptyList()).stream()
@@ -88,6 +104,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Cacheable(value = "cities:condition", key = "#belongTo + '-' + #level")
     public ServiceMultiResult<SupportAddressDTO> findAreaByBelongToAndLevel(String belongTo, String level) {
         SupportAddress.AddressLevel levelEnum = SupportAddress.AddressLevel.of(level);
         List<SupportAddressDTO> list = Optional.ofNullable(supportAddressRepository.findAllByBelongToAndLevel(belongTo, levelEnum.getValue()))
@@ -99,15 +116,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public ServiceMultiResult<SupportAddressDTO> findAreaInEnName(List<String> enNameList) {
-        List<SupportAddressDTO> list = Optional.ofNullable(supportAddressRepository.findAllByEnNameIn(enNameList))
-                .orElse(Collections.emptyList())
-                .stream().map(item -> modelMapper.map(item, SupportAddressDTO.class))
-                .collect(Collectors.toList());
-        return new ServiceMultiResult<>(list.size(), list);
-    }
-
-    @Override
+    @Cacheable(value = "subway:lines", key = "#cityEnName")
     public ServiceMultiResult<SubwayDTO> findAllSubwayByCityEnName(String cityEnName) {
         List<SubwayDTO> subWayDtoList = Optional.ofNullable(subwayRepository.findAllByCityEnName(cityEnName))
                 .orElse(Collections.emptyList()).stream().map(subway -> modelMapper.map(subway, SubwayDTO.class)).collect(Collectors.toList());
@@ -115,6 +124,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Cacheable(value = "subway:stations", key = "#subwayId")
     public ServiceMultiResult<SubwayStationDTO> findAllSubwayStationBySubwayId(Long subwayId) {
         List<SubwayStationDTO> subwayStationDTOList = Optional.ofNullable(subwayStationRepository
                 .getAllBySubwayId(subwayId)).orElse(Collections.emptyList()).stream()
@@ -124,10 +134,20 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName) {
-        SupportAddress city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
+        String cityKey = REDIS_SUPPORT_CITY_PREFIX + cityEnName;
+        String regionKey = REDIS_SUPPORT_CITY_PREFIX + cityEnName + "-" + regionEnName;
+        SupportAddress city= (SupportAddress) redisTemplate.opsForValue().get(cityKey);
+        if(city == null){
+            city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-        SupportAddress region = supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.REGION.getValue())
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+            redisTemplate.opsForValue().set(cityKey, city, Duration.ofSeconds(REDIS_SUPPORT_CITY_EXPIRE));
+        }
+        SupportAddress region = (SupportAddress) redisTemplate.opsForValue().get(regionKey);
+        if(region == null){
+            region = supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.REGION.getValue())
+                    .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
+            redisTemplate.opsForValue().set(regionKey, region, Duration.ofSeconds(REDIS_SUPPORT_CITY_EXPIRE));
+        }
         Map<SupportAddress.AddressLevel, SupportAddressDTO> map = new HashMap();
         map.put(SupportAddress.AddressLevel.CITY, modelMapper.map(city, SupportAddressDTO.class));
         map.put(SupportAddress.AddressLevel.REGION, modelMapper.map(region, SupportAddressDTO.class));
@@ -135,18 +155,21 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Cacheable(value = "subway:station", key = "#subwayStationId")
     public SubwayStationDTO findSubwayStation(Long subwayStationId) {
         SubwayStation subwayStation = subwayStationRepository.findById(subwayStationId).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
         return modelMapper.map(subwayStation, SubwayStationDTO.class);
     }
 
     @Override
+    @Cacheable(value = "subway:line", key = "#subwayId")
     public SubwayDTO findSubway(Long subwayId) {
         Subway subway = subwayRepository.findById(subwayId).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_LINE_ERROR));
         return modelMapper.map(subway, SubwayDTO.class);
     }
 
     @Override
+    @Cacheable(value = "support:city:enName", key = "#cityEnName")
     public Optional<SupportAddressDTO> findCity(String cityEnName) {
         return supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
                 .map(item -> modelMapper.map(item, SupportAddressDTO.class));

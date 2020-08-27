@@ -1,12 +1,17 @@
 package com.harry.renthouse.security;
 
 import com.harry.renthouse.base.ApiResponseEnum;
+import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
+import com.harry.renthouse.config.RedisConfig;
 import com.harry.renthouse.entity.Role;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.RoleRepository;
 import com.harry.renthouse.repository.UserRepository;
+import com.harry.renthouse.service.auth.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
@@ -16,11 +21,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 用户认证及权限
@@ -30,32 +40,38 @@ import java.util.Set;
 @Service
 public class RentHouseUserDetailService implements UserDetailsService {
 
-    @Autowired
+    @Resource
     private UserRepository userRepository;
 
-    @Autowired
+    @Resource
     private RoleRepository roleRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    @Resource
+    private UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findUserByName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        // 从缓存中读取用户
+        User user = userService.readCache(UserService.REDIS_USER_NAME_PREFIX + username);
+        if(user == null){
+            user = userRepository.findUserByName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+            userService.cache(user);
+        }
         wrapperRole(user);
         return user;
     }
 
     public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
-        User user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        User user = userService.readCache(UserService.REDIS_USER_PHONE_PREFIX + phone);
+        if(user == null){
+            user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+            userService.cache(user);
+        }
         wrapperRole(user);
         return user;
     }
+
     private void wrapperRole(User user){
-        List<Role> roleList = Optional.ofNullable(roleRepository.findRolesByUserId(user.getId()))
-                .orElseThrow(() -> new DisabledException(ApiResponseEnum.NO_PRIORITY_ERROR.getMessage()));
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        roleList.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName())));
-        user.setAuthorities(authorities);
+        user.setAuthorities(userService.findUserRoles(user.getId()));
     }
 }

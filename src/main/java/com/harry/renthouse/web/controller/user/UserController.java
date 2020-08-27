@@ -5,11 +5,13 @@ import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.property.LimitsProperty;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.auth.AuthenticationService;
 import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.util.FileUploaderChecker;
+import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import io.swagger.annotations.Api;
@@ -49,11 +51,15 @@ public class UserController {
     @Resource
     private HouseService houseService;
 
+    @Resource
+    private AuthenticationService authenticationService;
+
     @GetMapping
     @ApiOperation("获取当前用户信息")
     public ApiResponse<UserDTO> getUserInfo(){
         Long userId = AuthenticatedUserUtil.getUserId();
         UserDTO userDTO = userService.findUserById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        userDTO.setAuthorities(userService.findUserRoles(userDTO.getId()));
         return ApiResponse.ofSuccess(userDTO);
     }
 
@@ -174,6 +180,13 @@ public class UserController {
     @ApiOperation("取消收藏房源")
     public ApiResponse cancelStarHouse(@PathVariable Long houseId){
         houseService.deleteStarInfo(houseId);
+        return ApiResponse.ofSuccess();
+    }
+
+    @DeleteMapping("logout/{token}")
+    @ApiOperation("登出用户")
+    public ApiResponse logout(@PathVariable String token){
+        authenticationService.logout(token);
         return ApiResponse.ofSuccess();
     }
 }

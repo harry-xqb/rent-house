@@ -2,6 +2,7 @@ package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.RentHouseApplicationTests;
 import com.harry.renthouse.base.RentWayEnum;
+import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.HouseService;
@@ -106,8 +107,8 @@ class HouseServiceImplTest extends RentHouseApplicationTests {
     void authUser(){
         User user = new User();
         user.setId(14L);
-        Set<GrantedAuthority> authorities = new HashSet<>();
-        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        Set<SimpleGrantedAuthorityExtend> authorities = new HashSet<>();
+        authorities.add(new SimpleGrantedAuthorityExtend("ROLE_ADMIN"));
         user.setAuthorities(authorities);
         Authentication auth = new PreAuthenticatedAuthenticationToken(user, "", user.getAuthorities());
         auth.setAuthenticated(true);

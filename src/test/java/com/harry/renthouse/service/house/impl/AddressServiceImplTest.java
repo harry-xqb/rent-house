@@ -2,8 +2,11 @@ package com.harry.renthouse.service.house.impl;
 
 import com.harry.renthouse.RentHouseApplicationTests;
 import com.harry.renthouse.elastic.entity.BaiduMapLocation;
+import com.harry.renthouse.service.ServiceMultiResult;
 import com.harry.renthouse.service.house.AddressService;
+import com.harry.renthouse.web.dto.SupportAddressDTO;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
@@ -21,6 +24,9 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
 
     @Resource
     private AddressService addressService;
+
+    @Resource
+    private RedisTemplate redisTemplate;
 
     @Test
     void getBaiduMapLocation() {
@@ -44,5 +50,16 @@ class AddressServiceImplTest  extends RentHouseApplicationTests {
     void lbsRemove() {
         boolean result = addressService.lbsRemove(12345L);
         Assert.isTrue(result, "删除poi失败");
+    }
+
+    @Test
+    void findAllCities() {
+//        redisTemplate.opsForValue().set("aaa", addressService.findAllCities());
+        ServiceMultiResult<SupportAddressDTO> result = (ServiceMultiResult<SupportAddressDTO>) redisTemplate.opsForValue().get("aaa");
+        System.out.println(result);
+        ServiceMultiResult<SupportAddressDTO> result2 = (ServiceMultiResult<SupportAddressDTO>) redisTemplate.opsForValue().get("bbb");
+        System.out.println(result2);
+        ServiceMultiResult<SupportAddressDTO> result3 = (ServiceMultiResult<SupportAddressDTO>) redisTemplate.opsForValue().get("support:cities::all");
+        System.out.println(result3);
     }
 }

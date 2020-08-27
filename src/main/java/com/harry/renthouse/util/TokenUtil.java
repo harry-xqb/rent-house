@@ -39,6 +39,10 @@ public class TokenUtil {
         return redisUtil.expire(LOGIN_TOKEN_PREFIX + token, DEFAULT_TOKEN_EXPIRE_TIME);
     }
 
+    public void delete(String token){
+        redisUtil.del(LOGIN_TOKEN_PREFIX + token);
+    }
+
     /**
      * 判断token是否存在
      */

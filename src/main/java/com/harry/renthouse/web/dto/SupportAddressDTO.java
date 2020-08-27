@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  *  支持区域dto
  * @author Harry Xu
@@ -11,7 +13,7 @@ import lombok.Data;
  */
 @Data
 @ApiModel("支持的区域 DTO")
-public class SupportAddressDTO {
+public class SupportAddressDTO implements Serializable {
 
     @ApiModelProperty(value = "地区id", example = "4")
     private Long id;

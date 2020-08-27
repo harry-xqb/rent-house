@@ -34,6 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Resource
     private UserService userService;
 
+
     @Override
     public AuthenticationDTO loginByUsername(String username, String password) {
         User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
@@ -58,6 +59,11 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public AuthenticationDTO noPassLogin(String phone) {
         UserDTO userDTO = userService.findByPhoneNumber(phone).orElseGet(() -> userService.createByPhone(phone));
         return tokenGenerate(userDTO.getName());
+    }
+
+    @Override
+    public void logout(String token) {
+        tokenUtil.delete(token);
     }
 
     private AuthenticationDTO tokenGenerate(String username){

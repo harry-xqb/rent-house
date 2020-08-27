@@ -112,7 +112,7 @@ public class HouseController {
         // 整合数据
         HouseMapRegionsAggDTO houseMapRegionsAggDTO = new HouseMapRegionsAggDTO();
         houseMapRegionsAggDTO.setRegions(regions.getList());
-        houseMapRegionsAggDTO.setTotalHouse(houseBucketDTOResult.getResultSize());
+        houseMapRegionsAggDTO.setTotalHouse(houseBucketDTOResult.resultSize());
         houseMapRegionsAggDTO.setAggData(houseBucketDTOResult.getList());
         return ApiResponse.ofSuccess(houseMapRegionsAggDTO);
     }

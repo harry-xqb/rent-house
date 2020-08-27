@@ -1,5 +1,6 @@
 package com.harry.renthouse.entity;
 
+import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -60,7 +61,7 @@ public class User implements UserDetails, Serializable {
     private String introduction;
 
     @Transient
-    private Set<GrantedAuthority> authorities;
+    private Set<SimpleGrantedAuthorityExtend> authorities;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

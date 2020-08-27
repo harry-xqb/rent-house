@@ -1,11 +1,13 @@
 package com.harry.renthouse.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-public class ServiceMultiResult<T> {
+public class ServiceMultiResult<T> implements Serializable {
 
     @ApiModelProperty(value = "总数")
     private Integer total;
@@ -27,7 +29,8 @@ public class ServiceMultiResult<T> {
     @ApiModelProperty(value = "结果集")
     private List<T> list;
 
-    public int getResultSize(){
+    @JsonIgnore
+    public int resultSize(){
         return Optional.ofNullable(list).orElse(Collections.emptyList()).size();
     }
 }

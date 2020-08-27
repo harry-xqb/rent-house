@@ -56,17 +56,19 @@ public class OpenController {
     private RedisUtil redisUtil;
 
 
+
     @GetMapping("limits")
     @ApiOperation(value = "获取请求限制条件")
     public ApiResponse<LimitsDTO> getLimits(){
         return ApiResponse.ofSuccess(modelMapper.map(limitsProperty, LimitsDTO.class));
     }
+
     @PostMapping("registryByPhone")
     @ApiOperation("通过手机号注册用户")
     public ApiResponse<AuthenticationDTO> phoneRegistry(@Validated @RequestBody UserPhoneRegisterForm userPhoneRegisterForm){
         String smsCode = smsCodeService.getSmsCode(userPhoneRegisterForm.getPhoneNumber(), ValidateCodeTypeEnum.SIGN_UP.getValue());
         if(StringUtils.equals(smsCode, userPhoneRegisterForm.getVerifyCode())){
-            UserDTO userDTO = userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN));
+            userService.registerUserByPhone(userPhoneRegisterForm, Collections.singletonList(UserRoleEnum.ADMIN));
             AuthenticationDTO authenticationDTO = authenticationService.noPassLogin(userPhoneRegisterForm.getPhoneNumber());
             // return ApiResponse.ofSuccess());
             return ApiResponse.ofSuccess(authenticationDTO);
@@ -176,4 +178,5 @@ public class OpenController {
             throw new BusinessException(ApiResponseEnum.NOT_VALID_PARAM);
         }
     }
+
 }

@@ -1,5 +1,6 @@
 package com.harry.renthouse.web.dto;
 
+import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -55,5 +56,5 @@ public class UserDTO {
     private String introduction;
 
     @ApiModelProperty(value = "权限", example = "[{'authority': 'ROLE_ADMIN'}]")
-    private Set<GrantedAuthority> authorities;
+    private Set<SimpleGrantedAuthorityExtend> authorities;
 }

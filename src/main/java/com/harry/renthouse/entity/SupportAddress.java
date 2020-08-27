@@ -9,6 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import java.io.Serializable;
 
 /**
  *  支持地区
@@ -17,7 +18,7 @@ import javax.persistence.Id;
  */
 @Entity
 @Data
-public class SupportAddress {
+public class SupportAddress implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -29,7 +29,6 @@ public class AddressController {
     @Resource
     private AddressService addressService;
 
-
     @GetMapping("support/cities")
     @ApiOperation(value = "获取所有支持的城市列表")
     public ApiResponse<ServiceMultiResult<SupportAddressDTO>>  getSupportCities(){

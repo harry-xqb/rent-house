@@ -32,12 +32,6 @@ public interface AddressService {
      */
     ServiceMultiResult<SupportAddressDTO> findAreaByBelongToAndLevel(String belongTo, String level);
 
-    /**
-     * 查找所有给定的enName地址
-     * @param enNameList 城市/区域 enName
-     * @return 行政单位列表
-     */
-    ServiceMultiResult<SupportAddressDTO> findAreaInEnName(List<String> enNameList);
 
     /**
      * 通过城市英文名获取所有地铁线路
