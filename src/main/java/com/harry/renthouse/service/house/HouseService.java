@@ -149,11 +149,6 @@ public interface HouseService {
      */
     void deleteStarInfo(Long houseId);
 
-    /**
-     *  用户是否收藏指定房屋
-     * @param houseId 房屋id
-     */
-    UserHouseOperateDTO getHouseOperate(Long houseId);
 
     /**
      * 通过房源id获取房源列表
@@ -161,4 +156,17 @@ public interface HouseService {
      */
     List<HouseDTO> findAllByIds(List<Long> houseIdList);
 
+    /**
+     * 用户是否收藏指定房源
+     * @param houseId 房源id
+     * @param userId 用户id
+     */
+    boolean isStarHouse(long houseId, long userId);
+
+    /**
+     * 用户是否预约过指定房源
+     * @param houseId 房源id
+     * @param userId 用户id
+     */
+    boolean isReserveHouse(long houseId, long userId);
 }

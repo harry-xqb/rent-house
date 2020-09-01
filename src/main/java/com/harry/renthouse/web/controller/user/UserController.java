@@ -11,7 +11,6 @@ import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.house.QiniuService;
 import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.util.FileUploaderChecker;
-import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.*;
 import io.swagger.annotations.Api;
@@ -24,8 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author Harry Xu
@@ -160,13 +157,6 @@ public class UserController {
     public ApiResponse starHouse(@PathVariable Long houseId){
         houseService.starHouse(houseId);
         return ApiResponse.ofSuccess();
-    }
-
-    @GetMapping("house/{houseId}/operate")
-    @ApiOperation("获取当前用户对房源的操作（收藏，预约）")
-    public ApiResponse<UserHouseOperateDTO> getHouseOperate(@PathVariable Long houseId){
-        UserHouseOperateDTO houseOperate = houseService.getHouseOperate(houseId);
-        return ApiResponse.ofSuccess(houseOperate);
     }
 
     @PostMapping("house/star/list")

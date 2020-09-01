@@ -21,6 +21,12 @@ public class HouseCompleteInfoDetailDTO extends HouseCompleteInfoDTO{
     @ApiModelProperty(value = "当前房屋小区的出租房屋数")
     private Integer houseCountInDistrict;
 
+    @ApiModelProperty(value = "是否收藏过房源")
+    private boolean star;
+
+    @ApiModelProperty(value = "是否预约过房源")
+    private boolean reserve;
+
     @ApiModelProperty(value = "推荐房源")
     private List<HouseDTO> suggestHouses;
 }

@@ -15,6 +15,7 @@ import com.harry.renthouse.service.auth.UserService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
+import com.harry.renthouse.util.AuthenticatedUserUtil;
 import com.harry.renthouse.web.dto.*;
 import com.harry.renthouse.web.form.HouseIdListForm;
 import com.harry.renthouse.web.form.MapBoundSearchForm;
@@ -86,6 +87,15 @@ public class HouseController {
         searchHouseForm.setKeyword(houseInfo.getHouse().getTitle());
         ServiceMultiResult<HouseDTO> suggestResult = houseService.search(searchHouseForm);
         List<HouseDTO> suggest = suggestResult.getList().stream().filter(item -> item.getId().longValue() != id).collect(Collectors.toList());
+
+        // 如果当前用户已经登录，则判断当前用户是否搜藏预约过房源
+        if(AuthenticatedUserUtil.isAuthenticated()){
+            long userId = AuthenticatedUserUtil.getUserId();
+            boolean star = houseService.isStarHouse(id, userId);
+            boolean reserve = houseService.isReserveHouse(id, userId);
+            result.setStar(star);
+            result.setReserve(reserve);
+        }
         // 返回结果
         result.setAgent(agent);
         result.setHouseCountInDistrict(houseCountInDistrict);

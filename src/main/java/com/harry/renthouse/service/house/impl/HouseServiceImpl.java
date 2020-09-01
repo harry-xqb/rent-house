@@ -522,22 +522,19 @@ public class HouseServiceImpl implements HouseService {
             throw new BusinessException(ApiResponseEnum.HOUSE_UN_STAR_NOT_FOUND_ERROR);
         }
     }
-
     @Override
-    public UserHouseOperateDTO getHouseOperate(Long houseId) {
-        Long userId = AuthenticatedUserUtil.getUserId();
-        UserHouseOperateDTO userHouseOperateDTO = new UserHouseOperateDTO();
-        boolean star = houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
-        boolean reserve = houseSubscribeRepository.existsByHouseIdAndUserId(houseId, userId);
-        userHouseOperateDTO.setStar(star);
-        userHouseOperateDTO.setReserve(reserve);
-        return userHouseOperateDTO;
+    public List<HouseDTO> findAllByIds(List<Long> houseIdList) {
+        return wrapperHouseResult(houseIdList);
     }
 
     @Override
-    public List<HouseDTO> findAllByIds(List<Long> houseIdList) {
-        List<HouseDTO> houseDTOList = wrapperHouseResult(houseIdList);
-        return houseDTOList;
+    public boolean isStarHouse(long houseId, long userId) {
+        return houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+    }
+
+    @Override
+    public boolean isReserveHouse(long houseId, long userId) {
+        return houseSubscribeRepository.existsByHouseIdAndUserId(houseId, userId);
     }
 
     private ServiceMultiResult<HouseSubscribeInfoDTO> listHouseSubscribes(ListHouseSubscribesForm subscribesForm,

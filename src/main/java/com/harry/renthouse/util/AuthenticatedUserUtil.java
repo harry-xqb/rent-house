@@ -3,6 +3,7 @@ package com.harry.renthouse.util;
 import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.entity.User;
 import com.harry.renthouse.exception.BusinessException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
@@ -35,35 +36,12 @@ public class AuthenticatedUserUtil {
     public static Long getUserId(){
         return getUserInfo().getId();
     }
-}
 
-class Shop {
-
-    void printSomething(Printer printer){
-        printer.print();
+    /**
+     * 判断当前是否有登录用户（排除匿名用户）
+     */
+    public static boolean isAuthenticated(){
+        return !"anonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 }
 
-class Consumer{
-    public static void main(String[] args) {
-        Shop shop = new Shop();
-        // 我想打印彩印
-        Printer colorPrinter = new ColorPrinter();
-        shop.printSomething(colorPrinter);
-
-        // 我想打印黑白照
-        Printer blackPrinter = new BlackPrinter();
-        shop.printSomething(blackPrinter);
-    }
-}
-
-
-class Printer{
-
-    void print(){
-
-    };
-}
-
-class ColorPrinter extends Printer{};
-class BlackPrinter extends Printer{};
