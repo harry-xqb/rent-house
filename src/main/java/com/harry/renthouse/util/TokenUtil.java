@@ -18,7 +18,7 @@ public class TokenUtil {
 
     private static final int DEFAULT_TOKEN_EXPIRE_TIME = 60 * 60 * 2; // 2个小时
 
-    private static final String  LOGIN_TOKEN_PREFIX = "LOGIN:TOKEN:";
+    private static final String  LOGIN_TOKEN_PREFIX = "login:token:";
 
 
     /**

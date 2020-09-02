@@ -73,13 +73,6 @@ public class AddressServiceImpl implements AddressService {
     // 坐标类型
     private static final String COORD_TYPE = "3";
 
-    @Resource
-    private RedisTemplate redisTemplate;
-
-    private static final String REDIS_SUPPORT_CITY_PREFIX = "city:";
-
-    private static final int REDIS_SUPPORT_CITY_EXPIRE = 60 * 60 * 24 * 7;
-
 
     /**
      * 获取所有城市
@@ -125,28 +118,6 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName) {
-        String cityKey = REDIS_SUPPORT_CITY_PREFIX + cityEnName;
-        String regionKey = REDIS_SUPPORT_CITY_PREFIX + cityEnName + "-" + regionEnName;
-        SupportAddress city= (SupportAddress) redisTemplate.opsForValue().get(cityKey);
-        if(city == null){
-            city = supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-            redisTemplate.opsForValue().set(cityKey, city, Duration.ofSeconds(REDIS_SUPPORT_CITY_EXPIRE));
-        }
-        SupportAddress region = (SupportAddress) redisTemplate.opsForValue().get(regionKey);
-        if(region == null){
-            region = supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.REGION.getValue())
-                    .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
-            redisTemplate.opsForValue().set(regionKey, region, Duration.ofSeconds(REDIS_SUPPORT_CITY_EXPIRE));
-        }
-        Map<SupportAddress.AddressLevel, SupportAddressDTO> map = new HashMap();
-        map.put(SupportAddress.AddressLevel.CITY, modelMapper.map(city, SupportAddressDTO.class));
-        map.put(SupportAddress.AddressLevel.REGION, modelMapper.map(region, SupportAddressDTO.class));
-        return map;
-    }
-
-    @Override
     @Cacheable(value = "subway:station", key = "#subwayStationId")
     public SubwayStationDTO findSubwayStation(Long subwayStationId) {
         SubwayStation subwayStation = subwayStationRepository.findById(subwayStationId).orElseThrow(() -> new BusinessException(ApiResponseEnum.SUBWAY_STATION_ERROR));
@@ -161,9 +132,16 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    @Cacheable(value = "support:city:enName", key = "#cityEnName")
-    public Optional<SupportAddressDTO> findCity(String cityEnName) {
+    @Cacheable(value = "support:city", key = "#cityEnName")
+    public Optional<SupportAddressDTO> findCityByName(String cityEnName) {
         return supportAddressRepository.findByEnNameAndLevel(cityEnName, SupportAddress.AddressLevel.CITY.getValue())
+                .map(item -> modelMapper.map(item, SupportAddressDTO.class));
+    }
+
+    @Override
+    @Cacheable(value = "support:region", key = "#cityEnName + ':' +  #regionEnName", unless = "#result.present")
+    public Optional<SupportAddressDTO> findRegionByCityNameAndName(String cityEnName, String regionEnName) {
+        return supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.CITY.getValue())
                 .map(item -> modelMapper.map(item, SupportAddressDTO.class));
     }
 

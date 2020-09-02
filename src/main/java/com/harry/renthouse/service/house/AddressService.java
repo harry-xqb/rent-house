@@ -48,13 +48,6 @@ public interface AddressService {
     ServiceMultiResult<SubwayStationDTO> findAllSubwayStationBySubwayId(Long subwayId);
 
     /**
-     * 获取城市和区县
-     * @param cityEnName 城市英文简称
-     * @param regionEnName 区县英文简称
-     */
-    Map<SupportAddress.AddressLevel, SupportAddressDTO> findCityAndRegion(String cityEnName, String regionEnName);
-
-    /**
      * 获取地铁站
      * @param subwayStationId 地铁站id
      */
@@ -69,9 +62,15 @@ public interface AddressService {
     /**
      * 通过城市英文简称查找城市
      * @param cityEnName 城市英文简称
-     * @return
      */
-    Optional<SupportAddressDTO> findCity(String cityEnName);
+    Optional<SupportAddressDTO> findCityByName(String cityEnName);
+
+    /**
+     * 通过区县英文简称查找区县
+     * @param cityEnName 城市英文简称
+     * @param regionEnName 区县英文简称
+     */
+    Optional<SupportAddressDTO> findRegionByCityNameAndName(String cityEnName, String regionEnName);
 
     /**
      * 通过城市详细地址获取经纬度

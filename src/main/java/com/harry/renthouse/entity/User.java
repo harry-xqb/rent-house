@@ -1,5 +1,6 @@
 package com.harry.renthouse.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.harry.renthouse.base.SimpleGrantedAuthorityExtend;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -61,6 +62,7 @@ public class User implements UserDetails, Serializable {
     private String introduction;
 
     @Transient
+    @JsonIgnore
     private Set<SimpleGrantedAuthorityExtend> authorities;
 
     @Override
@@ -69,26 +71,31 @@ public class User implements UserDetails, Serializable {
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return this.name;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return true;
     }

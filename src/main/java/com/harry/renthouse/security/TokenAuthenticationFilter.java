@@ -76,8 +76,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 auth.setAuthenticated(true);
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
-//            Authentication auth = new TokenAuthentication(token);
-
         }
         fc.doFilter(req, res);
     }

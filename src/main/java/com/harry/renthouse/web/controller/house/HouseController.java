@@ -73,7 +73,7 @@ public class HouseController {
         HouseCompleteInfoDTO houseInfo = houseService.findCompleteHouse(id);
         HouseCompleteInfoDetailDTO result = modelMapper.map(houseInfo, HouseCompleteInfoDetailDTO.class);
         // 获取用户信息
-        UserDTO agent = userService.findUserById(houseInfo.getHouse().getAdminId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        UserDTO agent = userService.findById(houseInfo.getHouse().getAdminId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         // 获取小区出租房屋数
         int houseCountInDistrict = houseElasticSearchService
                 .aggregateDistrictHouse(houseInfo.getCity().getEnName(),
@@ -114,7 +114,7 @@ public class HouseController {
     @ApiOperation("地图-》聚合区县房源")
     public ApiResponse<HouseMapRegionsAggDTO> mapAggRegions(@ApiParam("城市英文简称") @PathVariable String cityEnName){
         // 判断城市是否存在
-        addressService.findCity(cityEnName).orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        addressService.findCityByName(cityEnName);
         // 获取所有区县
         ServiceMultiResult<SupportAddressDTO> regions = addressService.findAreaByBelongToAndLevel(cityEnName, SupportAddress.AddressLevel.REGION.getValue());
         // 获取聚合结果

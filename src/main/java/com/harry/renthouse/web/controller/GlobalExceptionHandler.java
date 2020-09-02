@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public ApiResponse exceptionHandler(Exception e){
-        e.printStackTrace();
+        log.error("不支持的请求类型异常:{}", e.getMessage());
         return ApiResponse.ofStatus(ApiResponseEnum.INTERNAL_SERVER_ERROR);
     }
 }

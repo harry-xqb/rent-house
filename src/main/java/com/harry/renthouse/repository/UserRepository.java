@@ -15,7 +15,7 @@ import java.util.Optional;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    Optional<User> findUserByName(String name);
+    Optional<User> findByName(String name);
 
     @Modifying
     @Query("update User as user set user.avatar = :avatar where user.id = :id")

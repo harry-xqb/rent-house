@@ -40,12 +40,12 @@ import java.util.UUID;
 @Slf4j
 public class VerifyImageUtil {
 
-    private static final String IMAGE_CODE_PREFIX = "IMAGE:CODE:";
+    private static final String IMAGE_CODE_PREFIX = "image:code:";
 
     private static final int IMAGE_CODE_KEY_EXPIRE = 60 * 5;
 
     // 验证成功后存储的操作码前缀
-    public static final String VERIFY_OPERATE_PREFIX  = "VERIFY:OPERATE:";
+    public static final String VERIFY_OPERATE_PREFIX  = "verify:operate:";
 
     private static final int VERIFY_OPERATE_KEY_EXPIRE = 60 * 15;
 
@@ -117,7 +117,7 @@ public class VerifyImageUtil {
 
     public static VerifyImageCheckDTO check(String phone, int x){
         Object result = redisStaticUtil.get(IMAGE_CODE_PREFIX + phone);
-        redisStaticUtil.del(phone);
+        redisStaticUtil.del(IMAGE_CODE_PREFIX + phone);
         if(result == null){
             throw new BusinessException(ApiResponseEnum.IMAGE_CODE_EXPIRE);
         }

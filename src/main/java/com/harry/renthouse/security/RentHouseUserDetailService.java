@@ -9,6 +9,8 @@ import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.RoleRepository;
 import com.harry.renthouse.repository.UserRepository;
 import com.harry.renthouse.service.auth.UserService;
+import com.harry.renthouse.web.dto.UserDTO;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -44,24 +46,22 @@ public class RentHouseUserDetailService implements UserDetailsService {
     private UserRepository userRepository;
 
     @Resource
-    private RoleRepository roleRepository;
+    private UserService userService;
 
     @Resource
-    private UserService userService;
+    private ModelMapper modelMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // 从缓存中读取用户
-        User user = userService.readCache(UserService.REDIS_USER_NAME_PREFIX + username);
-        if(user == null){
-            user = userRepository.findUserByName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-            userService.cache(user);
-        }
+        UserDTO userDTO = userService.findByUserName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        User user = modelMapper.map(userDTO, User.class);
         wrapperRole(user);
         return user;
     }
 
-    public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
+  /*  public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
+        Optional<UserDTO> phone = userService.findByPhoneNumber(phone);
         User user = userService.readCache(UserService.REDIS_USER_PHONE_PREFIX + phone);
         if(user == null){
             user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
@@ -69,9 +69,13 @@ public class RentHouseUserDetailService implements UserDetailsService {
         }
         wrapperRole(user);
         return user;
-    }
+    }*/
 
     private void wrapperRole(User user){
-        user.setAuthorities(userService.findUserRoles(user.getId()));
+        Set<SimpleGrantedAuthorityExtend> userRoles = userService.findUserRoles(user.getId());
+        if(CollectionUtils.isEmpty(userRoles)){
+            throw new BusinessException(ApiResponseEnum.NO_PRIORITY_ERROR);
+        }
+        user.setAuthorities(userRoles);
     }
 }

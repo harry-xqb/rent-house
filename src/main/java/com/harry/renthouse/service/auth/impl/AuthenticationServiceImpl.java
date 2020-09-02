@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Optional;
 
 /**
  * @author Harry Xu
@@ -29,30 +30,27 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private TokenUtil tokenUtil;
 
     @Resource
-    private RentHouseUserDetailService rentHouseUserDetailService;
-
-    @Resource
     private UserService userService;
 
 
     @Override
     public AuthenticationDTO loginByUsername(String username, String password) {
-        User user = (User)rentHouseUserDetailService.loadUserByUsername(username);
+        UserDTO userDTO = userService.findByUserName(username).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         // 如果用户不存在或者密码不匹配
-        if(!passwordEncoder.matches(password, user.getPassword())){
+        if(!passwordEncoder.matches(password, userDTO.getPassword())){
             throw new BusinessException(ApiResponseEnum.USERNAME_PASSWORD_ERROR);
         }
-        return tokenGenerate(user.getUsername());
+        return tokenGenerate(userDTO.getName());
     }
 
     @Override
     public AuthenticationDTO loginByPhone(String phone, String password) {
-        User user = (User)rentHouseUserDetailService.loadUserByPhone(phone);
+        UserDTO userDTO = userService.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         // 如果用户不存在或者密码不匹配
-        if(!passwordEncoder.matches(password, user.getPassword())){
+        if(!passwordEncoder.matches(password, userDTO.getPassword())){
             throw new BusinessException(ApiResponseEnum.USERNAME_PASSWORD_ERROR);
         }
-        return tokenGenerate(user.getUsername());
+        return tokenGenerate(userDTO.getName());
     }
 
     @Override
@@ -71,7 +69,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String token = tokenUtil.generate(username);
         AuthenticationDTO authenticationDTO = new AuthenticationDTO();
         authenticationDTO.setToken(token);
-//        authenticationDTO.setUser(modelMapper.map(user, UserDTO.class));
         return authenticationDTO;
     }
 }

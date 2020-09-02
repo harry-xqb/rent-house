@@ -17,16 +17,18 @@ import java.util.Set;
  */
 public interface UserService {
 
-    String REDIS_USER_ID_PREFIX = "user:id:";
-    String REDIS_USER_NAME_PREFIX = "user:name:";
-    String REDIS_USER_PHONE_PREFIX = "user:phone:";
-
     /**
      * 通过用户id查找用户
      * @param id 用户id
      * @return
      */
-    Optional<UserDTO> findUserById(Long id);
+    Optional<UserDTO> findById(Long id);
+
+    /**
+     * 通过用户名查找用户
+     * @param name 用户名
+     */
+    Optional<UserDTO> findByUserName(String name);
 
     /**
      * 通过手机号查询用户
@@ -53,12 +55,6 @@ public interface UserService {
      * @param roleList 用户角色集合
      */
     UserDTO registerUserByPhone(UserPhoneRegisterForm phoneRegisterForm, List<UserRoleEnum> roleList);
-
-    /**
-     * 通过昵称查找用户
-     * @param nickName 用户昵称
-     */
-    Optional<UserDTO> findByNickName(String nickName);
 
     /**
      * 通过手机号创建用户
@@ -89,21 +85,5 @@ public interface UserService {
      */
     void resetPasswordByToken(String password, String token);
 
-    /**
-     * 缓存用户信息
-     * @param user 用户
-     */
-    void cache(User user);
-
-    /**
-     * 读取用户缓存
-     * @param key
-     */
-    User readCache(String key);
-
-    /**
-     * 获取用户角色
-     * @param userId 用户id
-     */
-    Set<SimpleGrantedAuthorityExtend> findUserRoles(long userId);
+    Set<SimpleGrantedAuthorityExtend> findUserRoles(Long id);
 }

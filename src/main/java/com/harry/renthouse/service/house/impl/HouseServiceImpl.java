@@ -90,6 +90,8 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     @Override
     public HouseDTO addHouse(HouseForm houseForm){
+        checkCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
+        // 判断城市
         // 房屋详情数据填充与校验
         HouseDetail houseDetail = generateHouseDetail(houseForm);
         // 新增房屋信息
@@ -118,6 +120,7 @@ public class HouseServiceImpl implements HouseService {
     }
     @Transactional
     public HouseDTO editHouse(HouseForm houseForm){
+        checkCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
         Long houseId = houseForm.getId();
         // 查看房源id是否存在
         House house = houseRepository.findByIdAndAdminId(houseId, AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
@@ -238,7 +241,10 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePictureDTO);
         // 设置地铁信息
-        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseDTO.getCityEnName(), houseDTO.getRegionEnName());
+        SupportAddressDTO city = addressService.findCityByName(houseDTO.getCityEnName())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        SupportAddressDTO region = addressService.findRegionByCityNameAndName(houseDTO.getRegionEnName(), houseDTO.getRegionEnName())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
         // 获取地铁线路信息
         Long subwayLineId = houseDTO.getHouseDetail().getSubwayLineId();
         String subWayName = houseDTO.getHouseDetail().getSubwayLineName();
@@ -254,8 +260,8 @@ public class HouseServiceImpl implements HouseService {
         // 拼装返回信息
         HouseCompleteInfoDTO houseCompleteInfoDTO = new HouseCompleteInfoDTO();
         houseCompleteInfoDTO.setHouse(houseDTO);
-        houseCompleteInfoDTO.setCity(cityAndRegion.get(SupportAddress.AddressLevel.CITY));
-        houseCompleteInfoDTO.setRegion(cityAndRegion.get(SupportAddress.AddressLevel.REGION));
+        houseCompleteInfoDTO.setCity(city);
+        houseCompleteInfoDTO.setRegion(region);
         houseCompleteInfoDTO.setSubway(subwayDTO);
         houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
 
@@ -784,9 +790,16 @@ public class HouseServiceImpl implements HouseService {
         }).collect(Collectors.toList());
     }
 
+    private void checkCityAndRegion(String cityEnName, String regionEnName){
+        addressService.findCityByName(cityEnName)
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        addressService.findRegionByCityNameAndName(cityEnName, regionEnName)
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+    }
+
     @AllArgsConstructor
     @Data
-    class ListHouseSubscribeParams{
+    static class ListHouseSubscribeParams{
 
         private Long userId;
 

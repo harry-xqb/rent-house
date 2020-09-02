@@ -50,10 +50,6 @@ public class AdminController {
     @ApiOperation(value = "新增房源接口")
     @PostMapping(value = "house/add")
     public ApiResponse<HouseDTO> addHouse(@Validated @RequestBody HouseForm houseForm){
-        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
-        if(cityAndRegion.size() != 2){
-            return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
-        }
         HouseDTO houseDto = houseService.addHouse(houseForm);
         houseElasticSearchService.save(houseDto.getId());
         return ApiResponse.ofSuccess(houseDto);
@@ -70,10 +66,6 @@ public class AdminController {
     @PutMapping("house/edit")
     @ApiOperation(value = "房源信息编辑")
     public ApiResponse<HouseDTO> editHouse(@RequestBody @Validated({HouseForm.Edit.class}) HouseForm houseForm){
-        Map<SupportAddress.AddressLevel, SupportAddressDTO> cityAndRegion = addressService.findCityAndRegion(houseForm.getCityEnName(), houseForm.getRegionEnName());
-        if(cityAndRegion.size() != 2){
-            return ApiResponse.ofStatus(ApiResponseEnum.SUPPORT_ADDRESS_ERROR);
-        }
         HouseDTO houseDto = houseService.editHouse(houseForm);
         houseElasticSearchService.save(houseDto.getId());
         return ApiResponse.ofSuccess(houseDto);

@@ -112,15 +112,6 @@ public class OpenController {
         return ApiResponse.ofSuccess();
     }
 
-    @GetMapping("nickName")
-    @ApiOperation("校验用户名是否存在")
-    public ApiResponse<OpenApiUerCheckDTO> checkNickNameExist(@ApiParam(value = "昵称") @RequestParam String nickName){
-        if(userService.findByNickName(nickName).isPresent()){
-            return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(true, ApiResponseEnum.USER_ALREADY_EXIST.getMessage()));
-        }
-        return ApiResponse.ofSuccess(new OpenApiUerCheckDTO(false, ApiResponseEnum.USER_NOT_FOUND.getMessage()));
-    }
-
     @GetMapping("phone")
     @ApiModelProperty("校验手机号是否存在")
     public ApiResponse checkPhoneExist(@ApiParam(value = "手机号") @RequestParam  String phone){

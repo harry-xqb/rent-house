@@ -55,7 +55,7 @@ public class UserController {
     @ApiOperation("获取当前用户信息")
     public ApiResponse<UserDTO> getUserInfo(){
         Long userId = AuthenticatedUserUtil.getUserId();
-        UserDTO userDTO = userService.findUserById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        UserDTO userDTO = userService.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         userDTO.setAuthorities(userService.findUserRoles(userDTO.getId()));
         return ApiResponse.ofSuccess(userDTO);
     }

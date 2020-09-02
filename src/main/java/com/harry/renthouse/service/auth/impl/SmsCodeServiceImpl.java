@@ -46,8 +46,8 @@ public class SmsCodeServiceImpl implements SmsCodeService {
 
     private static final int REDIS_SMS_INTERVAL_KEY_EXPIRE = 60; // 间隔key 1分钟过期
 
-    private static final String SMS_CODE_INTERVAL_PREFIX = "SMS:CODE:INTERVAL:";
-    private static final String SMS_CODE_CONTENT_PREFIX = "SMS:CODE:CONTENT:";
+    private static final String SMS_CODE_INTERVAL_PREFIX = "sms:code:interval:";
+    private static final String SMS_CODE_CONTENT_PREFIX = "sms:code:content:";
 
     @Override
     public String sendSms(String phone, String operationType) {

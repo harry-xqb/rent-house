@@ -12,7 +12,9 @@ import com.harry.renthouse.repository.RoleRepository;
 import com.harry.renthouse.repository.UserRepository;
 import com.harry.renthouse.security.RentHouseUserDetailService;
 import com.harry.renthouse.service.auth.UserService;
+import com.harry.renthouse.service.cache.RedisUserService;
 import com.harry.renthouse.util.AuthenticatedUserUtil;
+import com.harry.renthouse.util.RedisUtil;
 import com.harry.renthouse.web.dto.UserDTO;
 import com.harry.renthouse.web.form.UserBasicInfoForm;
 import com.harry.renthouse.web.form.UserPhoneRegisterForm;
@@ -41,12 +43,6 @@ public class UserServiceImpl implements UserService {
 
     private static final String DEFAULT_NICk_NAME_PREFIX = "zfyh";
 
-    // 重置密码令牌前缀
-    private static final String RESET_PASS_WORD_TOKEN_PREFIX = "RESET:PASSWORD:TOKEN:";
-
-    private static final int RESET_PASS_WORD_TOKEN_EXPIRE = 60 * 15;
-
-
     @Resource
     private UserRepository userRepository;
 
@@ -60,40 +56,50 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
-
-    @Resource
-    private RedisTemplate redisTemplate;
-
-    @Resource
-    private Gson gson;
-
-    private static final  int REDIS_USER_TOKEN_EXPIRE = 60 * 60  * 24 * 7; // 默认缓存一周
-
-    public static final String REDIS_USRE_ROLE_PREFIX = "role:user:";
-
+    private RedisUserService redisUserService;
 
     @Override
-    public Optional<UserDTO> findUserById(Long id) {
+    public Optional<UserDTO> findById(Long id) {
         // 先从缓存中读取
-        User user = readCache(REDIS_USER_ID_PREFIX + id);
-        if(user != null){
-            return Optional.of(modelMapper.map(user, UserDTO.class));
+        Optional<UserDTO> userDTO = redisUserService.getUserById(id).map(item -> modelMapper.map(item, UserDTO.class));
+        if(userDTO.isPresent()){
+            return userDTO;
         }
         Optional<User> userOption = userRepository.findById(id);
-        userOption.ifPresent(this::cache);
+        // 缓存用户信息
+        userOption.ifPresent(item -> {
+            redisUserService.addUser(item);
+        });
+        return userOption.map(item -> modelMapper.map(item, UserDTO.class));
+    }
+
+    @Override
+    public Optional<UserDTO> findByUserName(String name) {
+        // 先从缓存中读取
+        Optional<UserDTO> userDTO = redisUserService.getUserByName(name).map(item -> modelMapper.map(item, UserDTO.class));
+        if(userDTO.isPresent()){
+            return userDTO;
+        }
+        Optional<User> userOption = userRepository.findByName(name);
+        // 缓存用户信息
+        userOption.ifPresent(item -> {
+            redisUserService.addUser(item);
+        });
         return userOption.map(item -> modelMapper.map(item, UserDTO.class));
     }
 
     @Override
     public Optional<UserDTO> findByPhoneNumber(String phoneNumber) {
         // 先从缓存中读取
-        User user = readCache(REDIS_USER_ID_PREFIX + phoneNumber);
-        if(user != null){
-            return Optional.of(modelMapper.map(user, UserDTO.class));
+        Optional<UserDTO> userDTO = redisUserService.getUserByPhoneNumber(phoneNumber).map(item -> modelMapper.map(item, UserDTO.class));
+        if(userDTO.isPresent()){
+            return userDTO;
         }
         Optional<User> userOption = userRepository.findByPhoneNumber(phoneNumber);
-        userOption.ifPresent(this::cache);
+        // 缓存用户信息
+        userOption.ifPresent(item -> {
+            redisUserService.addUser(item);
+        });
         return userOption.map(item -> modelMapper.map(item, UserDTO.class));
     }
 
@@ -103,23 +109,23 @@ public class UserServiceImpl implements UserService {
         Long userId = AuthenticatedUserUtil.getUserId();
         userRepository.updateAvatar(userId, avatar);
         // 如果存在缓存则更新缓存
-        User user = readCache(REDIS_USER_ID_PREFIX + userId);
-        if(user != null){
-            user.setAvatar(avatar);
-            cache(user);
-        }
+        redisUserService.getUserById(userId).ifPresent(item -> {
+            item.setAvatar(avatar);
+            redisUserService.addUser(item);
+        });
     }
 
     @Override
     @Transactional
     public UserDTO updateUserInfo(Long userId, UserBasicInfoForm userBasicInfoForm) {
-        final User user = userRepository.findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        UserDTO userDTO = findById(userId).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        User user = modelMapper.map(userDTO, User.class);
         user.setNickName(userBasicInfoForm.getNickName());
         user.setAvatar(userBasicInfoForm.getAvatar());
         user.setIntroduction(userBasicInfoForm.getIntroduction());
         userRepository.save(user);
         // 更新用户缓存
-        cache(user);
+        redisUserService.addUser(user);
         return modelMapper.map(user, UserDTO.class);
     }
 
@@ -127,7 +133,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDTO registerUserByPhone(UserPhoneRegisterForm phoneRegisterForm, List<UserRoleEnum> roleList) {
         // 判断手机号是否被注册
-        userRepository.findByPhoneNumber(phoneRegisterForm.getPhoneNumber()).ifPresent(user -> {
+        findByPhoneNumber(phoneRegisterForm.getPhoneNumber()).ifPresent(user -> {
             throw new BusinessException(ApiResponseEnum.PHONE_ALREADY_REGISTERED);
         });
         // 执行注册用户逻辑
@@ -151,24 +157,16 @@ public class UserServiceImpl implements UserService {
         user.setAuthorities(authorities);
 
         // 更新用户缓存
-        cache(user);
+        redisUserService.addUser(user);
         // 更新角色缓存
-        redisTemplate.opsForSet().add(
-                REDIS_USRE_ROLE_PREFIX + user.getId(),
-                roles.stream().map(Role::getName).distinct().toArray());
-        redisTemplate.expire(REDIS_USRE_ROLE_PREFIX + user.getId(), RedisConfig.REDIS_CACHE_DEFAULT_EXPIRE, TimeUnit.SECONDS);
+        redisUserService.addUserRoles(user.getId(), roles.stream().map(Role::getName).distinct().toArray(String[]::new));
         return modelMapper.map(user, UserDTO.class);
-    }
-
-    @Override
-    public Optional<UserDTO> findByNickName(String nickName) {
-        return  userRepository.findByNickName(nickName).map(user -> modelMapper.map(user, UserDTO.class));
     }
 
     @Transactional
     public UserDTO createByPhone(String phone){
         // 判断手机号是否被注册
-        userRepository.findByPhoneNumber(phone).ifPresent(user -> {
+        findByPhoneNumber(phone).ifPresent(user -> {
             throw new BusinessException(ApiResponseEnum.PHONE_ALREADY_REGISTERED);
         });
         // 执行注册用户逻辑
@@ -188,20 +186,19 @@ public class UserServiceImpl implements UserService {
         user.setAuthorities(authorities);
 
         // 更新用户缓存
-        cache(user);
+        redisUserService.addUser(user);
         // 更新角色缓存
         String[] roles = new String[]{UserRoleEnum.ADMIN.getValue()};
-        redisTemplate.opsForSet().add(
-                REDIS_USRE_ROLE_PREFIX + user.getId(),
-                roles);
-        redisTemplate.expire(REDIS_USRE_ROLE_PREFIX + user.getId(), RedisConfig.REDIS_CACHE_DEFAULT_EXPIRE, TimeUnit.SECONDS);
+        redisUserService.addUserRoles(user.getId(), roles);
+
         return modelMapper.map(user, UserDTO.class);
     }
 
     @Override
     @Transactional
     public void updatePassword(String oldPassword, String newPassword) {
-        User user = userRepository.findById(AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        UserDTO userDTO = findById(AuthenticatedUserUtil.getUserId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
+        User user = modelMapper.map(userDTO, User.class);
         if(StringUtils.isNotBlank(user.getPassword())){
             if(StringUtils.isBlank(oldPassword)){
                 throw new BusinessException(ApiResponseEnum.ORIGINAL_PASSWORD_EMPTY_ERROR);
@@ -214,62 +211,45 @@ public class UserServiceImpl implements UserService {
         userRepository.updatePassword(user.getId(), encodePassword);
         // 更新用户缓存
         user.setPassword(encodePassword);
-        cache(user);
+        redisUserService.addUser(user);
     }
 
     @Override
     public String generateResetPasswordToken(String phone) {
-        userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-        String token = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForValue().set(RESET_PASS_WORD_TOKEN_PREFIX + token, phone, RESET_PASS_WORD_TOKEN_EXPIRE, TimeUnit.SECONDS);
-        return token;
+        findByPhoneNumber(phone);
+        return redisUserService.addResetPasswordToken(phone);
     }
 
     @Override
     @Transactional
     public void resetPasswordByToken(String password, String token) {
-        String phone = stringRedisTemplate.opsForValue().get(RESET_PASS_WORD_TOKEN_PREFIX + token);
-        stringRedisTemplate.delete(RESET_PASS_WORD_TOKEN_PREFIX + token);
+        String phone = redisUserService.getPhoneByResetPasswordToken(token);
         if(StringUtils.isNotEmpty(phone)){
             throw new BusinessException(ApiResponseEnum.RESET_PASSWORD_INVALID_TOKEN);
         }
+
         User user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
         String encodePassword = passwordEncoder.encode(password);
         userRepository.updatePassword(user.getId(), encodePassword);
 
         // 更新用户缓存
         user.setPassword(encodePassword);
-        cache(user);
+        redisUserService.addUser(user);
     }
 
-    public void cache(User user){
-        String idKey = REDIS_USER_ID_PREFIX + user.getId();
-        String nameKey = REDIS_USER_NAME_PREFIX + user.getName();
-        String phoneKey = REDIS_USER_PHONE_PREFIX + user.getPhoneNumber();
-        String userJson = gson.toJson(user);
-        stringRedisTemplate.opsForValue().set(idKey, userJson, REDIS_USER_TOKEN_EXPIRE, TimeUnit.SECONDS);
-        stringRedisTemplate.opsForValue().set(nameKey, userJson, REDIS_USER_TOKEN_EXPIRE, TimeUnit.SECONDS);
-        stringRedisTemplate.opsForValue().set(phoneKey, userJson, REDIS_USER_TOKEN_EXPIRE, TimeUnit.SECONDS);
-    }
-    public User readCache(String key){
-        String userJSon = stringRedisTemplate.opsForValue().get(key);
-        if(StringUtils.isNotBlank(userJSon)){
-            return gson.fromJson(userJSon, User.class);
-        }
-        return null;
-    }
-
-    public Set<SimpleGrantedAuthorityExtend> findUserRoles(long userId){
-        Set<String> roleNameSet = redisTemplate.opsForSet().members(REDIS_USRE_ROLE_PREFIX + userId);
-        if(CollectionUtils.isEmpty(roleNameSet)){
-            roleNameSet = Optional.ofNullable(roleRepository.findRolesByUserId(userId))
-                    .orElseThrow(() -> new DisabledException(ApiResponseEnum.NO_PRIORITY_ERROR.getMessage()))
-                    .stream().map(Role::getName).collect(Collectors.toSet());
-            redisTemplate.opsForSet().add(REDIS_USRE_ROLE_PREFIX + userId, roleNameSet.toArray());
-            redisTemplate.expire(REDIS_USRE_ROLE_PREFIX + userId, RedisConfig.REDIS_CACHE_DEFAULT_EXPIRE, TimeUnit.SECONDS);
-        }
+    @Override
+    public Set<SimpleGrantedAuthorityExtend> findUserRoles(Long id) {
+        Set<String> userRoles = redisUserService.getUserRoles(id);
+        // 如果缓存命中则直接返回
         Set<SimpleGrantedAuthorityExtend> authorities = new HashSet<>();
-        roleNameSet.forEach(roleName -> authorities.add(new SimpleGrantedAuthorityExtend("ROLE_" + roleName)));
+        if(!CollectionUtils.isEmpty(userRoles)){
+            userRoles.forEach(roleName -> authorities.add(new SimpleGrantedAuthorityExtend("ROLE_" + roleName)));
+            return authorities;
+        }
+        userRoles = roleRepository.findRolesByUserId(id).stream().map(Role::getName).collect(Collectors.toSet());
+        userRoles.forEach(roleName -> authorities.add(new SimpleGrantedAuthorityExtend("ROLE_" + roleName)));
+        // 缓存用户角色
+        redisUserService.addUserRoles(id, userRoles.toArray(new String[0]));
         return authorities;
     }
 }
