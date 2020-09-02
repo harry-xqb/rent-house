@@ -7,11 +7,14 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 /**
+ *
  * token 凭证
  * @author Harry Xu
  * @date 2020/5/11 9:51
+ * @deprecated 直接在filter中拦截token，无需走provider
  */
 @AllArgsConstructor
+@Deprecated
 public class TokenAuthentication implements Authentication {
 
     private String token;

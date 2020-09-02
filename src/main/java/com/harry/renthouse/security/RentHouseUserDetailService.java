@@ -43,9 +43,6 @@ import java.util.stream.Collectors;
 public class RentHouseUserDetailService implements UserDetailsService {
 
     @Resource
-    private UserRepository userRepository;
-
-    @Resource
     private UserService userService;
 
     @Resource
@@ -59,17 +56,6 @@ public class RentHouseUserDetailService implements UserDetailsService {
         wrapperRole(user);
         return user;
     }
-
-  /*  public UserDetails loadUserByPhone(String phone) throws UsernameNotFoundException {
-        Optional<UserDTO> phone = userService.findByPhoneNumber(phone);
-        User user = userService.readCache(UserService.REDIS_USER_PHONE_PREFIX + phone);
-        if(user == null){
-            user = userRepository.findByPhoneNumber(phone).orElseThrow(() -> new BusinessException(ApiResponseEnum.USER_NOT_FOUND));
-            userService.cache(user);
-        }
-        wrapperRole(user);
-        return user;
-    }*/
 
     private void wrapperRole(User user){
         Set<SimpleGrantedAuthorityExtend> userRoles = userService.findUserRoles(user.getId());

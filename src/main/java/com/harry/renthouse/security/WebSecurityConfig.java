@@ -61,7 +61,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 加入自定义的安全认证
-        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
+//        auth.authenticationProvider(tokenAuthenticationProvider).eraseCredentials(true);
         auth.userDetailsService(rentHouseUserDetailService).passwordEncoder(passwordEncoder);
     }
 

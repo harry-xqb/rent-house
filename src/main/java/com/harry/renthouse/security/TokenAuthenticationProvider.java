@@ -20,9 +20,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
 /**
+ * 直接在filter拦截token, 无需在provider中进行
  * token认证提供者
  */
 @Component
+@Deprecated
 public class TokenAuthenticationProvider implements AuthenticationProvider {
 
     @Autowired
