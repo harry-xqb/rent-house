@@ -139,9 +139,9 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    @Cacheable(value = "support:region", key = "#cityEnName + ':' +  #regionEnName", unless = "#result.present")
+    @Cacheable(value = "support:region", key = "#cityEnName + ':' +  #regionEnName", unless = "#result == null ")
     public Optional<SupportAddressDTO> findRegionByCityNameAndName(String cityEnName, String regionEnName) {
-        return supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.CITY.getValue())
+            return supportAddressRepository.findByBelongToAndEnNameAndLevel(cityEnName, regionEnName, SupportAddress.AddressLevel.REGION.getValue())
                 .map(item -> modelMapper.map(item, SupportAddressDTO.class));
     }
 

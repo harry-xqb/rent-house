@@ -2,6 +2,7 @@ package com.harry.renthouse.util;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SessionCallback;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -84,6 +85,10 @@ public class RedisUtil {
      */
     public Object get(String key){
         return key==null?null:redisTemplate.opsForValue().get(key);
+    }
+
+    public List<Object> mget(List<String> keys){
+        return redisTemplate.opsForValue().multiGet(keys);
     }
 
     /**
@@ -330,6 +335,73 @@ public class RedisUtil {
     }
 
     /**
+     * 将数据放入set缓存
+     * @param key 键
+     * @param value 值 可以是多个
+     * @param score 顺序
+     * @param time 过期时间
+     */
+    public boolean zSet(String key, Object value, double score, long time) {
+        try {
+            redisTemplate.opsForZSet().add(key, value, score);
+            if(time > 0){
+                expire(key, time);
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    /**
+     * 将数据放入set缓存
+     * @param key 键
+     * @param value 值 可以是多个
+     * @param score 顺序
+     */
+    public boolean zSet(String key, Object value, double score) {
+        try {
+            redisTemplate.opsForZSet().add(key, value, score);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * 获取集合大小
+     * @param key 键
+     * @return 集合大小
+     */
+    public long zSetGetSize(String key){
+        try {
+            return redisTemplate.opsForZSet().size(key);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public long zSetRemove(String key, Object ...values) {
+        try {
+            Long count = redisTemplate.opsForZSet().remove(key, values);
+            return count;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    public boolean zSetIsMember(String key, Object value){
+        try {
+            return redisTemplate.opsForSet().isMember(key, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * 将set数据放入缓存
      * @param key 键
      * @param time 时间(秒)
@@ -531,4 +603,11 @@ public class RedisUtil {
         }
     }
 
+    /**
+     * 执行管道操作
+     * @param sessionCallback session回调
+     */
+    public List<Object> pipeLine(SessionCallback sessionCallback){
+        return redisTemplate.executePipelined(sessionCallback);
+    }
 }

@@ -7,6 +7,8 @@ import com.harry.renthouse.entity.*;
 import com.harry.renthouse.exception.BusinessException;
 import com.harry.renthouse.repository.*;
 import com.harry.renthouse.service.ServiceMultiResult;
+import com.harry.renthouse.service.cache.RedisHouseService;
+import com.harry.renthouse.service.cache.RedisStarService;
 import com.harry.renthouse.service.house.AddressService;
 import com.harry.renthouse.service.house.HouseService;
 import com.harry.renthouse.service.search.HouseElasticSearchService;
@@ -30,6 +32,7 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import javax.persistence.criteria.Predicate;
+import javax.validation.constraints.Null;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
@@ -87,6 +90,12 @@ public class HouseServiceImpl implements HouseService {
     @Resource
     private UserRepository userRepository;
 
+    @Resource
+    private RedisHouseService redisHouseService;
+
+    @Resource
+    private RedisStarService redisStarService;
+
     @Transactional
     @Override
     public HouseDTO addHouse(HouseForm houseForm){
@@ -115,7 +124,9 @@ public class HouseServiceImpl implements HouseService {
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePictureDTOList);
-        houseDTO.setTags(houseForm.getTags());
+        houseDTO.setTags(new HashSet<>(houseForm.getTags()));
+        // 缓存房屋信息
+        redisHouseService.addHouseDTO(houseDTO);
         return houseDTO;
     }
     @Transactional
@@ -151,11 +162,11 @@ public class HouseServiceImpl implements HouseService {
         // 填充房屋信息
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePicturesDTO);
-        houseDTO.setTags(houseForm.getTags());
+        houseDTO.setTags(new HashSet<>(houseForm.getTags()));
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
-        // 建立elastic索引
-        /*if(house.getStatus() == HouseStatusEnum.AUDIT_PASSED.getValue()){
-        }*/
+
+        // 缓存房屋信息
+        redisHouseService.addHouseDTO(houseDTO);
         return houseDTO;
     }
 
@@ -201,28 +212,46 @@ public class HouseServiceImpl implements HouseService {
         Page<House> houses = houseRepository.findAll(querySpec, pageable);
         List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
         // 设置房屋被收藏次数
-        houseDTOList.forEach(houseDTO -> {
-            int number = houseStarRepository.countByHouseId(houseDTO.getId());
+        for (HouseDTO houseDTO : houseDTOList) {
+            int number = (int) redisStarService.getHouseStarCount(houseDTO.getId());
             houseDTO.setStarNumber(number);
-        });
+        }
         return new ServiceMultiResult<>((int)houses.getTotalElements(), houseDTOList);
     }
 
     @Override
     public HouseCompleteInfoDTO findCompleteHouse(Long houseId) {
+        // 查找缓存中是否存在数据
+        HouseDTO dto = redisHouseService.getHouseDTOById(houseId).orElseGet(() -> {
+            House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+            HouseDTO houseDTO = wrapHouseDTO(house);
+            // 缓存
+            redisHouseService.addHouseDTO(houseDTO);
+            return houseDTO;
+        });
         // 查找房屋信息
-        House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
-        return wrapHouseCompleteDTO(house);
+        return wrapHouseCompleteDTO(dto);
     }
 
     @Override
     public HouseCompleteInfoDTO findAgentEditCompleteHouse(Long houseId) {
         Long agentId = AuthenticatedUserUtil.getUserId();
-        House house = houseRepository.findByIdAndAdminId(houseId, agentId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
-        return wrapHouseCompleteDTO(house);
+        HouseDTO dto = redisHouseService.getHouseDTOById(houseId).map(item -> {
+            if (agentId.longValue() != item.getAdminId()) {
+                throw new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR);
+            }
+            return item;
+        }).orElseGet(() -> {
+            House house = houseRepository.findByIdAndAdminId(houseId, agentId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+            HouseDTO houseDTO = wrapHouseDTO(house);
+            // 缓存
+            redisHouseService.addHouseDTO(houseDTO);
+            return houseDTO;
+        });
+        return wrapHouseCompleteDTO(dto);
     }
 
-    private HouseCompleteInfoDTO wrapHouseCompleteDTO(House house){
+    private HouseDTO wrapHouseDTO(House house){
         Long houseId = house.getId();
         // 查找房屋详情
         HouseDetail houseDetail = houseDetailRepository.findByHouseId(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_DETAIL_NOT_FOUND_ERROR));
@@ -237,14 +266,18 @@ public class HouseServiceImpl implements HouseService {
         List<HousePictureDTO> housePictureDTO = housePictureList.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 设置组装houseDTO
         houseDTO.setCover(cdnPrefix + houseDTO.getCover());
-        houseDTO.setTags(tagStringList);
+        houseDTO.setTags(new HashSet<>(tagStringList));
         houseDTO.setHouseDetail(houseDetailDTO);
         houseDTO.setHousePictureList(housePictureDTO);
+        return houseDTO;
+    }
+
+    private HouseCompleteInfoDTO wrapHouseCompleteDTO(HouseDTO houseDTO){
         // 设置地铁信息
         SupportAddressDTO city = addressService.findCityByName(houseDTO.getCityEnName())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
-        SupportAddressDTO region = addressService.findRegionByCityNameAndName(houseDTO.getRegionEnName(), houseDTO.getRegionEnName())
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+        SupportAddressDTO region = addressService.findRegionByCityNameAndName(houseDTO.getCityEnName(), houseDTO.getRegionEnName())
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
         // 获取地铁线路信息
         Long subwayLineId = houseDTO.getHouseDetail().getSubwayLineId();
         String subWayName = houseDTO.getHouseDetail().getSubwayLineName();
@@ -266,8 +299,8 @@ public class HouseServiceImpl implements HouseService {
         houseCompleteInfoDTO.setSubwayStation(subwayStationDTO);
 
         // 计算房源被收藏次数
-        int number = houseStarRepository.countByHouseId(houseDTO.getId());
-        houseDTO.setStarNumber(number);
+        long number = redisStarService.getHouseStarCount(houseDTO.getId());
+        houseDTO.setStarNumber((int) number);
         return houseCompleteInfoDTO;
     }
 
@@ -283,6 +316,9 @@ public class HouseServiceImpl implements HouseService {
         houseTag.setHouseId(house.getId());
         houseTag.setName(tagForm.getName());
         houseTagRepository.save(houseTag);
+
+        // 更新标签缓存
+        redisHouseService.addHouseTag(house.getId(), houseTag.getName());
     }
 
     @Override
@@ -292,6 +328,9 @@ public class HouseServiceImpl implements HouseService {
         HouseTag houseTag = houseTagRepository.findByNameAndHouseId(tagForm.getName(), tagForm.getHouseId())
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.TAG_NOT_EXIST));
         houseTagRepository.delete(houseTag);
+
+        // 更新标签缓存
+        redisHouseService.addHouseTag(tagForm.getHouseId(), houseTag.getName());
     }
 
     @Override
@@ -299,6 +338,9 @@ public class HouseServiceImpl implements HouseService {
     public void deletePicture(Long pictureId) {
         HousePicture housePicture = housePictureRepository.findById(pictureId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
         housePictureRepository.delete(housePicture);
+
+        // 更新图片缓存
+        redisHouseService.deleteHousePicture(housePicture.getHouseId(), pictureId);
         /*try {
             // TODO 七牛云中相同图片只存一份，如果删除的话会导致其他引用改图片的房屋照片也被删除
             Response response = qiniuService.deleteFile(housePicture.getPath());
@@ -320,6 +362,9 @@ public class HouseServiceImpl implements HouseService {
         HousePicture housePicture = housePictureRepository.findById(coverId).orElseThrow(() -> new BusinessException(ApiResponseEnum.PICTURE_NOT_EXIST));
         House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
         houseRepository.updateCover(house.getId(), housePicture.getPath());
+
+        // 更新房源信息缓存
+        redisHouseService.updateHouse(house);
     }
 
     @Override
@@ -343,6 +388,9 @@ public class HouseServiceImpl implements HouseService {
         }else{
             houseElasticSearchService.delete(houseId);
         }
+
+        // 更新房源信息缓存
+        redisHouseService.updateHouse(house);
     }
 
     @Override
@@ -411,7 +459,6 @@ public class HouseServiceImpl implements HouseService {
         });
         // 查找房屋的管理员
         House house = houseRepository.findById(subscribeHouseForm.getHouseId()).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
-
         HouseSubscribe houseSubscribe = new HouseSubscribe();
         houseSubscribe.setAdminId(house.getAdminId());
         houseSubscribe.setOrderTime(subscribeHouseForm.getTime());
@@ -421,6 +468,8 @@ public class HouseServiceImpl implements HouseService {
         houseSubscribe.setStatus(HouseSubscribeStatusEnum.WAIT.getValue());
         houseSubscribe.setUserId(userId);
         houseSubscribeRepository.save(houseSubscribe);
+
+        // todo 添加房屋预约缓存
     }
 
     @Override
@@ -448,7 +497,7 @@ public class HouseServiceImpl implements HouseService {
             throw new BusinessException(ApiResponseEnum.HOUSE_SUBSCRIBE_CANCEL_FINISH_ERROR);
         }
         houseSubscribeRepository.deleteById(subscribeId);
-        //TODO 发送短信通知管理员或者用户，当前预约已取消
+        //TODO 发送短信通知管理员或者用户，当前预约取消
     }
 
     @Override
@@ -587,21 +636,6 @@ public class HouseServiceImpl implements HouseService {
     }
 
     /**
-     * 通过id集合获取房源信息
-     * @param houseIdList id集合列表
-     * @return 房源dto列表
-     */
-    private List<HouseDTO> wrapperHouseResult(List<Long> houseIdList){
-        List<House> houseList = houseRepository.findAllById(houseIdList);
-        List<HouseDTO> houseDTOList = convertToHouseDTOList(houseList);
-        Map<Long, HouseDTO> houseDTOMap = houseDTOList.stream().collect(Collectors.toMap(HouseDTO::getId, house -> house));
-        wrapHouseDTOList(houseDTOList);
-        List<HouseDTO> result = new ArrayList<>();
-        houseIdList.forEach(id -> result.add(houseDTOMap.get(id)));
-        return result;
-    }
-
-    /**
      * 基本sql查询
      */
     private ServiceMultiResult<HouseDTO> simpleSearch(SearchHouseForm searchHouseForm){
@@ -684,10 +718,53 @@ public class HouseServiceImpl implements HouseService {
         Sort sort = Sort.by(sortDirection, HouseSortOrderByEnum.from(searchHouseForm.getOrderBy()).orElse(HouseSortOrderByEnum.DEFAULT).getValue());
         Pageable pageable = PageRequest.of(searchHouseForm.getPage() - 1, searchHouseForm.getPageSize(), sort);
         Page<House> houses = houseRepository.findAll(specification, pageable);
-        List<HouseDTO> houseDTOList = convertToHouseDTOList(houses.getContent());
-        wrapHouseDTOList(houseDTOList);
-        // 过滤地铁站
+        List<HouseDTO> houseDTOList = wrapperHouseResultByHouses(houses.getContent());
         return new ServiceMultiResult<>((int) houses.getTotalElements(), houseDTOList);
+    }
+
+    /**
+     * 通过id集合获取房源信息
+     * @param houseIdList id集合列表
+     * @return 房源dto列表
+     */
+    private List<HouseDTO> wrapperHouseResult(List<Long> houseIdList){
+        Function<List<Long>, List<House>> func = unCachedIdList ->  houseRepository.findAllById(unCachedIdList);
+        return wrapperHouseResult(houseIdList, func);
+    }
+
+    /**
+     * 通过id集合获取房源信息
+     * @param houseList 房源信息集合
+     * @return 房源dto列表
+     */
+    private List<HouseDTO> wrapperHouseResultByHouses(List<House> houseList){
+        List<Long> houseIdList = houseList.stream().map(House::getId).collect(Collectors.toList());
+        Function<List<Long>, List<House>> func = unCachedIdList ->  houseList.stream().filter(item -> unCachedIdList.contains(item.getId())).collect(Collectors.toList());
+        return wrapperHouseResult(houseIdList, func);
+    }
+
+    private List<HouseDTO> wrapperHouseResult(List<Long> houseIdList, Function<List<Long>, List<House>> func){
+        // 先从缓存中查找
+        List<HouseDTO> houseRedisDTOS = redisHouseService.getByIds(houseIdList);
+        if(houseIdList.size() == houseRedisDTOS.size()){
+            return houseRedisDTOS;
+        }
+        // 换种命中的id
+        List<Long> cachedIds = houseRedisDTOS.stream().map(HouseDTO::getId).collect(Collectors.toList());
+        // 获取未命中的房源id
+        List<Long> unCachedIds = houseIdList.stream().filter(houseId -> !cachedIds.contains(houseId)).collect(Collectors.toList());
+        // 如果未传原始房屋列表，则从数据库中查出所需房源信息， 否则直接过滤出未缓存的房源信息
+        // 执行function函数，获取对应的未缓存结果
+        List<House> unCachedHouse= func.apply(unCachedIds);
+
+        List<HouseDTO> unCachedHouseDTOList = convertToHouseDTOList(unCachedHouse);
+        // 包裹房源DTO
+        wrapHouseDTOList(unCachedHouseDTOList);
+        // 合并缓存与未缓存数据
+        List<HouseDTO> result = mergeCachedAndUnCachedHouse(houseIdList, houseRedisDTOS, unCachedHouseDTOList);
+        // 缓存未缓存过的房源DTO
+        redisHouseService.addHouseDTOList(unCachedHouseDTOList);
+        return result;
     }
 
     /**
@@ -714,6 +791,13 @@ public class HouseServiceImpl implements HouseService {
             houseDTOMap.get(detailDTO.getHouseId()).setHouseDetail(detailDTO);
         });
 
+        // 房屋设置图片列表
+        List<HousePicture> housePictureList = housePictureRepository.findAllByHouseIdIn(houseIdList);
+        housePictureList.forEach(housePicture -> {
+            HousePictureDTO pictureDTO = modelMapper.map(housePicture, HousePictureDTO.class);
+            HouseDTO houseDTO = houseDTOMap.get(pictureDTO.getHouseId());
+            houseDTO.getHousePictureList().add(pictureDTO);
+        });
     }
 
     /**
@@ -794,8 +878,32 @@ public class HouseServiceImpl implements HouseService {
         addressService.findCityByName(cityEnName)
                 .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
         addressService.findRegionByCityNameAndName(cityEnName, regionEnName)
-                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_CITY_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ApiResponseEnum.ADDRESS_REGION_NOT_FOUND));
     }
+
+    /**
+     * 按id顺序合并已缓存和未缓存的DTO
+     * @param houseIdOrders 房源id顺序
+     * @param cached 已缓存dto数据
+     * @param unCached 未缓存dto数据
+     * @return 合并后的dto集合
+     */
+    private List<HouseDTO> mergeCachedAndUnCachedHouse(List<Long> houseIdOrders,
+                                                       List<HouseDTO> cached, List<HouseDTO> unCached){
+        Map<Long, HouseDTO> cachedHouseDTOMap = cached.stream().collect(Collectors.toMap(HouseDTO::getId, houseDTO -> houseDTO, (k1, k2) -> k2));
+        Map<Long, HouseDTO> houseDTOMap = unCached.stream().collect(Collectors.toMap(HouseDTO::getId, house -> house));
+        // 合并缓存与未缓存房源集合
+        Map<Long, HouseDTO> map = new HashMap<>();
+        map.putAll(houseDTOMap);
+        map.putAll(cachedHouseDTOMap);
+        // 返回最终结果
+        List<HouseDTO> result = new ArrayList<>();
+        houseIdOrders.forEach(id -> result.add(map.get(id)));
+        return result;
+    }
+
+    private
+
 
     @AllArgsConstructor
     @Data

@@ -31,6 +31,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,7 +82,7 @@ public class HouseController {
                         houseInfo.getRegion().getEnName(),
                         houseInfo.getHouse().getDistrict()
                     );
-        // TODO 目前采用elastic搜索标题，后面采用hadoop + spark计算获取推荐房源
+        // TODO 目前采用elastic搜索标题，后期将会采用hadoop + spark计算获取推荐房源
         SearchHouseForm searchHouseForm = new SearchHouseForm();
         searchHouseForm.setPageSize(4);
         searchHouseForm.setCityEnName(houseInfo.getCity().getEnName());
@@ -100,6 +102,7 @@ public class HouseController {
         result.setAgent(agent);
         result.setHouseCountInDistrict(houseCountInDistrict);
         result.setSuggestHouses(suggest);
+
         return ApiResponse.ofSuccess(result);
     }
 

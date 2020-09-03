@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
+ * 用户信息缓存
  * @author Harry Xu
  * @date 2020/9/1 15:48
  */
