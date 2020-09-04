@@ -48,4 +48,13 @@ class RedisUtilTest extends RentHouseApplicationTests {
         user.setNickName("测试人员");
         user.setId(12345L);
     }
+
+    @Test
+    void zSetIsMember(){
+        String key = "star:user:14";
+        boolean isExist = redisUtil.zSetIsMember(key, 50);
+        Assert.isTrue(isExist, "用户14收藏了房源50");
+        isExist = redisUtil.zSetIsMember(key, 60);
+        Assert.isTrue(isExist, "用户14未收藏了房源60");
+    }
 }

@@ -3,9 +3,11 @@ package com.harry.renthouse.util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -359,7 +361,7 @@ public class RedisUtil {
      * @param value 值 可以是多个
      * @param score 顺序
      */
-    public boolean zSet(String key, Object value, double score) {
+    public boolean zSetAdd(String key, Object value, double score) {
         try {
             redisTemplate.opsForZSet().add(key, value, score);
             return true;
@@ -382,10 +384,17 @@ public class RedisUtil {
             return 0;
         }
     }
+
+    public Set<ZSetOperations.TypedTuple<Object>> zSetRangeWithScores(String key, long start, long end){
+        return redisTemplate.opsForZSet().rangeWithScores(key, start, end);
+    }
+
+    public Set<ZSetOperations.TypedTuple<Object>> zSetReverseRangeWithScores(String key, long start, long end){
+        return redisTemplate.opsForZSet().reverseRangeWithScores(key, start, end);
+    }
     public long zSetRemove(String key, Object ...values) {
         try {
-            Long count = redisTemplate.opsForZSet().remove(key, values);
-            return count;
+            return redisTemplate.opsForZSet().remove(key, values);
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
@@ -394,7 +403,7 @@ public class RedisUtil {
 
     public boolean zSetIsMember(String key, Object value){
         try {
-            return redisTemplate.opsForSet().isMember(key, value);
+            return redisTemplate.opsForZSet().score(key, value) != null;
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -610,4 +619,24 @@ public class RedisUtil {
     public List<Object> pipeLine(SessionCallback sessionCallback){
         return redisTemplate.executePipelined(sessionCallback);
     }
+
+    /**
+     * 如果不存在则设置
+     * @param key 键
+     * @param value 值
+     * @return 是否设置成功
+     */
+    public boolean setNotExist(String key, String value){
+        return redisTemplate.opsForValue().setIfAbsent(key, value);
+    }
+    /**
+     * 如果不存在则设置
+     * @param key 键
+     * @param value 值
+     * @return 是否设置成功
+     */
+    public boolean setNotExist(String key, String value, long time){
+        return redisTemplate.opsForValue().setIfAbsent(key, value, Duration.ofSeconds(time));
+    }
+
 }

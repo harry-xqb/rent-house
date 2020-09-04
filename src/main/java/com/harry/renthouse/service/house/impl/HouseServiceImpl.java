@@ -85,9 +85,6 @@ public class HouseServiceImpl implements HouseService {
     private HouseSubscribeRepository houseSubscribeRepository;
 
     @Resource
-    private HouseStarRepository houseStarRepository;
-
-    @Resource
     private UserRepository userRepository;
 
     @Resource
@@ -148,13 +145,11 @@ public class HouseServiceImpl implements HouseService {
         HouseDetailDTO houseDetailDTO = modelMapper.map(updateHouseDetail, HouseDetailDTO.class);
         // 移除所有照片
         housePictureRepository.deleteAllByHouseId(houseId);
-        housePictureRepository.flush();
         // 获取照片信息
         List<HousePicture> housePictures = housePictureRepository.saveAll(generateHousePicture(houseForm, houseId));
         List<HousePictureDTO> housePicturesDTO = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 移除所有标签
         houseTagRepository.deleteAllByHouseId(houseId);
-        houseTagRepository.flush();
         // 保存所有标签
         // 新增房屋标签信息
         List<HouseTag> houseTagList = generateHouseTag(houseForm, house.getId());
@@ -469,7 +464,6 @@ public class HouseServiceImpl implements HouseService {
         houseSubscribe.setUserId(userId);
         houseSubscribeRepository.save(houseSubscribe);
 
-        // todo 添加房屋预约缓存
     }
 
     @Override
@@ -536,10 +530,12 @@ public class HouseServiceImpl implements HouseService {
     @Override
     public void starHouse(Long houseId) {
         Long userId = AuthenticatedUserUtil.getUserId();
-        HouseStar houseStar = new HouseStar();
+       /* HouseStar houseStar = new HouseStar();
         houseStar.setHouseId(houseId);
         houseStar.setUserId(userId);
-        houseStarRepository.save(houseStar);
+        houseStarRepository.save(houseStar);*/
+        // 收藏数据直接存入redis
+        redisStarService.star(userId, houseId);
     }
 
     @Override
@@ -547,10 +543,13 @@ public class HouseServiceImpl implements HouseService {
         // 获取当前用户id（房东id）
         Long userId = AuthenticatedUserUtil.getUserId();
         // 所有预约信息
-        Sort sort = Sort.by(Sort.Direction.fromOptionalString(houseStarForm.getSortDirection()).orElse(Sort.Direction.DESC),
-                houseStarForm.getOrderBy());
-        Pageable pageable = PageRequest.of(houseStarForm.getPage() - 1, houseStarForm.getPageSize(), sort);
-        Page<HouseStar> houseStarPage = houseStarRepository.findAllByUserId(userId, pageable);
+        /*Sort sort = Sort.by(Sort.Direction.fromOptionalString(houseStarForm.getSortDirection()).orElse(Sort.Direction.DESC),
+                houseStarForm.getOrderBy());*/
+        Pageable pageable = PageRequest.of(houseStarForm.getPage() - 1, houseStarForm.getPageSize());
+        // 从缓存中查找
+        Page<HouseStar> houseStarPage = redisStarService.findAllByUserId(userId, pageable, Sort.Direction.fromOptionalString(houseStarForm.getSortDirection()).orElse(Sort.Direction.DESC));
+       // Page<HouseStar> houseStarPage = houseStarRepository.findAllByUserId(userId, pageable);
+
         List<HouseStar> houseStarList = houseStarPage.getContent();
         List<Long> houseList = houseStarList.stream().map(HouseStar::getHouseId).collect(Collectors.toList());
         List<HouseDTO> houseDTOList = wrapperHouseResult(houseList);
@@ -570,12 +569,13 @@ public class HouseServiceImpl implements HouseService {
     @Transactional
     public void deleteStarInfo(Long houseId) {
         Long userId = AuthenticatedUserUtil.getUserId();
-        boolean isStar = houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+        redisStarService.unStar(userId, houseId);
+      /*  boolean isStar = houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
         if(isStar){
             houseStarRepository.deleteByHouseIdAndUserId(houseId, userId);
         }else{
             throw new BusinessException(ApiResponseEnum.HOUSE_UN_STAR_NOT_FOUND_ERROR);
-        }
+        }*/
     }
     @Override
     public List<HouseDTO> findAllByIds(List<Long> houseIdList) {
@@ -584,7 +584,8 @@ public class HouseServiceImpl implements HouseService {
 
     @Override
     public boolean isStarHouse(long houseId, long userId) {
-        return houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+        //return houseStarRepository.existsByHouseIdAndUserId(houseId, userId);
+        return redisStarService.isStar(userId, houseId);
     }
 
     @Override

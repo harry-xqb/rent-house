@@ -27,7 +27,7 @@ public class ListHouseStarForm {
     @ApiModelProperty(value = "升降序: 默认降序")
     private String sortDirection = "DESC";
 
-    @ApiModelProperty(value = "排序字段: 创建时间")
-    private String orderBy = "createTime";
+//    @ApiModelProperty(value = "排序字段: 创建时间")
+    //private String orderBy = "createTime";
 
 }

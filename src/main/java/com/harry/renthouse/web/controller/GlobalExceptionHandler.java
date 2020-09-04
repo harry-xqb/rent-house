@@ -5,6 +5,7 @@ import com.harry.renthouse.base.ApiResponseEnum;
 import com.harry.renthouse.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,6 +56,13 @@ public class GlobalExceptionHandler {
     public ApiResponse exceptionHandler(HttpRequestMethodNotSupportedException e){
         log.error("不支持的请求类型异常:{}", e.getMessage());
         return ApiResponse.ofStatus(ApiResponseEnum.UNSUPPORTED_REQUEST_TYPE);
+    }
+
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public ApiResponse exceptionHandler(AccessDeniedException e){
+        log.error("访问被拒绝:{}", e.getMessage());
+        e.printStackTrace();
+        return ApiResponse.ofStatus(ApiResponseEnum.NO_PRIORITY_ERROR);
     }
 
     @ExceptionHandler(value = Exception.class)

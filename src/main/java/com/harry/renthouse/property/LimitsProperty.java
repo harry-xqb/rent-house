@@ -26,5 +26,5 @@ public class LimitsProperty{
 
     public long housePhotoSizeLimit = 10485760;
 
-    public String[] housePhotoTypeLimit = {"jpg", "png", "jpeg"};
+    public String[] housePhotoTypeLimit = {"jpg", "png", "jpeg", "webp"};
 }

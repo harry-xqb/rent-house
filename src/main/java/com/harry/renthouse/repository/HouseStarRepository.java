@@ -25,4 +25,6 @@ public interface HouseStarRepository  extends JpaRepository<HouseStar, Long> {
 
     boolean existsByHouseIdAndUserId(Long houseId, Long userId);
 
+    void deleteAllByIdIn(List<Long> idList);
+
 }
