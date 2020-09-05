@@ -173,16 +173,17 @@ public class RedisStarServiceImpl implements RedisStarService {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         // 取消
         if(redisUtil.setNotExist(STAR_SYNC_LOCK, uuid, 30)){
+            log.info("正在获取新增的收藏操作记录表...");
             // 获取收藏列表
             Set<ZSetOperations.TypedTuple<Object>> starRecordSet = redisUtil.zSetRangeWithScores(STAR_RECORD_ZSET_PREFIX, 0, -1);
             // 获取取消收藏列表
+            log.info("正造获取需要删除的收藏操作记录...");
             Set<Object> deletedStarSet = redisUtil.sGet(STAR_RECORD_DELETE_KEY);
             List<Long> deleteStarIdList = new ArrayList<>();
             if(deletedStarSet != null){
-                deleteStarIdList = deletedStarSet.stream().map(item -> (Long) item).collect(Collectors.toList());
+                deleteStarIdList = deletedStarSet.stream().map(item -> Long.parseLong(item.toString())).collect(Collectors.toList());
             }
             List<HouseStar> list = new ArrayList<>();
-            // 移除
             // 遍历出star record
             for(ZSetOperations.TypedTuple<Object> starRecord: starRecordSet){
                 String recordValue = (String) starRecord.getValue();
@@ -202,16 +203,19 @@ public class RedisStarServiceImpl implements RedisStarService {
                     }
                 }
             }
-
             // 移除需要删除的房源id
+            log.info("正在删除取消收藏的数据...");
             houseStarRepository.deleteAllByIdIn(deleteStarIdList);
+            houseStarRepository.flush();
             // 新增的star存入mysql中
+            log.info("正在保存新增的收藏数据...");
             List<HouseStar> saveResult = houseStarRepository.saveAll(list);
             // 更新starHash, record记录表, 删除记录表
+            log.info("正造删除redis记录表中数据...");
             redisUtil.pipeLine(new SessionCallback() {
                 @Override
                 public Object execute(RedisOperations operations) throws DataAccessException {
-                    Map<String, Long> map = new HashMap();
+                    Map<String, Long> map = new HashMap<>();
                     for (HouseStar houseStar : saveResult) {
                         Long houseId = houseStar.getHouseId();
                         Long userId = houseStar.getUserId();
@@ -227,7 +231,9 @@ public class RedisStarServiceImpl implements RedisStarService {
                 }
             });
             // 释放锁
+            log.info("正造释放同步锁...");
             redisUtil.del(STAR_SYNC_LOCK);
+            log.info("同步任务结束。本次共同步新增收藏数据:{}条，删除收藏数据:{}条", list.size(), deleteStarIdList.size());
         }else{
             log.warn("当前数据正在同步中，为避免数据紊乱， 不可重复同步。");
         }

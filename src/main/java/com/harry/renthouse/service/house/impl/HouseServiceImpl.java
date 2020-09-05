@@ -145,11 +145,13 @@ public class HouseServiceImpl implements HouseService {
         HouseDetailDTO houseDetailDTO = modelMapper.map(updateHouseDetail, HouseDetailDTO.class);
         // 移除所有照片
         housePictureRepository.deleteAllByHouseId(houseId);
+        housePictureRepository.flush();
         // 获取照片信息
         List<HousePicture> housePictures = housePictureRepository.saveAll(generateHousePicture(houseForm, houseId));
         List<HousePictureDTO> housePicturesDTO = housePictures.stream().map(picture -> modelMapper.map(picture, HousePictureDTO.class)).collect(Collectors.toList());
         // 移除所有标签
         houseTagRepository.deleteAllByHouseId(houseId);
+        houseTagRepository.flush();
         // 保存所有标签
         // 新增房屋标签信息
         List<HouseTag> houseTagList = generateHouseTag(houseForm, house.getId());
