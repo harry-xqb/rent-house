@@ -134,7 +134,7 @@ open:
     avatarSizeLimit: 5242880
     avatarTypeLimit: jpg,png,jpeg
     housePhotoSizeLimit: 10485760
-    housePhotoTypeLimit: jpg,png,jpeg
+    housePhotoTypeLimit: jpg,png,jpeg,webp
 esmonitor:
   mailForm: 923243595@qq.com   #***** es健康检查发件邮箱 *****
   mailTo: 923243595@qq.com    #***** es健康检查发件通知人 *****

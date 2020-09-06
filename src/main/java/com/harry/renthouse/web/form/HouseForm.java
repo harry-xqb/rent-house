@@ -68,9 +68,9 @@ public class HouseForm {
     private Integer direction;
 
     /* 到地铁的距离 */
-    @NotNull(message = "房源到地铁距离不能为空")
+//    @NotNull(message = "房源到地铁距离不能为空")
     @ApiModelProperty(value = "到地铁站距离:没有距离的话传 -1", required = true, example = "500", notes = "没有距离的话传 -1")
-    private Integer distanceToSubway;
+    private Integer distanceToSubway = -1;
 
     /** 客厅数量 **/
     @NotNull(message = "房源客厅数量不能为空")
