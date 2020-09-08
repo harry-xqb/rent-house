@@ -21,7 +21,7 @@ public class HouseStarSyncTask {
     @Resource
     private RedisStarService redisStarService;
 
-    @Scheduled(cron = "0 0 15 * * *")
+    @Scheduled(cron = "0 0 3 * * *")
     public void syncHouseStarToDatabase(){
        // redisStarService.
         log.info("定时任务:同步redis收藏房源数据到数据库开始");
