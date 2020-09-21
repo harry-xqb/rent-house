@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -361,13 +362,24 @@ public class HouseServiceImpl implements HouseService {
         houseRepository.updateCover(house.getId(), housePicture.getPath());
 
         // 更新房源信息缓存
-        redisHouseService.updateHouse(house);
+        House mapHouse = new House();
+        modelMapper.map(house, mapHouse);
+        mapHouse.setCover(cdnPrefix + house.getCover());
+        redisHouseService.updateHouse(mapHouse);
     }
 
     @Override
     @Transactional
     public void updateStatus(Long houseId, HouseOperationEnum houseOperationEnum) {
         House house = houseRepository.findById(houseId).orElseThrow(() -> new BusinessException(ApiResponseEnum.HOUSE_NOT_FOUND_ERROR));
+        // 如果当前房屋的管理员当前用户或者当前用户是超级管理员才允许修改
+        User user = AuthenticatedUserUtil.getUserInfo();
+        boolean superAdmin = user.getAuthorities().stream().anyMatch(item -> UserRoleEnum.SUPER_ADMIN.
+                getValue().equalsIgnoreCase(item.getAuthority().replace("ROLE_", "")
+        ));
+        if(!superAdmin && house.getAdminId().longValue() != user.getId().longValue()){
+            throw new BusinessException(ApiResponseEnum.NO_PRIORITY_ERROR);
+        }
         int status = house.getStatus();
         if(status == houseOperationEnum.getCode()){
             throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_NOT_CHANGE);
@@ -378,6 +390,8 @@ public class HouseServiceImpl implements HouseService {
      /*   if(status == HouseStatusEnum.RENTED.getValue()){
             throw new BusinessException(ApiResponseEnum.HOUSE_STATUS_CHANGE_ERROR_RENTED);
         }*/
+
+
         houseRepository.updateStatus(houseId, houseOperationEnum.getCode());
         // 如果房源更新为审核通过则建立
         if(houseOperationEnum.getCode() == HouseOperationEnum.PASS.getCode()){
@@ -385,9 +399,11 @@ public class HouseServiceImpl implements HouseService {
         }else{
             houseElasticSearchService.delete(houseId);
         }
-
         // 更新房源信息缓存
-        redisHouseService.updateHouse(house);
+        House mapHouse = new House();
+        modelMapper.map(house, mapHouse);
+        mapHouse.setCover(cdnPrefix + house.getCover());
+        redisHouseService.updateHouse(mapHouse);
     }
 
     @Override

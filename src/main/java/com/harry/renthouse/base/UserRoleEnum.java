@@ -12,6 +12,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum  UserRoleEnum {
     ADMIN("ADMIN", "管理员"),
+    SUPER_ADMIN("SUPER-ADMIN", "超级管理员"),
     USER("USER", "用户"),;
 
     private String value;
