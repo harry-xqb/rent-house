@@ -1,8 +1,8 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url:  jdbc:mysql://localhost:3306/rent_house?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8&useSSL=true
-    username: harry
+    url:  jdbc:mysql://mysql/rent_house?&useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=GMT%2B8
+    username: root
     password: 123456
     hikari:
       minimum-idle: 5
@@ -52,8 +52,6 @@ spring:
         allow: 127.0.0.1
         login-username: admin
         login-password: 123456
-        #禁止那些ip
-        deny: 192.168.1.102
         #是否可以重置
         reset-enable: true
         #启用
@@ -74,28 +72,31 @@ spring:
       repositories:
         enabled: false
   redis:
-    host: 127.0.0.1
+    host: redis
     port: 6379
   elasticsearch:
     rest:
-      uris: http://127.0.0.1:9200
+      uris: http://elasticsearch:9200
   kafka:
     consumer:
-      bootstrap-servers: 127.0.0.1:9092
+      bootstrap-servers: kafka:9092
       group-id: rent-house
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     producer:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: kafka:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
     listener:
       missing-topics-fatal: false
   mail:
-    host: smtp.qq.com     #***** 你修改的邮件服务地址 *****
+    host: smtp.qq.com    #***** 你修改的邮件服务地址 *****
     username: 923243595@qq.com   #***** 修改为你的邮箱 *****
-    password: xxxxx    #***** 修改为你的邮箱密码 *****
+    password: xxxxxx   #***** 修改为你的邮箱密码 *****
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: true
 logging:
   level:
     org:
@@ -105,26 +106,27 @@ logging:
     com:
       harry:
         renthouse: debug
+
 # 七牛云配置
 qiniu:
-  accessKey: xxxxxx  # 你的七牛云accesskey
-  secretKey: xxxxxx  # 你的七牛云accessSecret
-  bucket: hz-rent-house        # 你的七牛云OSS名称
-  cdnPrefix: http://qiniu.touchfish.top/  # 你的七牛云cnd前缀名称
+  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo   #***** 修改为你的七牛云accsskey 测试学习时可以先用我的 *****
+  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7  #***** 修改为你的七牛云secretKey 测试学习时可以先用我的 *****
+  bucket: hz-rent-house  #***** 修改为你的七牛云bucket 测试学习时可以先用我的 *****
+  cdnPrefix: http://qiniu.touchfish.top/   #***** 修改为你的七牛云cdn前缀 测试学习时可以先用我的 *****
 # 阿里云配置
 aliyun:
   sms:
-    accessKey: aabbcc  # 你的阿里短信accesskey
-    accessSecret: aabbcc  # 你的阿里短信accessSecret
-    templateCode: SMS_190792051  # 你的阿里短信模板代码
-    signName: touchfish   # 你的阿里短信模板签名
-    length: 4
+    accessKey: xxxxxx   #***** 修改为你的阿里云accessKey，如果不使用短信功能可以先不加, 这个要花钱，我就不免费提供了 *****
+    accessSecret: xxxxxx  #***** 修改为你的阿里云accessKey 如果不使用短信功能可以先不加 这个要花钱，我就不免费提供了 *****
+    templateCode: SMS_190792051   #***** 修改为你的阿里云短信模板代码 如果不使用短信功能可以先不加 *****
+    signName: touchfish    #***** 修改为你的阿里云短信签名 如果不使用短信功能可以先不加 *****
+    length: 4     # 短信长度
     expireIn: 300 # 5分钟过期
     resendInterval: 60 # 1分钟重发
 baidu:
   map:
-    accessKey: xxxaaasdasdasdasdads  # 你的百度云accessKey
-    geoTableId: 1000007599   # 你的geo表id
+    accessKey: SEr7pwTtgtPOHnj6dRplmm1fEKLH2zuo  #***** 修改为你的百度云 accessKey 测试学习时可以先用我的 *****
+    geoTableId: 212912  #***** 修改为你的百度云 geoTableId 测试学习时可以先用我的 *****
 open:
   limits:
     userPasswordRegex: ^(?=.*\d)((?=.*[a-z])|(?=.*[A-Z])).{8,16}$
@@ -132,9 +134,9 @@ open:
     avatarSizeLimit: 5242880
     avatarTypeLimit: jpg,png,jpeg
     housePhotoSizeLimit: 10485760
-    housePhotoTypeLimit: jpg,png,jpeg
+    housePhotoTypeLimit: jpg,png,jpeg,webp
 esmonitor:
-  mailForm: 923243595@qq.com   # es健康检查异常通知邮箱
-  mailTo: 923243595@qq.com
-  mailTitle: 【警告】Elasticsearch监控
-  api: http://localhost:9200/_cluster/health
+  mailForm: 923243595@qq.com   #***** es健康检查发件邮箱 *****
+  mailTo: 923243595@qq.com    #***** es健康检查发件通知人 *****
+  mailTitle: 【警告】Elasticsearch监控  #***** es健康检查异常通知标题 *****
+  api: http://elasticsearch:9200/_cluster/health
