@@ -8,7 +8,7 @@ MAINTAINER harry <923243595@qq.com>
 # VOLUME 指定了临时文件目录为/tmp。
 # 其效果是在主机 /var/lib/docker 目录下创建了一个临时文件，并链接到容器的/tmp
 # 将jar包添加到容器中并更名为app.jar
-ADD target/rent-house-1.1.0.jar app.jar
+ADD target/rent-house-1.2.0.jar app.jar
 # 暴漏端口号
 EXPOSE 8080
 # 运行jar包

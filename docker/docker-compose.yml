@@ -2,7 +2,7 @@ version: "3"
 services:
   #租房网后端docker
   rent-house-backend:
-    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-backend:1.0.0
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-backend:1.2.0
     container_name: rent-house-backend
     restart: always
     depends_on:
@@ -18,7 +18,7 @@ services:
       - ./application.yml:/application.yml
   #  租房网前端docker
   rent-house-frontend:
-    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-frontend:1.0.0
+    image: registry.cn-shenzhen.aliyuncs.com/harryxqb/rent-house-frontend:1.2.0
     container_name: rent-house-frontend
     restart: always
     depends_on:
@@ -65,16 +65,16 @@ services:
       - TZ="Asia/Shanghai"
     ports:
       - 10086:3306
-  kibana:
-    image: kibana:7.5.1
-    container_name: kibana
-    restart: always
-    environment:
-      - TZ="Asia/Shanghai"
-    ports:
-      - 5601:5601
-    depends_on:
-      - elasticsearch
+#  kibana:
+#    image: kibana:7.5.1
+#    container_name: kibana
+#    restart: always
+#    environment:
+#      - TZ="Asia/Shanghai"
+#    ports:
+#      - 5601:5601
+#    depends_on:
+#      - elasticsearch
   redis:
     image: redis
     container_name: redis

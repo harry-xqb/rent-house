@@ -109,24 +109,24 @@ logging:
 
 # 七牛云配置
 qiniu:
-  accessKey: xxxxxx   #***** 修改为你的七牛云accsskey *****
-  secretKey: xxxxxx  #***** 修改为你的七牛云secretKey *****
-  bucket: hz-rent-house  #***** 修改为你的七牛云bucket *****
-  cdnPrefix: http://qiniu.touchfish.top/   #***** 修改为你的七牛云cdn前缀 *****
+  accessKey: 0X5I0cIFqwWldEepBQ3KuyBmSd9MEun2-hfP_Tvo   #***** 修改为你的七牛云accsskey 测试学习时可以先用我的 *****
+  secretKey: 1s0fxMO-8gOIxWucZpeJHnXbhgRlRsQvpGDZ_Fm7  #***** 修改为你的七牛云secretKey 测试学习时可以先用我的 *****
+  bucket: hz-rent-house  #***** 修改为你的七牛云bucket 测试学习时可以先用我的 *****
+  cdnPrefix: http://qiniu.touchfish.top/   #***** 修改为你的七牛云cdn前缀 测试学习时可以先用我的 *****
 # 阿里云配置
 aliyun:
   sms:
-    accessKey: xxxxxx   #***** 修改为你的阿里云accessKey *****
-    accessSecret: xxxxxx  #***** 修改为你的阿里云accessKey *****
-    templateCode: SMS_190792051   #***** 修改为你的阿里云短信模板代码*****
-    signName: touchfish    #***** 修改为你的阿里云短信签名 *****
+    accessKey: xxxxxx   #***** 修改为你的阿里云accessKey，如果不使用短信功能可以先不加, 这个要花钱，我就不免费提供了 *****
+    accessSecret: xxxxxx  #***** 修改为你的阿里云accessKey 如果不使用短信功能可以先不加 这个要花钱，我就不免费提供了 *****
+    templateCode: SMS_190792051   #***** 修改为你的阿里云短信模板代码 如果不使用短信功能可以先不加 *****
+    signName: touchfish    #***** 修改为你的阿里云短信签名 如果不使用短信功能可以先不加 *****
     length: 4     # 短信长度
     expireIn: 300 # 5分钟过期
     resendInterval: 60 # 1分钟重发
 baidu:
   map:
-    accessKey: xxxxx  #***** 修改为你的百度云 accessKey *****
-    geoTableId: 212912  #***** 修改为你的百度云 geoTableId *****
+    accessKey: SEr7pwTtgtPOHnj6dRplmm1fEKLH2zuo  #***** 修改为你的百度云 accessKey 测试学习时可以先用我的 *****
+    geoTableId: 212912  #***** 修改为你的百度云 geoTableId 测试学习时可以先用我的 *****
 open:
   limits:
     userPasswordRegex: ^(?=.*\d)((?=.*[a-z])|(?=.*[A-Z])).{8,16}$

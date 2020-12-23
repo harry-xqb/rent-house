@@ -1,6 +1,7 @@
 ## Rent-House
 
 前端源码: [https://github.com/night-233/rent-house-admin](https://github.com/night-233/rent-house-admin)
+后端源码: [https://github.com/harry-xqb/rent-house](https://github.com/harry-xqb/rent-house)
 
 项目致力于打造一个完整的租房系统，采用现阶段流行技术实现。
 
@@ -8,9 +9,8 @@
 rent-house 项目是一套模仿自如的租房系统，基于SpringBoot+Elasticsearch实现，采用Docker容器化部署。系统主要包含租房首页、房源搜索、房源展示、地图找房、房源周边检索、收藏栏、看房预约、用户中心、发布管理、账号管理等模块。
 
 ## 在线演示
-
+(由于个人经费原因，在线网址已经停机，麻烦大家使用docker方式进行本地部署, 见下文)
 租房网地址:  [http://house.touchfish.top](http://house.touchfish.top)  账号: 17811111111 密码: 123
-
 后端swiger接口地址:  [http://house.frp.touchfish.top/swagger-ui.html](http://house.frp.touchfish.top/swagger-ui.html)  账号: admin 密码: 123
 
 ## 技术选型
@@ -52,7 +52,8 @@ rent-house 项目是一套模仿自如的租房系统，基于SpringBoot+Elastic
 
 #### Docker-Compose一键部署
 
-进入该项目下docker目录, 修改application.yml和docker-compose.yml 注释中带有 * 号部分的配置为你的相关配置，修改完成后在docker目录下执行以下命令
+进入该项目下docker目录, 修改application.yml和docker-compose.yml 注释中带有 #***** [修改内容] ***** 号部分的配置为你的相关配置，修改完成后在docker目录下执行以下命令,
+注意 docker-compose.yml下 kafka的KAFKA_ADVERTISED_HOST_NAME配置要改成你的主机ip地址
 
 窗口运行: `docker-compose up`
 
@@ -62,7 +63,11 @@ rent-house 项目是一套模仿自如的租房系统，基于SpringBoot+Elastic
 
 停止并移除: `docker-compose down`
 
-项目启动后访问:  [http://localhost:8888 ](http://localhost:8888 )
+查看日志: `docker-compose logs -f`
+
+
+启动后即可访问租房网前端地址:  [http://localhost:8888 ](http://localhost:8888 )  
+后端接口文档地址: [http://localhost:8080/swagger-ui.html ](http://localhost:8080/swagger-ui.html )
 
 说明: 拉取镜像的过程可能比较慢，如果网络环境不好，不建议使用该方式。 另外不了解docker的同学需要先学习下Docker： [Docker官网](https://www.docker.com/)
 

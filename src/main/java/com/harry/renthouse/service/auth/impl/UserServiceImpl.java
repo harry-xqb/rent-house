@@ -224,7 +224,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void resetPasswordByToken(String password, String token) {
         String phone = redisUserService.getPhoneByResetPasswordToken(token);
-        if(StringUtils.isNotEmpty(phone)){
+        if(StringUtils.isEmpty(phone)){
             throw new BusinessException(ApiResponseEnum.RESET_PASSWORD_INVALID_TOKEN);
         }
 

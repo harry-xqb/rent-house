@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.harry</groupId>
     <artifactId>rent-house</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <name>rent-house</name>
     <description>rent house project</description>
 
